@@ -1,0 +1,5 @@
+data/
+trial_cache/
+trial_logs/
+.env
+.env
