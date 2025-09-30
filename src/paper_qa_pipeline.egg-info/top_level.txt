@@ -1,6 +1,0 @@
-answer_generation
-chunking
-data
-document_parsing
-embeddings
-retrieval

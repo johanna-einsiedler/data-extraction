@@ -1,7 +1,0 @@
-Metadata-Version: 2.4
-Name: paper-qa-pipeline
-Version: 0.1.0
-Summary: Example project with CLI scripts
-Author-email: Johanna Einsiedler <johanna.einsiedler@unibas.ch>
-Requires-Python: >=3.8
-Description-Content-Type: text/markdown

@@ -1,3 +1,0 @@
-[console_scripts]
-chunk = chunking.chunk:main
-parse = document_parsing.parse:main
