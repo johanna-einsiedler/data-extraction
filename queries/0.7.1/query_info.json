@@ -1,0 +1,8 @@
+{
+  "label": "codelang",
+  "description": "Programming language used for ML-related computations of study (reported in article)",
+  "choices": "R, Python, Julia, Matlab, Stata, SPSS, SAS, Other",
+  "examples_and_notes": "",
+  "type": "SC",
+  "answer": "Z"
+}

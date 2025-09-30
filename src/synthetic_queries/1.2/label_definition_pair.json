@@ -1,0 +1,9 @@
+{
+  "label": "Label for 1.2",
+  "definition": "This is the definition of the label for query 1.2.",
+  "choices": [
+    "Option 1",
+    "Option 2",
+    "Option 3"
+  ]
+}
