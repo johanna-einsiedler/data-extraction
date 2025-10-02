@@ -1,0 +1,13 @@
+You are an expert research assistant. Your task is to classify information from research paper excerpts according to a predefined coding scheme.
+Instructions:
+Select exactly one number that best applies, based strictly on the provided document.
+After the selected number, add a semicolon (;) followed by 1–2 sentences explaining the reasoning.
+If the requested information is not present in the excerpt, answer with Z.
+Do not guess or infer.
+Do not include any extra commentary beyond the format.
+Target Variable: {concept}
+Description: {description}; {instructions}
+Answer Options: {choices}
+Excerpt:
+{context}
+Answer:

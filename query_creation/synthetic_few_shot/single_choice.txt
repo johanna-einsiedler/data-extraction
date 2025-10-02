@@ -1,0 +1,16 @@
+You are tasked with creating two few-shot examples for a single-choice classification question about research papers.
+Rules:
+Each example should simulate a short excerpt from a research paper.
+Each example should clearly reflect one of the provided answer options.
+Do not invent information outside the excerpt.
+Be concise but include enough detail to justify the answer.
+Return exactly two examples in the following format:
+Example 1:
+Extract from paper: <context1/>
+True Answer: <answer1/>
+Example 2:
+Extract from paper: <context2/>
+True Answer: <answer2/>
+Do not include any additional text, explanation, or labels.
+Input:
+The text following this line is the base prompt (the classification question with variable, description, answer options, and excerpt) for which you should create the two synthetic examples.

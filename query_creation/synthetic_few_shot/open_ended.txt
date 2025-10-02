@@ -1,0 +1,17 @@
+You are tasked with creating two few-shot examples for an open-ended classification question about research papers.
+Rules:
+Each example should simulate a short excerpt from a research paper.
+Each example should clearly reflect the target concept in a short free-text answer.
+If the requested information is not present in the excerpt, the answer should be "Z".
+Do not invent information outside the excerpt.
+Be concise but include enough detail to justify the answer.
+Return exactly two examples in the following format:
+Example 1:
+Extract from paper: <context1/>
+True Answer: <answer1/>
+Example 2:
+Extract from paper: <context2/>
+True Answer: <answer2/>
+Do not include any additional text, explanation, or labels.
+Input:
+The text following this line is the base prompt (including the task, document, and instructions) for which you should create the two synthetic examples.

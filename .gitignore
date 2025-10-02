@@ -3,3 +3,6 @@ trial_cache/
 trial_logs/
 .env
 .env
+.DS_Store
+pipeline_env/
+__pycache__/

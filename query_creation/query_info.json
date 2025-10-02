@@ -1,0 +1,1404 @@
+[
+    {
+        "query_id": "0.7",
+        "label": "code",
+        "description": "Open code",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "1": {
+                "value": "No",
+                "description": "  "
+            },
+            "2": {
+                "value": "Yes",
+                "description": ""
+            }
+        },
+        "type": "single_choice"
+    },
+    {
+        "query_id": "0.7.1",
+        "label": "codelang",
+        "description": "Programming language used for ML-related computations of study (reported in article)",
+        "description_detailed": "",
+        "instructions": "If authors do not explicitly state the programming language used for the analysis but clearly specify packages that are uniquely associated with a particular programming language, then the relevant programming language should be recorded.",
+        "choices": {
+            "A": {
+                "value": "R",
+                "description": ""
+            },
+            "B": {
+                "value": "Python",
+                "description": ""
+            },
+            "C": {
+                "value": "Julia",
+                "description": ""
+            },
+            "D": {
+                "value": "Matlab",
+                "description": ""
+            },
+            "E": {
+                "value": "Stata",
+                "description": ""
+            },
+            "F": {
+                "value": "SPSS",
+                "description": ""
+            },
+            "G": {
+                "value": "SAS",
+                "description": ""
+            },
+            "Y": {
+                "value": "Other",
+                "description": ""
+            }
+        },
+        "type": "multiple_choice"
+    },
+    {
+        "query_id": "0.7.2",
+        "label": "codevers",
+        "description": "Programming language version reported",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "1": {
+                "value": "No",
+                "description": ""
+            },
+            "2": {
+                "value": "Yes",
+                "description": "The authors explicitly report the version of the programming language used in the study (e.g., Python 3.9, R 4.2.1)."
+            }
+        },
+        "type": "single_choice"
+    },
+    {
+        "query_id": "0.7.3",
+        "label": "packages",
+        "description": "ML packages / libraries / modeling frameworks mentioned ",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "0": {
+                "value": "No specific ML packages mentioned",
+                "description": "Only ML modeling packages or libraries (e.g., caret, scikit-learn) are relevant here, excluding general-purpose or visualization tools."
+            }
+        },
+        "type": "list"
+    },
+    {
+        "query_id": "0.7.4",
+        "label": "packagesvers",
+        "description": "Package / library / modeling framework version reported ",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "1": {
+                "value": "No",
+                "description": ""
+            },
+            "2": {
+                "value": "Yes",
+                "description": "The authors explicitly report the version numbers of ML-related packages, libraries, or meta-modeling frameworks used (e.g., scikit-learn 1.2.2, caret 6.0-93, mlr3 0.15.0)."
+            }
+        },
+        "type": "single_choice"
+    },
+    {
+        "query_id": "0.8",
+        "label": "data",
+        "description": "Open data",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "0": {
+                "value": "Not available",
+                "description": "Original or preprocessed data are either not mentioned or not available, and no information is provided on how they can be accessed (e.g., the repository is private, the link is broken, or the resource is otherwise inaccessible)."
+            },
+            "1": {
+                "value": "Available upon request",
+                "description": "Original or preprocessed data are available, but only by directly requesting them from the authors."
+            },
+            "2": {
+                "value": "Synthetic data only",
+                "description": "Only synthetic or simulated data are provided; original or preprocessed data are not available."
+            },
+            "3": {
+                "value": "Public Repository (restricted or open)",
+                "description": "Original or preprocessed data is deposited in a public repository; access may require registration or agreement."
+            },
+            "4": {
+                "value": "Fully open access",
+                "description": "Data are openly available via supplemental materials or a direct repository link, with no restrictions."
+            }
+        },
+        "type": "single_choice"
+    },
+    {
+        "query_id": "0.9",
+        "label": "prereg",
+        "description": "Preregistration ",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "1": {
+                "value": "No",
+                "description": ""
+            },
+            "2": {
+                "value": "Yes",
+                "description": ""
+            }
+        },
+        "type": "single_choice"
+    },
+    {
+        "query_id": "1.1",
+        "label": "n",
+        "description": "Sample size",
+        "description_detailed": "Sample size used for final analysis (i.e., model training and validation if applicable).",
+        "instructions": "If, in addition to an initial validation (e.g., a 20% holdout of the original sample), the model is validated on another data set, the sample sizes of all involved data sets should be noted.",
+        "choices": {
+            "0": {
+                "value": "Not reported",
+                "description": ""
+            }
+        },
+        "type": "numeric"
+    },
+    {
+        "query_id": "1.2",
+        "label": "p",
+        "description": "Number of predictor variables used in the final analysis",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "0": {
+                "value": "Not reported",
+                "description": ""
+            }
+        },
+        "type": "numeric"
+    },
+    {
+        "query_id": "1.2.1",
+        "label": "cases",
+        "description": "Number of cases (i.e., the outcome to be predicted) in the minority group ",
+        "description_detailed": "In the context of classification tasks, the number of cases (observations) refers to the frequency with which a specific class of the outcome occurs within the dataset. The category with the smallest frequency should be coded.",
+        "instructions": "",
+        "choices": {
+            "0": {
+                "value": "Not reported",
+                "description": ""
+            },
+            "-99": {
+                "value": "Not applicable (if 4 in 1.8)",
+                "description": ""
+            }
+        },
+        "type": "numeric"
+    },
+    {
+        "query_id": "1.3",
+        "label": "sample",
+        "description": "Sample description ",
+        "description_detailed": "Open-ended variable describing the analyzed sample (e.g., \"Sexual offenders in preventive detention\", \"elementary school students\").",
+        "instructions": "",
+        "choices": {},
+        "type": "open_ended"
+    },
+    {
+        "query_id": "1.4",
+        "label": "country",
+        "description": "Country of data acquisition",
+        "description_detailed": "",
+        "instructions": "If authors do not specify the country but provide names of cities, states, or regions that can be assigned to a country, then the corresponding country should be recorded.",
+        "choices": {
+            "A": {
+                "value": "Cross-cultural (specific countries not listed)",
+                "description": ""
+            },
+            "B": {
+                "value": "USA",
+                "description": ""
+            },
+            "C": {
+                "value": "UK",
+                "description": ""
+            },
+            "D": {
+                "value": "Germany",
+                "description": ""
+            },
+            "E": {
+                "value": "Australia",
+                "description": ""
+            },
+            "F": {
+                "value": "Canada",
+                "description": ""
+            },
+            "G": {
+                "value": "China",
+                "description": ""
+            },
+            "H": {
+                "value": "Netherlands",
+                "description": ""
+            },
+            "I": {
+                "value": "France",
+                "description": ""
+            },
+            "J": {
+                "value": "Italy",
+                "description": ""
+            },
+            "K": {
+                "value": "Brazil",
+                "description": ""
+            },
+            "L": {
+                "value": "Spain",
+                "description": ""
+            },
+            "M": {
+                "value": "Japan",
+                "description": ""
+            },
+            "N": {
+                "value": "Turkey",
+                "description": ""
+            },
+            "O": {
+                "value": "South Korea",
+                "description": ""
+            },
+            "P": {
+                "value": "Sweden",
+                "description": ""
+            },
+            "Q": {
+                "value": "Switzerland",
+                "description": ""
+            },
+            "R": {
+                "value": "Israel",
+                "description": ""
+            },
+            "S": {
+                "value": "Norway",
+                "description": ""
+            },
+            "Y": {
+                "value": "Other",
+                "description": ""
+            }
+        },
+        "type": "multiple_choice"
+    },
+    {
+        "query_id": "1.5",
+        "label": "predtype",
+        "description": "Data type of predictor variables (focusing on data modality rather than the source of collection).",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "A": {
+                "value": "Behavioral observation data",
+                "description": "Systematic recordings or codings of observable actions or interactions, typically in naturalistic or structured settings (e.g., classroom participation, gaze behavior, social engagement)."
+            },
+            "B": {
+                "value": "Performance data",
+                "description": "Data derived from task-based or ability-driven assessments that yield quantifiable outcomes based on accuracy, speed, or other performance metrics (e.g., IQ scores, reaction time, cognitive task results)."
+            },
+            "C": {
+                "value": "Digital trace data",
+                "description": "Automatically logged behavioral data from digital devices or platforms, typically passively collected (e.g., screen time, app usage, GPS location, typing dynamics)."
+            },
+            "D": {
+                "value": "Higher-dimensional data from text / image / audio",
+                "description": "Extracted features derived from unstructured data modalities such as natural language, visual input, or sound (e.g., embeddings from text data, pixel-based features from images, spectrogram-based features from audio recordings)."
+            },
+            "E": {
+                "value": "Biophysical measures",
+                "description": "Quantitative measurements of biological or physiological structures or functions (e.g., genetic markers, hormone levels, heart rate variability)."
+            },
+            "F": {
+                "value": "Rating / judgement data",
+                "description": "Structured evaluations based on rating scales or subjective judgments, typically collected through self-report questionnaires or external assessments (e.g., Likert-scale responses, observer ratings)."
+            },
+            "G": {
+                "value": "Demographic / biographical data",
+                "description": "Factual or historical records about an individual's life circumstances or traits (e.g., age, marital status, education history, medical diagnoses)."
+            },
+            "H": {
+                "value": "Contextual / aggregate data",
+                "description": "Data referring to features of the broader environment or context in which the individual is embedded (e.g., average income in a region, school-level teacher-student ratios, therapist gender in multi-level data)."
+            }
+        },
+        "type": "multiple_choice"
+    },
+    {
+        "query_id": "1.6",
+        "label": "outtype",
+        "description": "Data type of outcome variable (focusing on data modality rather than the source of collection).",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "A": {
+                "value": "Behavioral observation data",
+                "description": "Systematic recordings or codings of observable actions or interactions, typically in naturalistic or structured settings (e.g., classroom participation, gaze behavior, social engagement)."
+            },
+            "B": {
+                "value": "Performance data",
+                "description": "Data derived from task-based or ability-driven assessments that yield quantifiable outcomes based on accuracy, speed, or other performance metrics (e.g., IQ scores, reaction time, cognitive task results)."
+            },
+            "C": {
+                "value": "Digital trace data",
+                "description": "Automatically logged behavioral data from digital devices or platforms, typically passively collected (e.g., screen time, app usage, GPS location, typing dynamics)."
+            },
+            "D": {
+                "value": "Higher-dimensional data from text / image / audio",
+                "description": "Extracted features derived from unstructured data modalities such as natural language, visual input, or sound (e.g., embeddings from text data, pixel-based features from images, spectrogram-based features from audio recordings)."
+            },
+            "E": {
+                "value": "Biophysical measures",
+                "description": "Quantitative measurements of biological or physiological structures or functions (e.g., genetic markers, hormone levels, heart rate variability)."
+            },
+            "F": {
+                "value": "Rating / judgement data",
+                "description": "Structured evaluations based on rating scales or subjective judgments, typically collected through self-report questionnaires or external assessments (e.g., Likert-scale responses, observer ratings)."
+            },
+            "G": {
+                "value": "Demographic / biographical data",
+                "description": "Factual or historical records about an individual's life circumstances or traits (e.g., age, marital status, education history, medical diagnoses)."
+            },
+            "H": {
+                "value": "Contextual / aggregate data",
+                "description": "Data referring to features of the broader environment or context in which the individual is embedded (e.g., average income in a region, school-level teacher-student ratios, therapist gender in multi-level data)."
+            }
+        },
+        "type": "multiple_choice"
+    },
+    {
+        "query_id": "1.7",
+        "label": "predtask",
+        "description": "Prediction task including outcome",
+        "description_detailed": "Open-ended variable describing the predicted outcome in the study (e.g., \"Predicting students-at-risk in language acquisition\", \"Predicting recidive in major depression\"). ",
+        "instructions": "",
+        "choices": {},
+        "type": "open_ended"
+    },
+    {
+        "query_id": "1.8",
+        "label": "outcome",
+        "description": "Outcome variable type",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "1": {
+                "value": "Binary",
+                "description": "Two categories (e.g., suicide attempt: yes / no)."
+            },
+            "2": {
+                "value": "Nominal categorical (multi-class)",
+                "description": "More than two unordered (= nominal) categories (e.g., attachment style: secure / anxious / avoidant / disorganized). "
+            },
+            "3": {
+                "value": "Ordinal categorical",
+                "description": "Ordered categories with meaningful ranks (e.g., job position levels: intern / junior staff / senior staff / manager / executive)."
+            },
+            "4": {
+                "value": "Continuous",
+                "description": "Interval or ratio scale with numeric values and meaningful distances (IQ score). "
+            }
+        },
+        "type": "single_choice"
+    },
+    {
+        "query_id": "1.9",
+        "label": "long",
+        "description": "Longitudinal prediction",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "1": {
+                "value": "No",
+                "description": "The outcome is already known or assessed at the same time as (some parts of) the predictor data (e.g., predicting personality traits with music listening behavior)."
+            },
+            "2": {
+                "value": "Yes",
+                "description": "The outcome lies in the future relative to the collection of predictor data and is not yet known at that point (e.g., predicting relapse or therapy dropout with predictors collected at the beginning of therapy)."
+            }
+        },
+        "type": "single_choice"
+    },
+    {
+        "query_id": "2.1",
+        "label": "miss",
+        "description": "Reporting of missingness",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "0": {
+                "value": "Not reported",
+                "description": "The amount of missing data is not described at all. "
+            },
+            "1": {
+                "value": "General statement",
+                "description": "The authors either describe the extent of missing data qualitatively (e.g., \"low missingness\") or provide quantitative statements at the observation/person level or as an aggregate measure for the overall missing data."
+            },
+            "2": {
+                "value": "Descriptives on variable level",
+                "description": "The authors report missingness by quantifying missing values in the affected variables."
+            }
+        },
+        "type": "single_choice"
+    },
+    {
+        "query_id": "2.2",
+        "label": " misshand",
+        "description": "Handling of missing data",
+        "description_detailed": "",
+        "instructions": "The main source of information is the text of the publication; therefore, syntax or code files should not be consulted to assess data preparation, modeling, or validation decisions. Only if the authors explicitly refer to supplementary materials in the text for specific details on these aspects should such materials be considered.",
+        "choices": {
+            "A": {
+                "value": "Listwise deletion",
+                "description": ""
+            },
+            "B": {
+                "value": "Threshold-based deletion",
+                "description": "An observation is excluded from the analysis if it has any missing values on the variables included, meaning only complete cases are analyzed."
+            },
+            "C": {
+                "value": "Mean / median / modus imputation",
+                "description": "A variable or observation is excluded from the analysis if the proportion of missing data exceeded a predefined threshold (e.g., if more than 50% of its values were missing)."
+            },
+            "D": {
+                "value": "k-nearest neighbors (k-NN) imputation",
+                "description": "Missing values are replaced using simple rules based on central tendency. Although this is considered a single imputation method, it is coded separately."
+            },
+            "E": {
+                "value": "Multiple imputation methods (if reported, specify algorithm and number of datasets m in comment)",
+                "description": "Missing values are imputed by identifying the k observations with the smallest distance (e.g., Euclidean distance) to the incomplete case and aggregating their values for the missing variable (e.g., using the mean, median, or majority vote)."
+            },
+            "Y": {
+                "value": "Other",
+                "description": "Missing values are imputed multiple times to generate several complete datasets, capturing the uncertainty around the missing data (e.g., predictive mean matching (PMM) with m = 5 imputed datasets). "
+            }
+        },
+        "type": "multiple_choice"
+    },
+    {
+        "query_id": "2.3",
+        "label": "enrich",
+        "description": "Feature enrichment (i.e., using domain knowledge to create new or more informative variables). ",
+        "description_detailed": "",
+        "instructions": "See 2.2 misshand",
+        "choices": {
+            "A": {
+                "value": "Aggregating items to scales",
+                "description": ""
+            },
+            "B": {
+                "value": "Clustering (grouping raw data to features)",
+                "description": "Items of the PHQ-9 are combined into a single scale score by summing / averaging the item responses."
+            },
+            "C": {
+                "value": "Calculation of indices",
+                "description": "Answers in a structured interview are defined as a diagnosis based on DSM-5 criteria."
+            },
+            "D": {
+                "value": "Pre-specifying relations between predictors",
+                "description": "Deriving common indices, such as BMI, using standardized formulas from variables like weight and height."
+            },
+            "E": {
+                "value": "Computing latent trait scores",
+                "description": "Interactions or quadratic terms of predictors are computed."
+            },
+            "F": {
+                "value": "Enrichment via external data sources",
+                "description": "A score is computed for items of an underlying latent construct based on observed data, such as factor scores or Item Response Theory (IRT) scores."
+            },
+            "G": {
+                "value": "Extracting features from text / image / audio data",
+                "description": "Integrating relevant external data to provide additional context or meaningful information (e.g., adding location data of cafés, gyms, and libraries to individuals’ GPS movement data)."
+            },
+            "Y": {
+                "value": "Other",
+                "description": ""
+            }
+        },
+        "type": "multiple_choice"
+    },
+    {
+        "query_id": "2.4",
+        "label": "engineer",
+        "description": "Feature engineering ",
+        "description_detailed": "",
+        "instructions": "See 2.2 misshand",
+        "choices": {
+            "A": {
+                "value": "Standardization (z-scores)",
+                "description": ""
+            },
+            "B": {
+                "value": "Centering",
+                "description": ""
+            },
+            "C": {
+                "value": "Min-max scaling",
+                "description": ""
+            },
+            "D": {
+                "value": "Logarithmic transformation",
+                "description": ""
+            },
+            "E": {
+                "value": "Dimensionality reduction (if reported, note specific method in a comment)",
+                "description": ""
+            },
+            "F": {
+                "value": "Categorization",
+                "description": "Features are reduced in dimensionality to create a smaller set of variables that still capture essential information (e.g., Principal Component Analysis (PCA))."
+            },
+            "G": {
+                "value": "Winsorization of outliers",
+                "description": "Continuous or ordinal variables are converted into categorical ones (e.g., using a cutoff score on a depression scale to classify individuals as \"elevated symptoms\" vs. \"no/mild symptoms\")."
+            },
+            "H": {
+                "value": "Outlier masking + imputation",
+                "description": "Extreme values are replaced (or capped) with less extreme values to reduce the influence of outliers on model training and improve robustness."
+            },
+            "Y": {
+                "value": "Other",
+                "description": "Outliers are initially treated as missing data and subsequently imputed."
+            }
+        },
+        "type": "multiple_choice"
+    },
+    {
+        "query_id": "2.5",
+        "label": "select",
+        "description": "Feature selection ",
+        "description_detailed": "",
+        "instructions": "See 2.2 misshand",
+        "choices": {
+            "A": {
+                "value": "Theoretically derived",
+                "description": ""
+            },
+            "B": {
+                "value": "Empirically, filter methods",
+                "description": "When predicting depression in patients, the authors select predictors based on factors outlined in the bio-psycho-social etiology model."
+            },
+            "C": {
+                "value": "Empirically, wrapper methods",
+                "description": "Techniques that rank all available features and select those above or below a defined threshold (e.g., excluding features with an outcome correlation < 0.1 or those with near-zero variance)."
+            },
+            "Y": {
+                "value": "Other",
+                "description": "Optimization-based feature selection methods which iteratively refine feature subsets to maximize model performance (e.g. genetic algorithms or simulated annealing)."
+            }
+        },
+        "type": "multiple_choice"
+    },
+    {
+        "query_id": "2.6",
+        "label": "splitprep",
+        "description": "Data preparation steps performed to train/ test set separately",
+        "description_detailed": "",
+        "instructions": "Only code 1 (Jointly) if it is clear that one of the preparation steps was performed jointly for training and test sets.\nDo not infer joint processing from the order or chronology of methods described in the study.",
+        "choices": {
+            "0": {
+                "value": "Not reported",
+                "description": "If some data preparation steps are performed jointly (e.g., mean imputation) while others are done separately (e.g., standardization), code this variable as 1 (Jointly)."
+            },
+            "1": {
+                "value": "Jointly",
+                "description": ""
+            },
+            "2": {
+                "value": "Separately",
+                "description": ""
+            },
+            "-99": {
+                "value": "Not applicable (if \"No validation\" or \"Internal, no split\" in 4.2)",
+                "description": ""
+            }
+        },
+        "type": "single_choice"
+    },
+    {
+        "query_id": "3.1",
+        "label": "algo",
+        "description": "Applied ML algorithms for prediction",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "A": {
+                "value": "Ridge Regression",
+                "description": "Only algorithms used for the actual prediction task should be included here. If authors use algorithms like LASSO for feature selection but employ different models for the primary prediction task, those algorithms should not be listed here."
+            },
+            "B": {
+                "value": "LASSO Regression",
+                "description": ""
+            },
+            "C": {
+                "value": "Elastic Net Regression",
+                "description": ""
+            },
+            "D": {
+                "value": "Bayesian Linear Regression",
+                "description": ""
+            },
+            "E": {
+                "value": "Classification and Regression Trees (CART)",
+                "description": ""
+            },
+            "F": {
+                "value": "Random Forest",
+                "description": ""
+            },
+            "G": {
+                "value": "Gradient Boosting Machine (GBM)",
+                "description": ""
+            },
+            "H": {
+                "value": "XGBoost",
+                "description": ""
+            },
+            "I": {
+                "value": "LightGBM",
+                "description": ""
+            },
+            "J": {
+                "value": "CatBoost",
+                "description": ""
+            },
+            "K": {
+                "value": "Bayesian Additive Regression Trees (BART)",
+                "description": ""
+            },
+            "L": {
+                "value": "Linear SVM",
+                "description": ""
+            },
+            "M": {
+                "value": "Radial basis function SVM",
+                "description": ""
+            },
+            "N": {
+                "value": "Polynomial SVM",
+                "description": ""
+            },
+            "O": {
+                "value": "Sigmoid SVM",
+                "description": ""
+            },
+            "P": {
+                "value": "K nearest neighbors (kNN)",
+                "description": ""
+            },
+            "Q": {
+                "value": "Generalized Additive Models (GAM)",
+                "description": ""
+            },
+            "R": {
+                "value": "Multivariate Adaptive Regression Splines (MARS)",
+                "description": ""
+            },
+            "S": {
+                "value": "Naive Bayes",
+                "description": ""
+            },
+            "T": {
+                "value": "Rule-Based Models (e.g., RuleFit)",
+                "description": ""
+            },
+            "U": {
+                "value": "Customized model ensembles",
+                "description": ""
+            },
+            "Y": {
+                "value": "Other",
+                "description": ""
+            }
+        },
+        "type": "multiple_choice"
+    },
+    {
+        "query_id": "3.2",
+        "label": "tunevalues",
+        "description": "Hyperparameter values chosen for tuning",
+        "description_detailed": "",
+        "instructions": "If the choice of software strongly suggests certain modeling decisions but the authors do not explicitly report these decisions, the information should be recorded as missing.",
+        "choices": {
+            "A": {
+                "value": "Hyperparameter values not mentioned",
+                "description": ""
+            },
+            "B": {
+                "value": "Fixed set of hyperparameter values",
+                "description": "Instead of tuning hyperparameters, the authors use predefined fixed values."
+            },
+            "C": {
+                "value": "Hyperparameter values not specified, stated that default values were used",
+                "description": "Instead of specifying the hyperparameter values used for model training, the authors merely state that they rely on the default settings of the software."
+            },
+            "D": {
+                "value": "Specific set of hyperparameters values (details in a comment)",
+                "description": "The authors explicitly define the range of possible hyperparameter values to be used for tuning."
+            }
+        },
+        "type": "multiple_choice"
+    },
+    {
+        "query_id": "3.2.1",
+        "label": "tunemethod",
+        "description": "Method chosen for hyperparameter tuning",
+        "description_detailed": "",
+        "instructions": "See 3.2 tunevalues",
+        "choices": {
+            "A": {
+                "value": "Tuning method not specified, stated that default method was used",
+                "description": ""
+            },
+            "B": {
+                "value": "Random search",
+                "description": "The authors do not specify the tuning method and state only that the default procedure of the software was used."
+            },
+            "C": {
+                "value": "Grid search",
+                "description": "Hyperparameter values are randomly sampled from a predefined range to explore different configurations. "
+            },
+            "D": {
+                "value": "Model-based optimization",
+                "description": "All possible combinations of predefined hyperparameter values are systematically evaluated."
+            },
+            "E": {
+                "value": "Optimization heuristics",
+                "description": "Based on previous results, models are built and iteratively updated to predict performance and prioritize promising hyperparameter configurations."
+            },
+            "F": {
+                "value": "-99 = Not applicable (if \"Fixed set of hyperparameter values\" was selected as the only answer in 3.2)",
+                "description": ""
+            },
+            "Y": {
+                "value": "Other",
+                "description": "Rule-based strategies iteratively searching for combinations of hyperparameters. "
+            }
+        },
+        "type": "multiple_choice"
+    },
+    {
+        "query_id": "3.3",
+        "label": "resampling",
+        "description": "Type of resampling method (inner loop)",
+        "description_detailed": "",
+        "instructions": "See 3.2 tunevalues",
+        "choices": {
+            "A": {
+                "value": "Resampling method not specified, stated that default  method was used",
+                "description": ""
+            },
+            "B": {
+                "value": "Single k fold CV",
+                "description": ""
+            },
+            "C": {
+                "value": "Repeated k fold CV",
+                "description": ""
+            },
+            "D": {
+                "value": "Leave-one-out-cross-validation (LOOCV)",
+                "description": ""
+            },
+            "E": {
+                "value": "Leave-group-out-cross-validation (LGOCV)",
+                "description": ""
+            },
+            "F": {
+                "value": "Bootstrap",
+                "description": ""
+            },
+            "G": {
+                "value": "Optimism-corrected bootstrap",
+                "description": ""
+            },
+            "H": {
+                "value": "Rolling window CV",
+                "description": ""
+            },
+            "I": {
+                "value": "Expanding window CV",
+                "description": ""
+            },
+            "J": {
+                "value": "Blocked CV",
+                "description": ""
+            },
+            "Y": {
+                "value": "Other",
+                "description": ""
+            }
+        },
+        "type": "multiple_choice"
+    },
+    {
+        "query_id": "3.4",
+        "label": "nested",
+        "description": "Nested data structure",
+        "description_detailed": "",
+        "instructions": "The aspect of nested data is only relevant for the sample used for model training. Any information on nested data structures for validation samples can be ignored when coding this variable.\nIf the authors do not mention or discuss a nested data structure but the sample description and data collection context suggest one, this should be noted accordingly. ",
+        "choices": {
+            "0": {
+                "value": "No nested structure",
+                "description": ""
+            },
+            "1": {
+                "value": "Hierarchical",
+                "description": "For example, patients nested in clinics."
+            },
+            "2": {
+                "value": "Longitudinal / repeated measures",
+                "description": "Each row represents a timepoint nested within an observation in long format / row-per-timepoint (e.g., weekly stress ratings and mood scores for each participant over 10 weeks), with time-varying predictors and outcomes."
+            }
+        },
+        "type": "single_choice"
+    },
+    {
+        "query_id": "3.4.1",
+        "label": "nesthand",
+        "description": "Handling of nested data structures",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "A": {
+                "value": "Rationale why not necessary",
+                "description": ""
+            },
+            "B": {
+                "value": "Grouped / nested CV",
+                "description": ""
+            },
+            "C": {
+                "value": "Time series CV",
+                "description": "Cross-validation methods that respect group structure (e.g., LGOCV), such that all observations from a group (e.g., patients of the same therapist) are confined to either the training or test fold."
+            },
+            "D": {
+                "value": "Mixed-effects ML algorithms",
+                "description": "For example, rolling / expanding window CV, blocked CV."
+            },
+            "E": {
+                "value": "= Other",
+                "description": "For example, applying regularized linear mixed-effect models (e.g., lmmlasso)."
+            },
+            "F": {
+                "value": "-99 = Not applicable (if 0 in 3.4)",
+                "description": ""
+            }
+        },
+        "type": "multiple_choice"
+    },
+    {
+        "query_id": "3.5",
+        "label": "imbalhand",
+        "description": "Handling of class imbalance",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "A": {
+                "value": "Up / down / SMOTE / otherwise sampling on full data",
+                "description": ""
+            },
+            "B": {
+                "value": "Up / down / SMOTE / otherwise sampling after split",
+                "description": ""
+            },
+            "C": {
+                "value": "Adapting decision rules",
+                "description": ""
+            },
+            "D": {
+                "value": "-99 = Not applicable (if 4 in 1.8)",
+                "description": "For example, training for sensitivity or changing the .50 cutoff."
+            }
+        },
+        "type": "multiple_choice"
+    },
+    {
+        "query_id": "3.5.1",
+        "label": "sampling",
+        "description": "Sampling method applied ",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "A": {
+                "value": "Up",
+                "description": ""
+            },
+            "B": {
+                "value": "Down",
+                "description": ""
+            },
+            "C": {
+                "value": "SMOTE",
+                "description": ""
+            },
+            "D": {
+                "value": "= Other",
+                "description": ""
+            },
+            "E": {
+                "value": "-99 = Not applicable (if -99 in 3.5)",
+                "description": ""
+            }
+        },
+        "type": "multiple_choice"
+    },
+    {
+        "query_id": "4.1",
+        "label": "compare",
+        "description": "Model comparisons",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "A": {
+                "value": "Between a naïve guessing model and any ML model",
+                "description": "The focus is on model comparisons in terms of predictive performance, excluding comparisons based on variable importance or feature selection."
+            },
+            "B": {
+                "value": "Between an unregularized linear / logistic regression model and simple regularized linear / logistic or complex ML models\n Between different simple regularized linear / logistic ML models",
+                "description": ""
+            },
+            "C": {
+                "value": "Between a simple regularized linear / logistic and a complex ML model",
+                "description": "A ML model is compared to a naïve baseline that makes predictions without learning from data (e.g., always predicting the majority class, random guessing, or decision rules based on theory or a very small subset of variables)."
+            },
+            "D": {
+                "value": "Between different complex ML models",
+                "description": "Ridge, LASSO, and elastic net regression are considered simple regularized linear / logistic ML models."
+            }
+        },
+        "type": "multiple_choice"
+    },
+    {
+        "query_id": "4.1.1",
+        "label": "bestmodel ",
+        "description": "Best performing model in context of comparison ",
+        "description_detailed": "",
+        "instructions": "If the authors identify more than one algorithm as best performing, code 1 (no algorithm outperforms others).\nIf the authors identify an algorithm as best performing despite the reported performances of all other algorithms indicating otherwise, note this in the variable 99 comment.",
+        "choices": {
+            "1": {
+                "value": "No algorithm outperforms others",
+                "description": "Authors do not identify any algorithm as best performing. "
+            },
+            "Character: \n\n-99": {
+                "value": "Not applicable (if 0 in 4.1)",
+                "description": "Specify the name of the algorithm the authors identify as best performing."
+            }
+        },
+        "type": "single_choice"
+    },
+    {
+        "query_id": "4.2",
+        "label": "valid",
+        "description": "Model validation",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "A": {
+                "value": "No validation",
+                "description": ""
+            },
+            "B": {
+                "value": "Internal, no split",
+                "description": ""
+            },
+            "C": {
+                "value": "Internal, single split",
+                "description": "No validation method is used to assess the model’s performance. Model performance is evaluated only on the training data."
+            },
+            "D": {
+                "value": "Internal, repeated splits (i.e., some form of nested resampling)",
+                "description": "Model performance is assessed using cross-validation within the training data. No independent holdout set is used."
+            },
+            "E": {
+                "value": "External, independent unseen holdout data, same population",
+                "description": "The dataset is split once into a training and test set (e.g., 80/20). The model is trained on one portion and tested on the remaining portion."
+            },
+            "F": {
+                "value": "External, independent unseen holdout data, different population",
+                "description": "Model performance is assessed using multiple train-test splits of the same dataset, meaning the initial data split is repeated multiple times (>1 iteration in the outer validation loop)."
+            }
+        },
+        "type": "multiple_choice"
+    },
+    {
+        "query_id": "4.2.1",
+        "label": "ratio",
+        "description": "Train-test split ratio",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "0": {
+                "value": "Not reported",
+                "description": ""
+            },
+            "-99": {
+                "value": "Not applicable (if \"No validation\", Internal, no split\", \"External, independent unseen holdout data, same population\", or \"External, independent unseen holdout data, different population\" in 4.2)",
+                "description": ""
+            }
+        },
+        "type": "numeric"
+    },
+    {
+        "query_id": "4.3",
+        "label": "perfmetric",
+        "description": "Performance measures reported for test set ",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "A": {
+                "value": "Mean Squared Error (MSE)",
+                "description": ""
+            },
+            "B": {
+                "value": "Root Mean Squared Error (RMSE)",
+                "description": ""
+            },
+            "C": {
+                "value": "Mean Absolute Error (MAE)",
+                "description": ""
+            },
+            "D": {
+                "value": "R-squared",
+                "description": ""
+            },
+            "E": {
+                "value": "Pearson correlation coefficient (r) between predicted and observed outcome",
+                "description": ""
+            },
+            "F": {
+                "value": "Mean Absolute Percentage Error (MAPE)",
+                "description": ""
+            },
+            "G": {
+                "value": "Symmetric MAPE (SMAPE)",
+                "description": ""
+            },
+            "H": {
+                "value": "Mean Absolute Scaled Error (MASE)",
+                "description": ""
+            },
+            "I": {
+                "value": "Accuracy (ACC)",
+                "description": ""
+            },
+            "J": {
+                "value": "Balanced Accuracy (BACC)",
+                "description": ""
+            },
+            "K": {
+                "value": "Area Under the ROC Curve (AUC)",
+                "description": ""
+            },
+            "L": {
+                "value": "Area Under the Precision-Recall Curve (AUPRC)",
+                "description": ""
+            },
+            "M": {
+                "value": "Sensitivity (SEN) / Recall",
+                "description": ""
+            },
+            "N": {
+                "value": "Specificity (SPE)",
+                "description": ""
+            },
+            "O": {
+                "value": "False Positive Rate (FPR)",
+                "description": ""
+            },
+            "P": {
+                "value": "False Negative Rate (FNR)",
+                "description": ""
+            },
+            "Q": {
+                "value": "Positive Predictive Value (PPV) / Precision",
+                "description": ""
+            },
+            "R": {
+                "value": "Negative Predictive Value (NPV)",
+                "description": ""
+            },
+            "S": {
+                "value": "False Omission Rate (FOR)",
+                "description": ""
+            },
+            "T": {
+                "value": "False Discovery Rate (FDR)",
+                "description": ""
+            },
+            "U": {
+                "value": "Matthews Correlation Coefficient (MCC)",
+                "description": ""
+            },
+            "V": {
+                "value": "F1 Score",
+                "description": ""
+            },
+            "W": {
+                "value": "Log Loss / Cross-Entropy",
+                "description": ""
+            },
+            "X": {
+                "value": "Brier Score",
+                "description": ""
+            },
+            "Y": {
+                "value": "Other",
+                "description": ""
+            }
+        },
+        "type": "multiple_choice"
+    },
+    {
+        "query_id": "4.4",
+        "label": "perftrain",
+        "description": "Performance metrics reported for training set",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "1": {
+                "value": "No",
+                "description": ""
+            },
+            "2": {
+                "value": "Yes",
+                "description": ""
+            }
+        },
+        "type": "single_choice"
+    },
+    {
+        "query_id": "4.5",
+        "label": "highestperf",
+        "description": "Highest performance achieved in the test sample ",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "-99": {
+                "value": "Not applicable (if \"No validation\" or \"Internal, no split\" in 4.2)",
+                "description": ""
+            }
+        },
+        "type": "numeric"
+    },
+    {
+        "query_id": "4.6",
+        "label": "ci",
+        "description": "Confidence intervals for performance metrics",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "1": {
+                "value": "No",
+                "description": ""
+            },
+            "2": {
+                "value": "Yes",
+                "description": ""
+            }
+        },
+        "type": "single_choice"
+    },
+    {
+        "query_id": "4.7",
+        "label": "sig",
+        "description": "Significance test(s) ",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "A": {
+                "value": "For model comparisons",
+                "description": ""
+            },
+            "B": {
+                "value": "For variable importance measures",
+                "description": ""
+            },
+            "C": {
+                "value": "For other reported results",
+                "description": ""
+            }
+        },
+        "type": "multiple_choice"
+    },
+    {
+        "query_id": "5.1",
+        "label": "iml",
+        "description": "Interpretable machine learning (IML) methods applied",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "A": {
+                "value": "(Standardized) Model Coefficients",
+                "description": ""
+            },
+            "B": {
+                "value": "Permutation Importance (Mean Decrease in Accuracy)",
+                "description": ""
+            },
+            "C": {
+                "value": "Gini Importance (Mean Decrease in Impurity for tree models)",
+                "description": ""
+            },
+            "D": {
+                "value": "H-Statistic (for interaction strength)",
+                "description": ""
+            },
+            "E": {
+                "value": "SHAP Values",
+                "description": ""
+            },
+            "F": {
+                "value": "LIME (Local Interpretable Model-agnostic Explanations)",
+                "description": ""
+            },
+            "G": {
+                "value": "Counterfactual Explanations",
+                "description": ""
+            },
+            "H": {
+                "value": "Scoped rules / anchors",
+                "description": ""
+            },
+            "I": {
+                "value": "Partial Dependence Plots (PDP)",
+                "description": ""
+            },
+            "J": {
+                "value": "Individual Conditional Expectation (ICE)",
+                "description": ""
+            },
+            "K": {
+                "value": "Accumulated Local Effects (ALE)",
+                "description": ""
+            },
+            "L": {
+                "value": "Unspecified variable importance measures",
+                "description": ""
+            },
+            "Y": {
+                "value": "Other",
+                "description": ""
+            }
+        },
+        "type": "multiple_choice"
+    },
+    {
+        "query_id": "5.2",
+        "label": "limit",
+        "description": "Limitations mentioned in the discussion",
+        "description_detailed": "",
+        "instructions": "If the publication includes a dedicated discussion section, reported limitations should be extracted from this section.",
+        "choices": {
+            "A": {
+                "value": "Lack of representativeness of the data",
+                "description": ""
+            },
+            "B": {
+                "value": "Unreliably measured indicators",
+                "description": ""
+            },
+            "C": {
+                "value": "Unreliably measured outcome",
+                "description": ""
+            },
+            "D": {
+                "value": "Incomplete data",
+                "description": ""
+            },
+            "E": {
+                "value": "Sample size",
+                "description": ""
+            },
+            "F": {
+                "value": "Unfavorable n/p ratio",
+                "description": ""
+            },
+            "G": {
+                "value": "Mono-method data types (e.g. exclusively relying on rating / judgement data)",
+                "description": ""
+            },
+            "H": {
+                "value": "Caution in interpretation of interpretable ML techniques",
+                "description": ""
+            },
+            "I": {
+                "value": "High computational demands of ML",
+                "description": ""
+            },
+            "J": {
+                "value": "Model fairness / alignment",
+                "description": ""
+            },
+            "Y": {
+                "value": "Other",
+                "description": ""
+            }
+        },
+        "type": "multiple_choice"
+    },
+    {
+        "query_id": "5.3",
+        "label": "interpret",
+        "description": "Interpretation of model comparison ",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "1": {
+                "value": "No comparisons / descriptive comparisons made",
+                "description": "The authors either compare model performances without explanation or do not perform model comparison at all."
+            },
+            "2": {
+                "value": "Interpretative comparisons",
+                "description": "The authors draw conclusions about relationships or structure of the data based on the model comparison (e.g., attributing the superior performance of a random forest over an elastic net to the presence of interaction effects in the data)."
+            },
+            "-99": {
+                "value": "Not applicable (if 0 in 4.1)",
+                "description": ""
+            }
+        },
+        "type": "single_choice"
+    },
+    {
+        "query_id": "5.4",
+        "label": "general",
+        "description": "Generalizability of model performance and variable importance measures",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "0": {
+                "value": "No statements regarding generalizability",
+                "description": ""
+            },
+            "1": {
+                "value": "Statements are extended to data outside the data sampling frame",
+                "description": "Authors claim their models generalize to populations or contexts beyond the one studied (e.g., a model trained on a U.S. sample is said to generalize across cultures)."
+            },
+            "2": {
+                "value": "Statements are made with respect to the data analyzed / generalizability outside the sampling frame is questioned.",
+                "description": "Claims are restricted to the analyzed data and/or generalization beyond it is explicitly questioned (e.g., results based on one region are stated not to generalize elsewhere)."
+            }
+        },
+        "type": "single_choice"
+    }
+]

@@ -9,16 +9,27 @@ from typing import List
 
 import numpy as np
 import optuna
-from dotenv import load_dotenv
+from dotenv import find_dotenv, load_dotenv
 
 from answer_generation.answer_generator import AnswerGenerator
 from evaluate import evaluate_answer
 from registry import CHUNKERS, EMBEDDERS, LLMS, PARSERS, RETRIEVERS
 from vectorstore.numpy_store import NumpyVectorStore
 
-load_dotenv()
-QUERIES_FOLDER = Path("../queries")  # Folder containing subfolders 1.1, 1.2, etc.
+dotenv_path = find_dotenv()
+load_dotenv(dotenv_path)
+
+
+QUERIES_FOLDER = Path("../queries")
 PROMPT_FILES = ["base_prompt.txt", "few_shot_prompt.txt"]
+
+
+def get_parser(name, **overrides):
+    """Factory to lazily instantiate parsers with optional overrides."""
+    entry = PARSERS[name]
+    cls = entry["cls"]
+    kwargs = {**entry["kwargs"], **overrides}
+    return cls(**kwargs)
 
 
 def load_queries():
@@ -95,7 +106,7 @@ def ensure_parsed(file_path: Path, parser_name: str):
         return txt_path
 
     # 2️⃣ Run parser
-    parser = PARSERS[parser_name]
+    parser = get_parser(parser_name)
     result = parser.parse(str(file_path))  # make sure your parser uses `out_dir`
     # 3️⃣ Save result depending on type
     if isinstance(result, (dict, list)):
@@ -444,6 +455,11 @@ def objective(trial, verbose: bool = False):
                     log(f"    Calling LLM {llm_model} with prompt={prompt_file}")
 
                     ans_gen = LLMS[llm_model]
+
+                    # log(
+                    #     f"qdata {qdata['prompts'][prompt_file]},chunks {retrieved_chunks}, prompt {qdata['system_prompt']}"
+                    # )
+
                     llm_output = ans_gen.generate(
                         query=qdata["prompts"][prompt_file],
                         chunks=retrieved_chunks,
@@ -451,8 +467,35 @@ def objective(trial, verbose: bool = False):
                         system_prompt=qdata["system_prompt"],
                     )
 
+                    def handle_other(llm_text):
+                        """
+                        Called when 'Other' (Z) is selected in multiple choice.
+                        Uses qdata to generate a follow-up LLM query.
+                        """
+                        other_prompt = (
+                            f"Question required 'Other' answer. Original LLM output: {llm_text}\n"
+                            f"Please provide the specific 'Other' response."
+                        )
+
+                        # Call your ans_gen.generate with qdata arguments
+                        other_response = ans_gen.generate(
+                            query=other_prompt,
+                            chunks=retrieved_chunks,  # same as original
+                            return_logprobs=True,
+                            system_prompt=qdata["system_prompt"],
+                        )
+
+                        return other_response["text"]
+
                     # ---------------- Evaluation ----------------
-                    eval_result = evaluate_answer(llm_output, qdata.get("answer", ""))
+                    eval_result = evaluate_answer(
+                        llm_output["text"],
+                        question_type="multiple_choice",
+                        doc_name=doc_name,
+                        query_id=qid,
+                        answer_file="human_codes_test.xlsx",
+                        other_callback=handle_other,
+                    )
                     result = {"doc_id": doc_id, "query_id": qid, **eval_result}
                     cache[trial_key] = result
 
@@ -461,7 +504,10 @@ def objective(trial, verbose: bool = False):
                 all_results.append(result)
 
                 doc_avg = np.mean([r["accuracy"] for r in doc_results])
-                doc_aggregates[f"doc_{doc_id}"] = {"average_accuracy": doc_avg}
+                doc_aggregates[f"doc_{doc_id}"] = {
+                    "average_accuracy": doc_avg,
+                    "doc_name": doc_name,
+                }
                 log(f"--- Document {doc_id} avg acc={doc_avg:.3f} ---")
 
             # persist updated mapping
@@ -531,3 +577,65 @@ if __name__ == "__main__":
 
     # # Run trials
     # study.optimize(lambda t: objective(t, verbose=True), n_trials=1)
+
+    ans_gen = LLMS["gpt-3.5-turbo-instruct"]
+
+    # log(
+    #     f"qdata {qdata['prompts'][prompt_file]},chunks {retrieved_chunks}, prompt {qdata['system_prompt']}"
+    # )
+
+#     llm_output = ans_gen.generate(
+#         query="""< question >
+# What programming language (s) are used for the ML - related computations in the study
+# ?
+# Response Options ( Multiple Choice -- select all that apply ) :
+# A ) R
+# B ) Python
+# C ) Julia
+# D ) Matlab
+# E ) Stata
+# F ) SPSS
+# G ) SAS
+# H ) Other
+# Z ) Not stated in the text
+# """,
+#         chunks=[
+#             (
+#                 np.str_(
+#                     "ins better results than considering just \nthe use of one of these types of algorithms. As future work, the use of \ntransformer-based models for better utilization of contextual informa\xad\ntion is proposed. \nCRediT authorship contribution statement \nJesus Serrano-Guerrero: Conceptualization, Investigation, Meth\xad\nodology, Writing – original draft. Bashar Alshouha: Investigation, \nSoftware, Writing – original draft. Mohammad Bani-Doumi: Investi\xad\ngation, Software, Writing – original draft. Francisco C"
+#                 ),
+#                 0.8327667117118835,
+#             ),
+#             (
+#                 np.str_(
+#                     "5,31–33]. \nXue et al. [34] proposed a new architecture called AttRCNN-CNNs to \nlearn the complex and hidden semantic features of textual content for \neach user. Majumder et al. [5] applied various deep learning techniques \nto detect personality traits in stream-of-consciousness essays. Further\xad\nmore, convolutional neural networks (CNN) were utilized to extract \nsemantic features from data and integrate them with document-level \nstylistic features as the personality classifier input. Sun et al. ["
+#                 ),
+#                 0.813636064529419,
+#             ),
+#             (
+#                 np.str_(
+#                     "4 Conf. Empir. Methods Nat. \nLang. Process. Proc. Conf.; 2014. p. 1724–34. https://doi.org/10.3115/v1/d14- \n1179. \n[56] Baeza-Yates R, Ribeiro-Neto B. Modern Information Retrieval. Boston, MA, USA: \nAddison Wesley; 1999. \n[57] Robertson SE. Understanding inverse document frequency: On theoretical \narguments for IDF. J Doc 2004;60. \n[58] Kumawat D, Jain V. POS tagging approaches: a comparison. Int J Comput Appl \n2015;118(6):32–8. https://doi.org/10.5120/20752-3148. \n[59] Mohammad SM, Turney PD. N"
+#                 ),
+#                 0.8089462518692017,
+#             ),
+#             (
+#                 np.str_(
+#                     "cantly insufficient to build a robust system capable of \ndetect personality traits. For this reason, other studies have opted for \nusing new machine learning approaches such as deep learning, which \ncan contribute significantly to this task capturing syntactic and semantic \nfeatures from users’ posts [4] and proposing new mechanisms to model \nsentences and documents [5]. Thus, assuming that every algorithm can \nbe able to detect different properties related to the personality traits, the \nbest s"
+#                 ),
+#                 0.8062679171562195,
+#             ),
+#             (
+#                 np.str_(
+#                     "                                                                                                                                                                                          \n"
+#                 ),
+#                 0.8057342767715454,
+#             ),
+#         ],
+#         return_logprobs=True,
+#         system_prompt="""Only respond based on information explicitly stated in the document . If a
+#         detail is not mentioned or cannot be confidently inferred from the text , answer
+#         with Z ( not stated ) . Do not guess . Do not explain your answer unless
+#         instructed .""",
+#     )
+
+#     print(llm_output)

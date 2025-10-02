@@ -22,14 +22,34 @@ TOGETHER_API_KEY = os.getenv("TOGETHER_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 
+# Registry now stores classes + default kwargs
 PARSERS = {
-    "GROBIDParser": grobid_parser.GROBIDParser(),
-    "PyMuPDFParser": pymupdf_parser.PyMuPDFParser(),
-    "PyMuPDFTesseractParser": pymupdf_tesseract.PyMuPDFTesseractParser(),
-    "GeminiParser": vlm_gemini.GeminiParser(api_key=GOOGLE_API_KEY),
-    "QwenParser": vlm_qwen.QwenParser(api_key=TOGETHER_API_KEY),
-    "MinerUParser": mineru_parser.MinerUParser(),
+    "GROBIDParser": {
+        "cls": grobid_parser.GROBIDParser,
+        "kwargs": {"check_server": False},  # no eager server check
+    },
+    "PyMuPDFParser": {
+        "cls": pymupdf_parser.PyMuPDFParser,
+        "kwargs": {},
+    },
+    "PyMuPDFTesseractParser": {
+        "cls": pymupdf_tesseract.PyMuPDFTesseractParser,
+        "kwargs": {},
+    },
+    "GeminiParser": {
+        "cls": vlm_gemini.GeminiParser,
+        "kwargs": {"api_key": GOOGLE_API_KEY},  # set dynamically
+    },
+    "QwenParser": {
+        "cls": vlm_qwen.QwenParser,
+        "kwargs": {"api_key": TOGETHER_API_KEY},  # set dynamically
+    },
+    "MinerUParser": {
+        "cls": mineru_parser.MinerUParser,
+        "kwargs": {},
+    },
 }
+
 
 CHUNKERS = {
     "LengthChunker": length_chunker.LengthChunker,

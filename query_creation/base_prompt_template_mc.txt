@@ -1,0 +1,23 @@
+< task >
+Extract the following concept from the paper:
+{concept}
+
+Response Options (Multiple Choice -- select all that apply) :
+{choices}
+{instructions}
+</ task >
+
+
+< document >
+{context}
+</ document >
+
+< instructions >
+Select all letters that apply . Return only the letters corresponding to the
+selected options , separated by commas .
+If no the requested information is not present in the context, select Z .
+
+Do not guess or infer .
+Do not explain your answer .
+</ instructions >
+Answer :
