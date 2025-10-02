@@ -20,10 +20,6 @@ dotenv_path = find_dotenv()
 load_dotenv(dotenv_path)
 
 
-QUERIES_FOLDER = Path("../queries")
-PROMPT_FILES = ["base_prompt.txt", "few_shot_prompt.txt"]
-
-
 def get_parser(name, **overrides):
     """Factory to lazily instantiate parsers with optional overrides."""
     entry = PARSERS[name]
@@ -32,31 +28,18 @@ def get_parser(name, **overrides):
     return cls(**kwargs)
 
 
+QUERIES_JSON_PATH = Path(
+    "../query_creation/queries_with_prompts.json"
+)  # Path to your JSON file
+
+
 def load_queries():
-    """Load all queries and their metadata."""
+    with open(QUERIES_JSON_PATH, "r", encoding="utf-8") as f:
+        query_dict = json.load(f)
+
     queries = {}
-    for qid_folder in QUERIES_FOLDER.iterdir():
-        if not qid_folder.is_dir():
-            continue
-        qid = qid_folder.name
-        # Load question info
-        with open(qid_folder / "query_info.json") as f:
-            query_info = json.load(f)
-        # load system prompt
-        with open(qid_folder / "system_prompt.txt") as f:
-            system_prompt = f.read()
-        # Load available prompt variations
-        prompts = {}
-        for pf in PROMPT_FILES:
-            path = qid_folder / pf
-            if path.exists():
-                with open(path) as f:
-                    prompts[pf] = f.read()
-        queries[qid] = {
-            "query_info": query_info,
-            "prompts": prompts,
-            "system_prompt": system_prompt,
-        }
+    for qid, q in query_dict.items():
+        queries[qid] = q  # keep original structure
     return queries
 
 
@@ -215,12 +198,12 @@ def ensure_query_embeddings(
     query_id: str,
     query_mode: str = "raw",  # "raw" or "label_def"
     base: str = "../data/query_embeddings",
-    queries_base: str = "../queries",
+    queries_base: str = "../query_creation",
 ) -> Path:
     """
     Ensure a single query embedding is cached.
     - Embeddings stored under {base}/{embedder_name}/{doc_name}_{query_id}_{query_mode}.npy
-    - Query info and prompts are read from ../data/queries/{query_id}/
+    - Query info and prompts are read directly from query_info.json
     """
     edir = Path(base) / embedder_name
     edir.mkdir(parents=True, exist_ok=True)
@@ -231,32 +214,36 @@ def ensure_query_embeddings(
     if out_path.exists():
         return out_path
 
-    # 2️⃣ Otherwise load query data
-    qdir = Path(queries_base) / query_id
-    info_file = qdir / "query_info.json"
+    # 2️⃣ Load query_info.json
+    qdir = Path(queries_base)
+    info_file = qdir / "queries_with_prompts.json"  # single JSON file for all queries
     if not info_file.exists():
-        raise FileNotFoundError(f"No query_info.json for {query_id} in {qdir}")
+        raise FileNotFoundError(f"No queries.json found in {qdir}")
 
     with open(info_file, "r", encoding="utf-8") as fh:
-        qinfo = json.load(fh)
+        all_queries = json.load(fh)
 
+    # Find the query by ID
+    qinfo = all_queries.get(query_id)
+    if qinfo is None:
+        raise ValueError(f"Query ID {query_id} not found in queries.json")
+
+    # 3️⃣ Prepare text to embed
     if query_mode == "label_def":
-        parts = [qinfo.get("label", ""), qinfo.get("definition", "")]
+        parts = [qinfo.get("label", ""), qinfo.get("description", "")]
         if qinfo.get("choices"):
-            parts.append("Choices: " + ", ".join(qinfo["choices"]))
-        if qinfo.get("examples_and_notes"):
-            parts.append("Notes: " + qinfo["examples_and_notes"])
+            choices_text = ", ".join(
+                f"{k}: {v['value']}" for k, v in qinfo["choices"].items()
+            )
+            parts.append("Choices: " + choices_text)
         text = " ".join(p for p in parts if p)
     else:
-        # For "raw", use the first available prompt file
-        prompt_files = list(qdir.glob("*.txt"))
-        if not prompt_files:
-            raise FileNotFoundError(
-                f"No prompt .txt files found for {query_id} in {qdir}"
-            )
-        text = prompt_files[0].read_text(encoding="utf-8")
+        # "raw" mode: pick base_prompt if available
+        text = qinfo.get("prompts", {}).get("base_prompt")
+        if not text:
+            raise ValueError(f"No 'base_prompt' found for query ID {query_id}")
 
-    # 3️⃣ Embed
+    # 4️⃣ Embed
     vector = EMBEDDERS[embedder_name].embed([text])[0]
     np.save(out_path, np.asarray(vector))
 
@@ -353,8 +340,7 @@ def objective(trial, verbose: bool = False):
             doc_results = []
 
             for qid, qdata in QUERIES.items():
-                log(f"  > Query {qid}: {qdata['prompts'][PROMPT_FILES[0]][:50]}...")
-
+                log(f"  > Query {qid}")
                 # ---------------- Retrieval ----------------
                 start_stage = time.time()
                 if mode == "rag":
@@ -448,11 +434,21 @@ def objective(trial, verbose: bool = False):
                     llm_model = trial.suggest_categorical(
                         "llm_model", list(LLMS.keys())
                     )
-                    prompt_file = trial.suggest_categorical("prompt_file", PROMPT_FILES)
-                    trial_choices.update(
-                        {"llm_model": llm_model, "prompt_file": prompt_file}
+
+                    # Instead of selecting a file, select a prompt type
+                    prompt_type = trial.suggest_categorical(
+                        "prompt_type", list(qdata["prompts"].keys())
                     )
-                    log(f"    Calling LLM {llm_model} with prompt={prompt_file}")
+                    prompt_text = qdata["prompts"].get(prompt_type)
+                    if not prompt_text:
+                        raise ValueError(
+                            f"No prompt found for query {qid} under '{prompt_type}'"
+                        )
+
+                    trial_choices.update(
+                        {"llm_model": llm_model, "prompt_type": prompt_type}
+                    )
+                    log(f"    Calling LLM {llm_model} with prompt={prompt_type}")
 
                     ans_gen = LLMS[llm_model]
 
@@ -461,10 +457,9 @@ def objective(trial, verbose: bool = False):
                     # )
 
                     llm_output = ans_gen.generate(
-                        query=qdata["prompts"][prompt_file],
+                        query=qdata["prompts"][prompt_type],
                         chunks=retrieved_chunks,
                         return_logprobs=True,
-                        system_prompt=qdata["system_prompt"],
                     )
 
                     def handle_other(llm_text):
@@ -482,7 +477,6 @@ def objective(trial, verbose: bool = False):
                             query=other_prompt,
                             chunks=retrieved_chunks,  # same as original
                             return_logprobs=True,
-                            system_prompt=qdata["system_prompt"],
                         )
 
                         return other_response["text"]
@@ -490,7 +484,7 @@ def objective(trial, verbose: bool = False):
                     # ---------------- Evaluation ----------------
                     eval_result = evaluate_answer(
                         llm_output["text"],
-                        question_type="multiple_choice",
+                        question_type=qdata["type"],
                         doc_name=doc_name,
                         query_id=qid,
                         answer_file="human_codes_test.xlsx",
@@ -565,7 +559,7 @@ if __name__ == "__main__":
         "k": 5,
         "query_embedding": "raw",
         "llm_model": "gpt-3.5-turbo-instruct",
-        "prompt_file": "base_prompt.txt",
+        "prompt_type": "base_prompt",
     }
 
     # Wrap trial as FixedTrial
@@ -579,63 +573,3 @@ if __name__ == "__main__":
     # study.optimize(lambda t: objective(t, verbose=True), n_trials=1)
 
     ans_gen = LLMS["gpt-3.5-turbo-instruct"]
-
-    # log(
-    #     f"qdata {qdata['prompts'][prompt_file]},chunks {retrieved_chunks}, prompt {qdata['system_prompt']}"
-    # )
-
-#     llm_output = ans_gen.generate(
-#         query="""< question >
-# What programming language (s) are used for the ML - related computations in the study
-# ?
-# Response Options ( Multiple Choice -- select all that apply ) :
-# A ) R
-# B ) Python
-# C ) Julia
-# D ) Matlab
-# E ) Stata
-# F ) SPSS
-# G ) SAS
-# H ) Other
-# Z ) Not stated in the text
-# """,
-#         chunks=[
-#             (
-#                 np.str_(
-#                     "ins better results than considering just \nthe use of one of these types of algorithms. As future work, the use of \ntransformer-based models for better utilization of contextual informa\xad\ntion is proposed. \nCRediT authorship contribution statement \nJesus Serrano-Guerrero: Conceptualization, Investigation, Meth\xad\nodology, Writing – original draft. Bashar Alshouha: Investigation, \nSoftware, Writing – original draft. Mohammad Bani-Doumi: Investi\xad\ngation, Software, Writing – original draft. Francisco C"
-#                 ),
-#                 0.8327667117118835,
-#             ),
-#             (
-#                 np.str_(
-#                     "5,31–33]. \nXue et al. [34] proposed a new architecture called AttRCNN-CNNs to \nlearn the complex and hidden semantic features of textual content for \neach user. Majumder et al. [5] applied various deep learning techniques \nto detect personality traits in stream-of-consciousness essays. Further\xad\nmore, convolutional neural networks (CNN) were utilized to extract \nsemantic features from data and integrate them with document-level \nstylistic features as the personality classifier input. Sun et al. ["
-#                 ),
-#                 0.813636064529419,
-#             ),
-#             (
-#                 np.str_(
-#                     "4 Conf. Empir. Methods Nat. \nLang. Process. Proc. Conf.; 2014. p. 1724–34. https://doi.org/10.3115/v1/d14- \n1179. \n[56] Baeza-Yates R, Ribeiro-Neto B. Modern Information Retrieval. Boston, MA, USA: \nAddison Wesley; 1999. \n[57] Robertson SE. Understanding inverse document frequency: On theoretical \narguments for IDF. J Doc 2004;60. \n[58] Kumawat D, Jain V. POS tagging approaches: a comparison. Int J Comput Appl \n2015;118(6):32–8. https://doi.org/10.5120/20752-3148. \n[59] Mohammad SM, Turney PD. N"
-#                 ),
-#                 0.8089462518692017,
-#             ),
-#             (
-#                 np.str_(
-#                     "cantly insufficient to build a robust system capable of \ndetect personality traits. For this reason, other studies have opted for \nusing new machine learning approaches such as deep learning, which \ncan contribute significantly to this task capturing syntactic and semantic \nfeatures from users’ posts [4] and proposing new mechanisms to model \nsentences and documents [5]. Thus, assuming that every algorithm can \nbe able to detect different properties related to the personality traits, the \nbest s"
-#                 ),
-#                 0.8062679171562195,
-#             ),
-#             (
-#                 np.str_(
-#                     "                                                                                                                                                                                          \n"
-#                 ),
-#                 0.8057342767715454,
-#             ),
-#         ],
-#         return_logprobs=True,
-#         system_prompt="""Only respond based on information explicitly stated in the document . If a
-#         detail is not mentioned or cannot be confidently inferred from the text , answer
-#         with Z ( not stated ) . Do not guess . Do not explain your answer unless
-#         instructed .""",
-#     )
-
-#     print(llm_output)
