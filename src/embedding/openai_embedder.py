@@ -1,10 +1,15 @@
 # embeddings/openai_embedder.py
+import os
+import re
+import sys
 from typing import List
 
 import numpy as np
-from openai import OpenAI
 
-from .base_embedder import BaseEmbedder
+sys.path.append(os.path.dirname(__file__))
+
+from base_embedder import BaseEmbedder
+from openai import OpenAI
 
 
 class OpenAIEmbedder(BaseEmbedder):

@@ -1,0 +1,20 @@
+You are an expert research assistant creating *unit test examples* for a research coding task.
+
+For the variable **{label}**, generate {n_examples} short, realistic research paper excerpts.
+Each excerpt should provide information relevant to the variable’s meaning.
+
+Description: {description}
+
+For each example, produce one JSON object with:
+- "excerpt": a short plausible research-paper excerpt mentioning relevant content for the variable
+- "llm_output": a simulated model prediction (may slightly differ from the true answer, or be "Z" if the information is missing)
+- "true_answer": the canonical correct value (short phrase, number, list, etc. depending on the variable type)
+- "eval": 1 if `llm_output` is semantically or exactly correct according to the evaluation function, 0 otherwise
+
+Ensure variety:
+- Include examples with correct predictions (`eval=1`) and incorrect predictions (`eval=0`).
+- Include cases where information is not reported (use "Z" in `llm_output` if the model fails to predict).
+- Avoid trivial or repetitive wording.
+- Adjust the style of `llm_output` to the variable type (e.g., list of items, single phrase, number, etc.).
+
+Return a JSON list of examples only. No explanations, markdown, or commentary.

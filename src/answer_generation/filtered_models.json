@@ -1,0 +1,230 @@
+[
+  {
+    "id": "arcee-ai/AFM-4.5B",
+    "display_name": "Arcee AI AFM 4.5B",
+    "organization": "Arcee AI",
+    "context_length": 65536,
+    "pricing": {
+      "input": 0.1,
+      "output": 0.4
+    },
+    "link": "https://huggingface.co/arcee-ai/AFM-4.5B",
+    "api_type": "together"
+  },
+  {
+    "id": "arcee-ai/maestro-reasoning",
+    "display_name": "Arcee AI Maestro",
+    "organization": "Arcee AI",
+    "context_length": 131072,
+    "pricing": {
+      "input": 0.9,
+      "output": 3.3
+    },
+    "link": "https://huggingface.co/api/models/togethercomputer/arcee-ai-maestro-32b-01",
+    "api_type": "together"
+  },
+  {
+    "id": "deepcogito/cogito-v2-preview-llama-405B",
+    "display_name": "Deepcogito Cogito V2 Preview Llama 405B",
+    "organization": "Deepcogito",
+    "context_length": 32768,
+    "pricing": {
+      "input": 3.5,
+      "output": 3.5
+    },
+    "link": "https://huggingface.co/api/models/togethercomputer/deepcogito-cogito-v2-preview-llama-405B",
+    "api_type": "together"
+  },
+  {
+    "id": "deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free",
+    "display_name": "DeepSeek R1 Distill Llama 70B Free",
+    "organization": "DeepSeek",
+    "context_length": 8192,
+    "pricing": {
+      "input": 0.0,
+      "output": 0.0
+    },
+    "link": "https://huggingface.co/deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
+    "api_type": "together"
+  },
+  {
+    "id": "deepseek-ai/DeepSeek-R1-Distill-Qwen-14B",
+    "display_name": "DeepSeek R1 Distill Qwen 14B",
+    "organization": "DeepSeek",
+    "context_length": 131072,
+    "pricing": {
+      "input": 1.6,
+      "output": 1.6
+    },
+    "link": "https://huggingface.co/api/models/deepseek-ai/DeepSeek-R1-Distill-Qwen-14B",
+    "api_type": "together"
+  },
+  {
+    "id": "deepseek-ai/DeepSeek-V3",
+    "display_name": "DeepSeek V3-0324",
+    "organization": "DeepSeek",
+    "context_length": 131072,
+    "pricing": {
+      "input": 1.25,
+      "output": 1.25
+    },
+    "link": "https://huggingface.co/deepseek-ai/DeepSeek-V3",
+    "api_type": "together"
+  },
+  {
+    "id": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+    "display_name": "Llama 4 Maverick Instruct (17Bx128E)",
+    "organization": "Meta",
+    "context_length": 1048576,
+    "pricing": {
+      "input": 0.27,
+      "output": 0.85
+    },
+    "link": "https://huggingface.co/meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+    "api_type": "together"
+  },
+  {
+    "id": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+    "display_name": "Llama 4 Scout Instruct (17Bx16E)",
+    "organization": "Meta",
+    "context_length": 1048576,
+    "pricing": {
+      "input": 0.18000000000000002,
+      "output": 0.5900000000000001
+    },
+    "link": "https://huggingface.co/meta-llama/Llama-4-Scout-17B-16E-Instruct",
+    "api_type": "together"
+  },
+  {
+    "id": "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
+    "display_name": "Meta Llama 3.1 405B Instruct Turbo",
+    "organization": "Meta",
+    "context_length": 130815,
+    "pricing": {
+      "input": 3.5,
+      "output": 3.5
+    },
+    "link": "https://huggingface.co/meta-llama/Meta-Llama-3.1-405B-Instruct",
+    "api_type": "together"
+  },
+  {
+    "id": "mistralai/Mistral-Small-24B-Instruct-2501",
+    "display_name": "Mistral Small (24B) Instruct 25.01",
+    "organization": "mistralai",
+    "context_length": 32768,
+    "pricing": {
+      "input": 0.8,
+      "output": 0.8
+    },
+    "link": "https://huggingface.co/mistralai/Mistral-Small-Instruct-2501",
+    "api_type": "together"
+  },
+  {
+    "id": "moonshotai/Kimi-K2-Instruct",
+    "display_name": "Kimi K2 Instruct",
+    "organization": "Moonshotai",
+    "context_length": 131072,
+    "pricing": {
+      "input": 1.0,
+      "output": 3.0
+    },
+    "link": "https://huggingface.co/moonshotai/Kimi-K2-Instruct",
+    "api_type": "together"
+  },
+  {
+    "id": "openai/gpt-oss-120b",
+    "display_name": "OpenAI GPT-OSS 120B",
+    "organization": "OpenAI",
+    "context_length": 131072,
+    "pricing": {
+      "input": 0.15,
+      "output": 0.6
+    },
+    "link": "https://huggingface.co/openai/gpt-oss-120b",
+    "api_type": "together"
+  },
+  {
+    "id": "openai/gpt-oss-20b",
+    "display_name": "OpenAI GPT-OSS 20B",
+    "organization": "OpenAI",
+    "context_length": 131072,
+    "pricing": {
+      "input": 0.05,
+      "output": 0.2
+    },
+    "link": "https://huggingface.co/api/models/openai/gpt-oss-20b",
+    "api_type": "together"
+  },
+  {
+    "id": "Qwen/Qwen2.5-Coder-32B-Instruct",
+    "display_name": "Qwen 2.5 Coder 32B Instruct",
+    "organization": "Qwen",
+    "context_length": 16384,
+    "pricing": {
+      "input": 0.8,
+      "output": 0.8
+    },
+    "link": "https://huggingface.co/Qwen/Qwen2.5-Coder-32B-Instruct",
+    "api_type": "together"
+  },
+  {
+    "id": "Qwen/Qwen3-235B-A22B-Thinking-2507",
+    "display_name": "Qwen3 235B A22B Thinking 2507 FP8",
+    "organization": "Qwen",
+    "context_length": 262144,
+    "pricing": {
+      "input": 0.65,
+      "output": 3.0
+    },
+    "link": "https://huggingface.co/api/models/Qwen/Qwen3-235B-A22B-Thinking-2507-FP8",
+    "api_type": "together"
+  },
+  {
+    "id": "Qwen/QwQ-32B",
+    "display_name": "Qwen QwQ-32B",
+    "organization": "Qwen",
+    "context_length": 131072,
+    "pricing": {
+      "input": 1.2,
+      "output": 1.2
+    },
+    "link": "https://huggingface.co/Qwen/QwQ-32B",
+    "api_type": "together"
+  },
+  {
+    "id": "zai-org/GLM-4.5-Air-FP8",
+    "display_name": "Glm 4.5 Air Fp8",
+    "organization": "Zai Org",
+    "context_length": 131072,
+    "pricing": {
+      "input": 0.2,
+      "output": 1.1
+    },
+    "link": "https://huggingface.co/api/models/zai-org/GLM-4.5-Air-FP8",
+    "api_type": "together"
+  },
+  {
+    "id": "o3-mini-2025-01-31",
+    "display_name": "O3 Mini",
+    "organization": "OpenAI",
+    "context_length": 100000,
+    "pricing": {
+      "input": 1.1,
+      "output": 4.4
+    },
+    "link": "https://platform.openai.com/docs/models/o3-mini",
+    "api_type": "openai"
+  },
+  {
+    "id": "gpt-4.1-2025-04-14",
+    "display_name": "GPT-4.1",
+    "organization": "OpenAI",
+    "context_length": 1047576,
+    "pricing": {
+      "input": 2,
+      "output": 8
+    },
+    "link": "https://platform.openai.com/docs/models/gpt-4.1",
+    "api_type": "openai"
+  }
+]

@@ -1,4 +1,4 @@
-You are an expert research assistant. Your task is to extract numeric information from research paper excerpts.
+Your task is to extract numeric information from research paper excerpts.
 Instructions:
 Provide the numeric value corresponding to the concept, taken strictly from the provided document.
 After the number, add a semicolon (;) followed by 1–2 sentences explaining the reasoning based strictly on the excerpt.

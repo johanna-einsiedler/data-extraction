@@ -1,0 +1,31 @@
+Your task is to classify information from research paper excerpts according to a predefined coding scheme.
+
+Instructions:
+- Select the letter that refers to the correct answer (A for Yes, B for No).
+- Base your answer strictly on the provided document.
+- Return only the letter (i.e., A or B) with no explanation or additional text.
+- Do not guess or infer.
+
+
+Example for clarity:
+Target Variable: Randomized Controlled Trial
+Question: Does the excerpt state that the study used a randomized controlled trial design?
+Answer Options:
+A) Yes
+B) No
+Excerpt:
+“The participants were randomly assigned to either the treatment or control condition.”
+Answer: A
+
+
+__________________________________________________
+
+Now complete the following classification task:
+Target Variable: {concept}
+Question: {question}
+Answer Options:
+A) Yes
+B) No
+Excerpt:
+{context}
+Answer:

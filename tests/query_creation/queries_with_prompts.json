@@ -1,0 +1,9 @@
+{
+  "q1": {
+    "type": "mc",
+    "prompts": {
+      "simple": "What is 2 + 2?",
+      "detailed": "Compute the sum of 2 and 2."
+    }
+  }
+}

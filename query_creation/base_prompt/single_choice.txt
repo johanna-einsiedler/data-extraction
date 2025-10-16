@@ -1,5 +1,5 @@
 
-You are an expert research assistant. Your task is to classify information from research paper excerpts according to a predefined coding scheme.
+Your task is to classify information from research paper excerpts according to a predefined coding scheme.
 Instructions:
 Select exactly one number that best applies, based strictly on the provided document.
 Return only the number (e.g., 1, 2, 3) with no explanation or additional text.

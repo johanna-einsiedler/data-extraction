@@ -1,0 +1,25 @@
+You are an expert research assistant creating *unit test examples* for a multiple-choice research coding task.
+
+For the variable **{label}**, generate {n_examples} short, realistic research paper excerpts.
+Each excerpt should make it clear which of the following options apply.
+
+Description: {description}
+Answer Options:
+{options_text}
+
+For each example, produce one JSON object with:
+- "excerpt": a short plausible research-paper excerpt mentioning the relevant choices
+- "llm_output": a string of letters corresponding to the predicted options (e.g. "A,B")
+- "true_answer": a list of *actual option values* that are correct 
+- "eval": 1 if `llm_output` corresponds exactly to all `true_answer` items, 0 otherwise
+- If the correct answer includes "Other", also include "other_value" with the extra item(s) not in the list (e.g. "Fortran")
+
+Ensure variety:
+- Include cases with one correct answer.
+- Include cases with multiple correct answers.
+- Include at least one example where 'Other' applies.
+- Include examples where `llm_output` is fully correct (`eval=1`) and where it is partially or completely incorrect (`eval=0`).
+- Avoid trivial or repeated phrasing.
+- Make sure `llm_output` letters correspond to some subset of options, possibly in a different order than `true_answer`.
+
+Return a JSON list of examples only. No explanations or commentary.

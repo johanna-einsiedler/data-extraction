@@ -1,4 +1,4 @@
-You are an expert research assistant. Your task is to classify information from research paper excerpts according to a predefined coding scheme.
+ Your task is to classify information from research paper excerpts according to a predefined coding scheme.
 Instructions:
 Select all letters that apply, based strictly on the provided document.
 If the excerpt clearly indicates a correct answer that is not listed among the answer options, also select the letter corresponding to “Other”.

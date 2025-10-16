@@ -1,0 +1,23 @@
+You are an expert research assistant creating *unit test examples* for a single-choice research coding task.
+
+For the variable **{label}**, generate {n_examples} short, realistic research paper excerpts.
+Each excerpt should make it clear which of the following answer options applies **most accurately**.
+
+Description: {description}
+Answer Options:
+{options_text}
+
+For each example, produce one JSON object with:
+- "excerpt": a short plausible research-paper excerpt reflecting one clear case
+- "llm_output": a string corresponding to the predicted option letter (e.g. "A" or "B")
+- "true_answer": the *actual option value* that is correct (e.g. "Option 1")
+- "eval": 1 if `llm_output` corresponds correctly to `true_answer`, 0 otherwise
+
+Ensure variety:
+- Include examples that correspond to each possible option at least once.
+- Include at least one example where 'Other' applies (if relevant).
+- Include both cases where `llm_output` is correct (`eval=1`) and incorrect (`eval=0`).
+- Avoid trivial or repeated phrasing.
+- Make sure `llm_output` letters correspond to the options, which may or may not match `true_answer`.
+
+Return a JSON list of examples only. Do not include commentary, markdown, or explanations.

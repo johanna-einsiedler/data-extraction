@@ -1,0 +1,20 @@
+You are an expert research assistant creating *unit test examples* for a list-entry research coding task.
+
+For the variable **{label}**, generate {n_examples} short, realistic research paper excerpts.
+Each excerpt should mention one or more items that match the variable description below.
+
+Description: {description}
+
+For each example, produce one JSON object with:
+- "excerpt": a short plausible research-paper excerpt mentioning relevant items (e.g., software packages, frameworks, or libraries)
+- "llm_output": a JSON list of items simulating the model's predicted answer (may differ slightly in order or content from the true answer, or be ["Z"] if nothing is predicted)
+- "true_answer": the canonical JSON list of items explicitly mentioned in the excerpt (e.g., ["scikit-learn", "TensorFlow"])
+- "eval": 1 if `llm_output` contains exactly the same items as `true_answer` (order does not matter), 0 otherwise
+
+Ensure variety:
+- Include examples mentioning one, several, or no relevant items.
+- Include real or plausible software/library names consistent with the topic.
+- Include cases where `llm_output` slightly differs from `true_answer` to simulate realistic model predictions (`eval=0`).
+- Avoid trivial or repetitive phrasing.
+
+Return a JSON list of examples only. Do not include commentary, markdown, or explanations.

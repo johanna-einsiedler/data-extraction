@@ -8,14 +8,16 @@
         "choices": {
             "1": {
                 "value": "No",
-                "description": "  "
+                "description": ""
             },
             "2": {
                 "value": "Yes",
                 "description": ""
             }
         },
-        "type": "single_choice"
+        "type": "single_choice",
+        "prefilled": [],
+        "examples": []
     },
     {
         "query_id": "0.7.1",
@@ -57,7 +59,16 @@
                 "description": ""
             }
         },
-        "type": "multiple_choice"
+        "type": "multiple_choice",
+        "prefilled": [
+            "Other:"
+        ],
+        "examples": [
+            {
+                "context": "\"Analyses were undertaken in R (R Core Team, 2022).\" (Section 2.3; p. 2)",
+                "answer": "R"
+            }
+        ]
     },
     {
         "query_id": "0.7.2",
@@ -75,12 +86,14 @@
                 "description": "The authors explicitly report the version of the programming language used in the study (e.g., Python 3.9, R 4.2.1)."
             }
         },
-        "type": "single_choice"
+        "type": "single_choice",
+        "prefilled": [],
+        "examples": []
     },
     {
         "query_id": "0.7.3",
         "label": "packages",
-        "description": "ML packages / libraries / modeling frameworks mentioned ",
+        "description": "ML packages / libraries / modeling frameworks mentioned",
         "description_detailed": "",
         "instructions": "",
         "choices": {
@@ -89,12 +102,21 @@
                 "description": "Only ML modeling packages or libraries (e.g., caret, scikit-learn) are relevant here, excluding general-purpose or visualization tools."
             }
         },
-        "type": "list"
+        "type": "list",
+        "prefilled": [
+            "Packages:"
+        ],
+        "examples": [
+            {
+                "context": "\"SuperLearner (van der Laan et al., 2007), the chosen ensemble \nmodelling tool, uses cross-validation to estimate the predictive perfor\nmance of individual machine learning algorithms, and ultimately de\ntermines the most accurate model within the ensemble.\" (Section 2.4; p. 2)\n\n\"The available hyperparameters of the winning model (BART) were tuned using ‘caret’ (Max, 2008) and were determined to be: number of \ntrees=50, k=2, α =0.95, β=0.5 and ν =3; see Supplementary Material 1 for further details.\" (Section 3.2; p.3)",
+                "answer": "Specific packages mentioned:"
+            }
+        ]
     },
     {
         "query_id": "0.7.4",
         "label": "packagesvers",
-        "description": "Package / library / modeling framework version reported ",
+        "description": "Package / library / modeling framework version reported",
         "description_detailed": "",
         "instructions": "",
         "choices": {
@@ -107,7 +129,9 @@
                 "description": "The authors explicitly report the version numbers of ML-related packages, libraries, or meta-modeling frameworks used (e.g., scikit-learn 1.2.2, caret 6.0-93, mlr3 0.15.0)."
             }
         },
-        "type": "single_choice"
+        "type": "single_choice",
+        "prefilled": [],
+        "examples": []
     },
     {
         "query_id": "0.8",
@@ -137,12 +161,19 @@
                 "description": "Data are openly available via supplemental materials or a direct repository link, with no restrictions."
             }
         },
-        "type": "single_choice"
+        "type": "single_choice",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "\" In this paper we make use of data of the LISS (Longitudinal Internet\n Studies for the Social sciences) panel administered by CentERdata (Til\nburg University, The Netherlands). The LISS panel is a representative\n sample of Dutch individuals (Scherpenzeel & Das, 2010) and is based\n on a true probability sample of households drawn from the population\n register. The data we used (n = 3642) were gathered in 2013.\" (Section \"Participants\"; p. 3)",
+                "answer": "3"
+            }
+        ]
     },
     {
         "query_id": "0.9",
         "label": "prereg",
-        "description": "Preregistration ",
+        "description": "Preregistration",
         "description_detailed": "",
         "instructions": "",
         "choices": {
@@ -155,7 +186,14 @@
                 "description": ""
             }
         },
-        "type": "single_choice"
+        "type": "single_choice",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "\"The methods for this study were preregistered and were adhered to \nwithout deviation (see: https://osf.io/s23hc/).\" (Section 2; p. 2)",
+                "answer": "2"
+            }
+        ]
     },
     {
         "query_id": "1.1",
@@ -169,7 +207,18 @@
                 "description": ""
             }
         },
-        "type": "numeric"
+        "type": "numeric",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "\"There were 30,833 patients treated for GAD. Of these, 14,974 did not \nmeet inclusion criteria for reasons such as having <2 treatment sessions \nor having missing PHQ-9 or GAD-7 item level data (see Supplementary Material 1 Figure 1). This resulted in an analytic sample of n=15,859 \nparticipants which was split into n=8,064 in the training dataset, \nn=5,021 in the validation dataset, and n=2,774 in the test dataset.\" (Section 3; p. 3)",
+                "answer": "15859"
+            },
+            {
+                "context": "\"Among our sample (n = 3385), we find that the leader trait paradigm can benefit from modeling complexity beyond linear effects and\n generate several interpretable results.\" (Abstract; p.1)",
+                "answer": "3385"
+            }
+        ]
     },
     {
         "query_id": "1.2",
@@ -183,14 +232,25 @@
                 "description": ""
             }
         },
-        "type": "numeric"
+        "type": "numeric",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "Supplement 1, Table 1",
+                "answer": "21"
+            },
+            {
+                "context": "\" In our analysis, we used measures for Big Five Inventory (BFI) per\nsonality traits, need for cognition (NFC), and leadership role occupancy\n (see Table1).\" (Section \"Measures\"; p.3).",
+                "answer": "6"
+            }
+        ]
     },
     {
         "query_id": "1.2.1",
         "label": "cases",
-        "description": "Number of cases (i.e., the outcome to be predicted) in the minority group ",
+        "description": "Number of cases (i.e., the outcome to be predicted) in the minority group",
         "description_detailed": "In the context of classification tasks, the number of cases (observations) refers to the frequency with which a specific class of the outcome occurs within the dataset. The category with the smallest frequency should be coded.",
-        "instructions": "",
+        "instructions": "If reported, include cases from all validation sets in the total number of cases.",
         "choices": {
             "0": {
                 "value": "Not reported",
@@ -201,16 +261,29 @@
                 "description": ""
             }
         },
-        "type": "numeric"
+        "type": "numeric",
+        "prefilled": [],
+        "examples": []
     },
     {
         "query_id": "1.3",
         "label": "sample",
-        "description": "Sample description ",
+        "description": "Sample description",
         "description_detailed": "Open-ended variable describing the analyzed sample (e.g., \"Sexual offenders in preventive detention\", \"elementary school students\").",
         "instructions": "",
         "choices": {},
-        "type": "open_ended"
+        "type": "open_ended",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "\"Routinely collected healthcare data were analysed for adults (aged \n≥18) treated for GAD in eight Improving Access to Psychological \nTherapies (IAPT) services (grouped together in four NHS Trusts) in the \nNorth and Central East London IAPT Service Improvement and Research \nNetwork (NCEL IAPT SIRN; see Supplementary Material 1 Table 3; \nSaunders et al., 2020).\" (Section 2.1; p.2)",
+                "answer": "Adults treated for generalized anxiety disorder"
+            },
+            {
+                "context": "\" In this paper we make use of data of the LISS (Longitudinal Internet\n Studies for the Social sciences) panel administered by CentERdata (Til\nburg University, The Netherlands). The LISS panel is a representative\n sample of Dutch individuals (Scherpenzeel & Das, 2010) and is based\n on a true probability sample of households drawn from the population\n register. The data we used (n = 3642) were gathered in 2013. In our\n sample, 58.4% of the participants were women and the minimal age\n was 18 (M=53.73,SD=16.07).\" (Section \"Participants; p. 3)",
+                "answer": "Adult participants of a Dutch panel study."
+            }
+        ]
     },
     {
         "query_id": "1.4",
@@ -298,9 +371,26 @@
             "Y": {
                 "value": "Other",
                 "description": ""
+            },
+            "Z": {
+                "value": "Not reported",
+                "description": ""
             }
         },
-        "type": "multiple_choice"
+        "type": "multiple_choice",
+        "prefilled": [
+            "Other:"
+        ],
+        "examples": [
+            {
+                "context": "\"IAPT services are mandated by NHS England to collect a stand\nardised set of sociodemographic data, as well as symptom and func\ntioning measures: the IAPT Minimum Dataset (MDS).\" (Section 2.2; p.2)",
+                "answer": "UK"
+            },
+            {
+                "context": "\" In this paper we make use of data of the LISS (Longitudinal Internet\n Studies for the Social sciences) panel administered by CentERdata (Til\nburg University, The Netherlands). The LISS panel is a representative\n sample of Dutch individuals (Scherpenzeel & Das, 2010) and is based\n on a true probability sample of households drawn from the population\n register. The data we used (n = 3642) were gathered in 2013. In our\n sample, 58.4% of the participants were women and the minimal age\n was 18 (M=53.73,SD=16.07).\" (Section \"Participants; p. 3)",
+                "answer": "Netherlands"
+            }
+        ]
     },
     {
         "query_id": "1.5",
@@ -342,7 +432,18 @@
                 "description": "Data referring to features of the broader environment or context in which the individual is embedded (e.g., average income in a region, school-level teacher-student ratios, therapist gender in multi-level data)."
             }
         },
-        "type": "multiple_choice"
+        "type": "multiple_choice",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "\"The predictors \nused in this study, that were those available to inform clinical decision \nmaking prior to starting treatment and were all collected routinely as \npart of the MDS at the initial assessment, are the individual items from \nthe Generalised Anxiety Disorder Assessment (GAD-7; Spitzer et al., \n2006) used to measure symptoms of generalised anxiety disorder, the \nPatient Health Questionnaire (PHQ-9; Kroenke et al., 2001) for \ndepressive symptoms, the Work and Social Adjustment Scale (WSAS; \nMundt et al., 2002) for functional impairment, and the IAPT Phobia \nScale Improving Access to Psychological Therapies (2011) to screen for \nphobic anxiety disorders. The GAD-7 and PHQ-9 total scores were also \nincluded. Only items two-to-five of the WSAS were used as the first item \nis not applicable for unemployed individuals. Other predictors were: \nage, ethnicity, employment status, gender, long-term health condition \nstatus, and psychotropic medication prescription and usage. Local Layer \nSuper Output Areas (LSOAs) were converted to Indices of Multiple \nDeprivation (IMD) as a measure of local area deprivation. Finally, the \nnumber of weeks between referral and initial assessment, and between \nassessment and first therapy session were included.\" (Section 2.2; p.2)",
+                "answer": "Rating / judgement data, Demographic / biographical data, Contextual / aggregate data"
+            },
+            {
+                "context": "\" In our analysis, we used measures for Big Five Inventory (BFI) per\nsonality traits, need for cognition (NFC), and leadership role occupancy\n (see Table1).\" (Section \"Measures\"; p.3).",
+                "answer": "Rating / judgement data"
+            }
+        ]
     },
     {
         "query_id": "1.6",
@@ -384,16 +485,38 @@
                 "description": "Data referring to features of the broader environment or context in which the individual is embedded (e.g., average income in a region, school-level teacher-student ratios, therapist gender in multi-level data)."
             }
         },
-        "type": "multiple_choice"
+        "type": "multiple_choice",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "\"The primary outcome was the GAD-7 score at the last attended therapy session.\" (Section 2.2; p.2)",
+                "answer": "Rating / judgement data"
+            },
+            {
+                "context": "\" In our analysis, we used measures for Big Five Inventory (BFI) per\nsonality traits, need for cognition (NFC), and leadership role occupancy\n (see Table1).\" (Section \"Measures\"; p.3).",
+                "answer": "Rating / judgement data"
+            }
+        ]
     },
     {
         "query_id": "1.7",
         "label": "predtask",
         "description": "Prediction task including outcome",
-        "description_detailed": "Open-ended variable describing the predicted outcome in the study (e.g., \"Predicting students-at-risk in language acquisition\", \"Predicting recidive in major depression\"). ",
+        "description_detailed": "Open-ended variable describing the predicted outcome in the study (e.g., \"Predicting students-at-risk in language acquisition\", \"Predicting recidive in major depression\").",
         "instructions": "",
         "choices": {},
-        "type": "open_ended"
+        "type": "open_ended",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "\"This study aimed to develop and validate an accurate and explainable prediction model of post-treatment GAD symptom severity.\" (Abstract; p.1)",
+                "answer": "Predicting the symptom severity for generalized anxiety disorder at the last treatment session."
+            },
+            {
+                "context": "\" As a measure of leadership role occupancy,we utilized the question:\n “What is your current profession/What profession did you exercise in\n your last job? (If you are retired, unemployed or currently do not have\n a job: please refer to the last job you had).” We classified individuals\n as occupying a leadership role (10.84%) when they answered the ques\ntion with “higher supervisory profession (e.g. manager, director, owner\n of large company, supervisory civil servant)”.Weclassified individuals\n as not occupying a leadership role when they answered the question\n with one of the following answers: “higher academic or independent\n profession (e.g. architect, physician, scholar, academic instructor, engi\nneer)” (7.71%), “intermediate academic or independent profession\n (e.g. teacher, artist, nurse, social worker, policy assistant)” (29.2%),\n “other mental work (e.g. administrative assistant, accountant, sales as\nsistant, family carer)” (31.8%), “semi-skilled manual work (e.g. driver,\n factory worker)” (8.68%), “unskilled and trained manual work (e.g.\n cleaner, packer)” (9.63%), and “agrarian profession (e.g. farm worker,\n independent agriculturalist)” (2.04%).\" (Section \"Measures\", p.3)",
+                "answer": "Predicting leadership role ocupancy."
+            }
+        ]
     },
     {
         "query_id": "1.8",
@@ -416,10 +539,21 @@
             },
             "4": {
                 "value": "Continuous",
-                "description": "Interval or ratio scale with numeric values and meaningful distances (IQ score). "
+                "description": "Interval or ratio scale with numeric values and meaningful distances (IQ score)."
             }
         },
-        "type": "single_choice"
+        "type": "single_choice",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "\"The primary outcome was the GAD-7 score at the last attended therapy session.\" (Section 2.2; p.2)",
+                "answer": "4"
+            },
+            {
+                "context": "\" As a measure of leadership role occupancy,we utilized the question:\n “What is your current profession/What profession did you exercise in\n your last job? (If you are retired, unemployed or currently do not have\n a job: please refer to the last job you had).” We classified individuals\n as occupying a leadership role (10.84%) when they answered the ques\ntion with “higher supervisory profession (e.g. manager, director, owner\n of large company, supervisory civil servant)”.We classified individuals\n as not occupying a leadership role when they answered the question\n with one of the following answers: “higher academic or independent\n profession (e.g. architect, physician, scholar, academic instructor, engi\nneer)” (7.71%), “intermediate academic or independent profession\n (e.g. teacher, artist, nurse, social worker, policy assistant)” (29.2%),\n “other mental work (e.g. administrative assistant, accountant, sales as\nsistant, family carer)” (31.8%), “semi-skilled manual work (e.g. driver,\n factory worker)” (8.68%), “unskilled and trained manual work (e.g.\n cleaner, packer)” (9.63%), and “agrarian profession (e.g. farm worker,\n independent agriculturalist)” (2.04%).\" (Section \"Measures\", p.3)",
+                "answer": "2"
+            }
+        ]
     },
     {
         "query_id": "1.9",
@@ -437,7 +571,51 @@
                 "description": "The outcome lies in the future relative to the collection of predictor data and is not yet known at that point (e.g., predicting relapse or therapy dropout with predictors collected at the beginning of therapy)."
             }
         },
-        "type": "single_choice"
+        "type": "single_choice",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "\"The primary outcome was the GAD-7 score at the last attended therapy session.\" (Section 2.2; p.2)",
+                "answer": "2"
+            },
+            {
+                "context": "\"In our analysis, we used measures for Big Five Inventory (BFI) per\nsonality traits, need for cognition (NFC), and leadership role occupancy\n (seeTable1).TheBFIpersonalitytraitsweremeasuredwiththe50-item\n Five Factor Model International Personality Item Pool (IPIP; Goldberg,\n 1999) and NFC with an 18-item NFC scale (Cacioppo & Petty, 1984).\n The items were translated into Dutch by professional translators and\n the survey was conducted in Dutch. The internal consistency of the\n measures ranged from 0.77 to 0.90. The correlations among the BFI\n traits as well as the correlations between NFC and openness, conscien\ntiousness, and neuroticism are in line with correlations found in previ\nous research (Furnham & Thorne, 2013; Van der Linden, te Nijenhuis,\n &Bakker,2010).Inourstudy,NFCshowsapositivecorrelationwithex\ntraversion and agreeableness where previous studies have respectively\n reported inconsistent and often non-significant correlations (Furnham\n &Thorne,2013).ThecorrelationbetweenNFCandleadershiproleoccu\npancy, which, to thebestof our knowledge,hasnotbeendirectly tested\n before, was positive. The correlations between leadership role occu\npancyandopenness,conscientiousness,andextraversionwerepositive,\n whereas the correlations between leadership role occupancy and\n agreeableness and neuroticism were negative. Compared with meta\nanalyses that tested the relationship between BFI and emergence\nthe latter measured in part as leadership role occupancy (Barling &\n Weatherhead,2016)–thecorrelationsare mostlyinthesamedirection\n exceptfor agreeableness(e.g., Ensari, Riggio, Christian, & Carslaw, 2011;\n Ilies, Gerhardt, & Le, 2004). In the meta-analysis of Ilies and colleagues,\n for example, agreeableness had a small overall positive correlation (r =\n 0.05), whereas we find a small negative correlation (r = −0.05).\n As a measure of leadership role occupancy, we utilized the question:\n “What is your current profession/What profession did you exercise in\n your last job? (If you are retired, unemployed or currently do not have\n a job: please refer to the last job you had).” We classified individuals\n as occupying a leadership role (10.84%) when they answered the ques\ntion with “higher supervisory profession (e.g. manager, director, owner\n of large company, supervisory civil servant)”.Weclassified individuals\n as not occupying a leadership role when they answered the question\n with one of the following answers: “higher academic or independent\n profession (e.g. architect, physician, scholar, academic instructor, engi\nneer)” (7.71%), “intermediate academic or independent profession\n (e.g. teacher, artist, nurse, social worker, policy assistant)” (29.2%),\n “other mental work (e.g. administrative assistant, accountant, sales as\nsistant, family carer)” (31.8%), “semi-skilled manual work (e.g. driver,\n factory worker)” (8.68%), “unskilled and trained manual work (e.g.\n cleaner, packer)” (9.63%), and “agrarian profession (e.g. farm worker,\n independent agriculturalist)” (2.04%).\" (Section \"Measures\"; p.3)",
+                "answer": "1"
+            }
+        ]
+    },
+    {
+        "query_id": "1.10",
+        "label": "rationale",
+        "description": "Rational for using ML",
+        "description_detailed": "",
+        "instructions": "",
+        "choices": {
+            "0": {
+                "value": "No rational given at all",
+                "description": ""
+            },
+            "1": {
+                "value": "Higher efficiency or better performance of ML algorithm",
+                "description": "The authors describe the advantages of ML methods in the context of prediction problems or reference literature where ML has demonstrated strong performance in similar research questions."
+            },
+            "2": {
+                "value": "Specific assumptions about effects or the data match properties of ML algorithm",
+                "description": "The authors consider specific properties of the data (e.g., interactions, non-linear relationships, or multicollinearity) and align these with the capabilities of a chosen ML algorithm (e.g., random forest for non-linearity, elastic net regression for multicollinearity)."
+            }
+        },
+        "type": "single_choice",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "Table 3; Supplement 1",
+                "answer": "1"
+            },
+            {
+                "context": "\"Specifically, as described\n above, we compare the predictive performance of a LM that solely\n tests linear additive effects with the predictive performance of a RF\n that allows moreflexibility. Testinghow well these engines perform re\nsults in information on the complexity of the leader trait paradigm. For\n instance, if the RF outperforms the LM in terms of predictive perfor\nmance, this suggests that the true leader trait relationship is likely\n more complex than linear additive effects.1 Thus, the first research\n question we focus on is:\n Research question 1: To what degree do non-linear effects and inter\nactions explain the trait‑leadership role occupancy relationship?\" (Section \" Dilemmas obstructing the leader trait paradigm\"; p. 3)",
+                "answer": "2"
+            }
+        ]
     },
     {
         "query_id": "2.1",
@@ -448,7 +626,7 @@
         "choices": {
             "0": {
                 "value": "Not reported",
-                "description": "The amount of missing data is not described at all. "
+                "description": "The amount of missing data is not described at all."
             },
             "1": {
                 "value": "General statement",
@@ -459,7 +637,14 @@
                 "description": "The authors report missingness by quantifying missing values in the affected variables."
             }
         },
-        "type": "single_choice"
+        "type": "single_choice",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "\"Missing baseline data were single imputed using the ‘missForest’ package (Stekhoven and Bühlmann, 2012), following conventions from other prediction model development and validation studies (Buckman et al., 2021a; Webb et al., 2020), with missingness varying by predictor from nil to 22.7 % (long-term health condition).\" (Section 2.3; p.2)",
+                "answer": "2"
+            }
+        ]
     },
     {
         "query_id": "2.2",
@@ -470,30 +655,44 @@
         "choices": {
             "A": {
                 "value": "Listwise deletion",
-                "description": ""
+                "description": "An observation is excluded from the analysis if it has any missing values on the variables included, meaning only complete cases are analyzed."
             },
             "B": {
                 "value": "Threshold-based deletion",
-                "description": "An observation is excluded from the analysis if it has any missing values on the variables included, meaning only complete cases are analyzed."
+                "description": "A variable or observation is excluded from the analysis if the proportion of missing data exceeded a predefined threshold (e.g., if more than 50% of its values were missing)."
             },
             "C": {
                 "value": "Mean / median / modus imputation",
-                "description": "A variable or observation is excluded from the analysis if the proportion of missing data exceeded a predefined threshold (e.g., if more than 50% of its values were missing)."
+                "description": "Missing values are replaced using simple rules based on central tendency. Although this is considered a single imputation method, it is coded separately."
             },
             "D": {
                 "value": "k-nearest neighbors (k-NN) imputation",
-                "description": "Missing values are replaced using simple rules based on central tendency. Although this is considered a single imputation method, it is coded separately."
+                "description": "Missing values are imputed by identifying the k observations with the smallest distance (e.g., Euclidean distance) to the incomplete case and aggregating their values for the missing variable (e.g., using the mean, median, or majority vote)."
             },
             "E": {
                 "value": "Multiple imputation methods (if reported, specify algorithm and number of datasets m in comment)",
-                "description": "Missing values are imputed by identifying the k observations with the smallest distance (e.g., Euclidean distance) to the incomplete case and aggregating their values for the missing variable (e.g., using the mean, median, or majority vote)."
+                "description": "Missing values are imputed multiple times to generate several complete datasets, capturing the uncertainty around the missing data (e.g., predictive mean matching (PMM) with m = 5 imputed datasets). "
             },
             "Y": {
                 "value": "Other",
-                "description": "Missing values are imputed multiple times to generate several complete datasets, capturing the uncertainty around the missing data (e.g., predictive mean matching (PMM) with m = 5 imputed datasets). "
+                "description": ""
+            },
+            "Z": {
+                "value": "Not reported",
+                "description": ""
             }
         },
-        "type": "multiple_choice"
+        "type": "multiple_choice",
+        "prefilled": [
+            "Details on multiple imputation:",
+            "Other:"
+        ],
+        "examples": [
+            {
+                "context": "\"Missing baseline data were single imputed using the ‘missForest’ package (Stekhoven and Bühlmann, 2012), following conventions from other prediction model development and validation studies (Buckman et al., 2021a; Webb et al., 2020), with missingness varying by predictor from nil to 22.7 % (long-term health condition).\" (Section 2.3; p.2)",
+                "answer": "Other:"
+            }
+        ]
     },
     {
         "query_id": "2.3",
@@ -504,43 +703,60 @@
         "choices": {
             "A": {
                 "value": "Aggregating items to scales",
-                "description": ""
+                "description": "Items of the PHQ-9 are combined into a single scale score by summing / averaging the item responses."
             },
             "B": {
                 "value": "Clustering (grouping raw data to features)",
-                "description": "Items of the PHQ-9 are combined into a single scale score by summing / averaging the item responses."
+                "description": "Answers in a structured interview are defined as a diagnosis based on DSM-5 criteria."
             },
             "C": {
                 "value": "Calculation of indices",
-                "description": "Answers in a structured interview are defined as a diagnosis based on DSM-5 criteria."
+                "description": "Deriving common indices, such as BMI, using standardized formulas from variables like weight and height."
             },
             "D": {
                 "value": "Pre-specifying relations between predictors",
-                "description": "Deriving common indices, such as BMI, using standardized formulas from variables like weight and height."
+                "description": "Interactions or quadratic terms of predictors are computed."
             },
             "E": {
                 "value": "Computing latent trait scores",
-                "description": "Interactions or quadratic terms of predictors are computed."
+                "description": "A score is computed for items of an underlying latent construct based on observed data, such as factor scores or Item Response Theory (IRT) scores."
             },
             "F": {
                 "value": "Enrichment via external data sources",
-                "description": "A score is computed for items of an underlying latent construct based on observed data, such as factor scores or Item Response Theory (IRT) scores."
+                "description": "Integrating relevant external data to provide additional context or meaningful information (e.g., adding location data of cafés, gyms, and libraries to individuals’ GPS movement data)."
             },
             "G": {
                 "value": "Extracting features from text / image / audio data",
-                "description": "Integrating relevant external data to provide additional context or meaningful information (e.g., adding location data of cafés, gyms, and libraries to individuals’ GPS movement data)."
+                "description": ""
             },
             "Y": {
                 "value": "Other",
                 "description": ""
+            },
+            "Z": {
+                "value": "Not reported",
+                "description": ""
             }
         },
-        "type": "multiple_choice"
+        "type": "multiple_choice",
+        "prefilled": [
+            "Other:"
+        ],
+        "examples": [
+            {
+                "context": "\" The GAD-7 and PHQ-9 total scores were also included.\" (Section 2.2; p.2)",
+                "answer": "Aggregating items to scales"
+            },
+            {
+                "context": "\" In our analysis, we used measures for Big Five Inventory (BFI) per\nsonality traits, need for cognition (NFC), and leadership role occupancy\n (seeTable1).The BFI personality traits were measured with the 50-item\n Five Factor Model International Personality Item Pool (IPIP; Goldberg,\n 1999) and NFC with an 18-item NFC scale (Cacioppo & Petty, 1984).\" (Section \"Measures\"; p.3)\n\nTable 1; p. 4",
+                "answer": "Aggregating items to scales"
+            }
+        ]
     },
     {
         "query_id": "2.4",
         "label": "engineer",
-        "description": "Feature engineering ",
+        "description": "Feature engineering",
         "description_detailed": "",
         "instructions": "See 2.2 misshand",
         "choices": {
@@ -562,52 +778,83 @@
             },
             "E": {
                 "value": "Dimensionality reduction (if reported, note specific method in a comment)",
-                "description": ""
+                "description": "Features are reduced in dimensionality to create a smaller set of variables that still capture essential information (e.g., Principal Component Analysis (PCA))."
             },
             "F": {
                 "value": "Categorization",
-                "description": "Features are reduced in dimensionality to create a smaller set of variables that still capture essential information (e.g., Principal Component Analysis (PCA))."
+                "description": "Continuous or ordinal variables are converted into categorical ones (e.g., using a cutoff score on a depression scale to classify individuals as \"elevated symptoms\" vs. \"no/mild symptoms\")."
             },
             "G": {
                 "value": "Winsorization of outliers",
-                "description": "Continuous or ordinal variables are converted into categorical ones (e.g., using a cutoff score on a depression scale to classify individuals as \"elevated symptoms\" vs. \"no/mild symptoms\")."
+                "description": "Extreme values are replaced (or capped) with less extreme values to reduce the influence of outliers on model training and improve robustness."
             },
             "H": {
                 "value": "Outlier masking + imputation",
-                "description": "Extreme values are replaced (or capped) with less extreme values to reduce the influence of outliers on model training and improve robustness."
+                "description": "Outliers are initially treated as missing data and subsequently imputed."
             },
             "Y": {
                 "value": "Other",
-                "description": "Outliers are initially treated as missing data and subsequently imputed."
+                "description": ""
+            },
+            "Z": {
+                "value": "Not reported",
+                "description": ""
             }
         },
-        "type": "multiple_choice"
+        "type": "multiple_choice",
+        "prefilled": [
+            "Details on dimensionality reduction:",
+            "Other:"
+        ],
+        "examples": [
+            {
+                "context": "\"Continuous variables were centred \nand scaled.\" (Section 2.3; p. 2)",
+                "answer": "Standardization (z-scores), Centering"
+            },
+            {
+                "context": "\"Following procedures described by Kuhn and Johnson (2013), we built the LM and RF based on normalized variables (normalized after splitting the data).\" (Section \"Analytical procedure\"; p.4)",
+                "answer": "Other:"
+            }
+        ]
     },
     {
         "query_id": "2.5",
         "label": "select",
-        "description": "Feature selection ",
+        "description": "Feature selection",
         "description_detailed": "",
         "instructions": "See 2.2 misshand",
         "choices": {
             "A": {
                 "value": "Theoretically derived",
-                "description": ""
+                "description": "When predicting depression in patients, the authors select predictors based on factors outlined in the bio-psycho-social etiology model."
             },
             "B": {
                 "value": "Empirically, filter methods",
-                "description": "When predicting depression in patients, the authors select predictors based on factors outlined in the bio-psycho-social etiology model."
+                "description": "Techniques that rank all available features and select those above or below a defined threshold (e.g., excluding features with an outcome correlation < 0.1 or those with near-zero variance)."
             },
             "C": {
                 "value": "Empirically, wrapper methods",
-                "description": "Techniques that rank all available features and select those above or below a defined threshold (e.g., excluding features with an outcome correlation < 0.1 or those with near-zero variance)."
+                "description": "Optimization-based feature selection methods which iteratively refine feature subsets to maximize model performance (e.g. genetic algorithms or simulated annealing)."
             },
             "Y": {
                 "value": "Other",
-                "description": "Optimization-based feature selection methods which iteratively refine feature subsets to maximize model performance (e.g. genetic algorithms or simulated annealing)."
+                "description": ""
+            },
+            "Z": {
+                "value": "Not reported",
+                "description": ""
             }
         },
-        "type": "multiple_choice"
+        "type": "multiple_choice",
+        "prefilled": [
+            "Other:"
+        ],
+        "examples": [
+            {
+                "context": "\"The first was an OLS \nregression model with only the pre-treatment GAD-7 score included, as \ninitial symptom severity is one of the most important factors considered \nby clinicians in predicting treatment outcomes (and allocating treat\nment) for their patients (Amati et al., 2018; Buckman et al., 2021b; \nO’Driscoll et al., 2021).\" (Section 2.4; p.2)",
+                "answer": "Theoretically derived"
+            }
+        ]
     },
     {
         "query_id": "2.6",
@@ -633,7 +880,18 @@
                 "description": ""
             }
         },
-        "type": "single_choice"
+        "type": "single_choice",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "\"Analyses were undertaken in R (R Core Team, 2022). Missing base\nline data were single imputed using the ‘missForest’ package (Stekhoven \nand Bühlmann, 2012), following conventions from other prediction \nmodel development and validation studies (Buckman et al., 2021a; \nWebb et al., 2020), with missingness varying by predictor from nil to \n22.7 % (long-term health condition). Continuous variables were centred \nand scaled. Categorical variables were dummy encoded post-imputation, with the first dummy encoded variable removed to avoid issues regarding multicollinearity. The dataset was then divided into three for training, validation and testing, as detailed in the study protocol.\" (Section 2.3; p.2).",
+                "answer": "1"
+            },
+            {
+                "context": "\"Following procedures described by Kuhn and Johnson (2013), we built the LM and RF based on normalized variables (normalized after splitting the data).\" (Section \"Analytical procedure\"; p.4)",
+                "answer": "2"
+            }
+        ]
     },
     {
         "query_id": "3.1",
@@ -644,7 +902,7 @@
         "choices": {
             "A": {
                 "value": "Ridge Regression",
-                "description": "Only algorithms used for the actual prediction task should be included here. If authors use algorithms like LASSO for feature selection but employ different models for the primary prediction task, those algorithms should not be listed here."
+                "description": ""
             },
             "B": {
                 "value": "LASSO Regression",
@@ -724,14 +982,27 @@
             },
             "U": {
                 "value": "Customized model ensembles",
-                "description": ""
+                "description": "User-defined combinations of multiple base learners into a single predictive model, often weighted or stacked (e.g., using caretEnsemble to combine different caret-trained models)."
             },
             "Y": {
                 "value": "Other",
                 "description": ""
             }
         },
-        "type": "multiple_choice"
+        "type": "multiple_choice",
+        "prefilled": [
+            "Other:"
+        ],
+        "examples": [
+            {
+                "context": "\"Thirteen machine learning algorithms were selected to provide a \nbroad comparison (of a variety of modelling techniques) and to be \nconsistent with research that has used similar methods (Webb et al., \n2020). To provide a benchmark against the machine learning models, an \nordinary least squares regression (OLS) model with all the available \nsame predictors (in the same manner as the machine learning models) \nwas included. The multiple OLS acts as a comparator with penalised \nregression models by fitting the data without any regularisation, making \nit prone to overfitting compared to models with regularisation. Addi\ntionally, two other comparison models akin to those used in similar \nresearch were fitted (Buckman et al., 2021a). The first was an OLS \nregression model with only the pre-treatment GAD-7 score included, as \ninitial symptom severity is one of the most important factors considered \nby clinicians in predicting treatment outcomes (and allocating treat\nment) for their patients (Amati et al., 2018; Buckman et al., 2021b; \nO’Driscoll et al., 2021). Separately, a null model was created using the \nmean post-treatment GAD-7 score in the training and validation dataset \nas the prediction for all test dataset cases. Five models based upon elastic \nnet regularised regression (ENR; Friedman et al., 2010) were included \n(alpha parameters were 0.0; full ridge, 0.25, 0.50, 0.75 and 1.0; full \nlasso), using the ridge and least absolute shrinkage and selection oper\nator (lasso) penalisations to reduce overfitting. Two spline regression \nmodels were used: adaptive splines (Friedman, 1991) and adaptive \npolynomial splines (Stone et al., 1997). In addition, two \ndecision-tree-based algorithms were used: random forest (Breiman, \n2001) and Bayesian Additive Regression Trees (BART; Chipman et al., \n2010). Lastly, three support vector machines (SVM) were included with \nlinear, polynomial and radial kernels (Dimitriadou et al., 2009). Full \ndetails of the models are presented in Supplementary Material 1 \n(Table 3). \nSuperLearner (van der Laan et al., 2007), the chosen ensemble \nmodelling tool, uses cross-validation to estimate the predictive perfor\nmance of individual machine learning algorithms, and ultimately de\ntermines the most accurate model within the ensemble.\" (Section 2.4; p.2)",
+                "answer": "Ridge Regression, LASSO Regression, Elastic Net Regression, Random Forest, BART, Linear SVM, Polynomial SVM, Radial basis function SVM, Customized model ensembles, Other:, MARS"
+            },
+            {
+                "context": "\"Following that, we use a large database (n = 3385) of trait variables and leadership\n role occupancy to compare the predictive performance of traditional\n (parametric) linear models (LM) versus the non-parametric technique\n of randomforest(RF)analysis.\" (Introduction; p. 2)",
+                "answer": "Random Forest"
+            }
+        ]
     },
     {
         "query_id": "3.2",
@@ -757,7 +1028,16 @@
                 "description": "The authors explicitly define the range of possible hyperparameter values to be used for tuning."
             }
         },
-        "type": "multiple_choice"
+        "type": "multiple_choice",
+        "prefilled": [
+            "Specific set of hyperparameters:"
+        ],
+        "examples": [
+            {
+                "context": "\"We explored 66 combinations of hyperparameters containing six values for the number of candidate variables for each split (i.e., 1, 2, 3, 4, 5, and 6) and 11 values for the minimal terminal node size (1, 5, 10, 25, 50, 100, 200, 300, 400, 500, and 600).\" (Section \"RQ1\"; p.4)",
+                "answer": "Specific set of hyperparameters values"
+            }
+        ]
     },
     {
         "query_id": "3.2.1",
@@ -768,34 +1048,47 @@
         "choices": {
             "A": {
                 "value": "Tuning method not specified, stated that default method was used",
-                "description": ""
+                "description": "The authors do not specify the tuning method and state only that the default procedure of the software was used."
             },
             "B": {
                 "value": "Random search",
-                "description": "The authors do not specify the tuning method and state only that the default procedure of the software was used."
+                "description": "Hyperparameter values are randomly sampled from a predefined range to explore different configurations."
             },
             "C": {
                 "value": "Grid search",
-                "description": "Hyperparameter values are randomly sampled from a predefined range to explore different configurations. "
+                "description": "All possible combinations of predefined hyperparameter values are systematically evaluated."
             },
             "D": {
                 "value": "Model-based optimization",
-                "description": "All possible combinations of predefined hyperparameter values are systematically evaluated."
+                "description": "Based on previous results, models are built and iteratively updated to predict performance and prioritize promising hyperparameter configurations."
             },
             "E": {
                 "value": "Optimization heuristics",
-                "description": "Based on previous results, models are built and iteratively updated to predict performance and prioritize promising hyperparameter configurations."
-            },
-            "F": {
-                "value": "-99 = Not applicable (if \"Fixed set of hyperparameter values\" was selected as the only answer in 3.2)",
-                "description": ""
+                "description": "Rule-based strategies iteratively searching for combinations of hyperparameters."
             },
             "Y": {
                 "value": "Other",
-                "description": "Rule-based strategies iteratively searching for combinations of hyperparameters. "
+                "description": ""
+            },
+            "Z": {
+                "value": "Not reported",
+                "description": ""
             }
         },
-        "type": "multiple_choice"
+        "type": "multiple_choice",
+        "prefilled": [
+            "Other:"
+        ],
+        "examples": [
+            {
+                "context": "\"Once the best \nperforming algorithm had been established within the validation data\nset, the exact same training and validation process was repeated to tune \nits hyperparameters, using the grid search method of the ‘caret’ package \n(see Supplementary Material 1; Max, 2008).\" (Section 2.4; p.3)",
+                "answer": "Grid search"
+            },
+            {
+                "context": "\"The final RF is grown with 500 trees, 2 candidate variables for each split, and a minimal of 400 observations in each terminal node. These hyperparameters are the optimal settings based on a grid search approach.\" (Section \"Analytical procedure\"; p.4)",
+                "answer": "Grid search"
+            }
+        ]
     },
     {
         "query_id": "3.3",
@@ -805,7 +1098,7 @@
         "instructions": "See 3.2 tunevalues",
         "choices": {
             "A": {
-                "value": "Resampling method not specified, stated that default  method was used",
+                "value": "Resampling method not specified, stated that default method was used",
                 "description": ""
             },
             "B": {
@@ -847,16 +1140,33 @@
             "Y": {
                 "value": "Other",
                 "description": ""
+            },
+            "Z": {
+                "value": "Not reported",
+                "description": ""
             }
         },
-        "type": "multiple_choice"
+        "type": "multiple_choice",
+        "prefilled": [
+            "Other:"
+        ],
+        "examples": [
+            {
+                "context": "\"Through training the ensemble using 10-fold internal cross-validation within the training \nsample (repeated ten times), the BART algorithm produced the lowest \nprediction error when generalising to the validation dataset (MSE [95 % \nCI]=16.72 [16.12; 17.32]; MAE=3.16; R 2 =0.38; see Table 2).\" (Section 3.1; p.3)",
+                "answer": "Repeated k fold CV"
+            },
+            {
+                "context": "\"We used these data for repeated cross-validation. In our cross-validation procedure, we randomly split these 2,258 observations into ten approximately equal parts, and iteratively used nine as training data and the remaining one as validation data until all parts had functioned as validation data once. We repeated this procedure ten times to decrease the influence of chance.\" (Section \"RQ1\"; p.4)",
+                "answer": "Repeated k fold CV"
+            }
+        ]
     },
     {
         "query_id": "3.4",
         "label": "nested",
         "description": "Nested data structure",
         "description_detailed": "",
-        "instructions": "The aspect of nested data is only relevant for the sample used for model training. Any information on nested data structures for validation samples can be ignored when coding this variable.\nIf the authors do not mention or discuss a nested data structure but the sample description and data collection context suggest one, this should be noted accordingly. ",
+        "instructions": "The aspect of nested data is only relevant for the sample used for model training. Any information on nested data structures for validation samples can be ignored when coding this variable.\nIf the authors do not mention or discuss a nested data structure but the sample description and data collection context suggest one, this should be noted accordingly.",
         "choices": {
             "0": {
                 "value": "No nested structure",
@@ -871,7 +1181,14 @@
                 "description": "Each row represents a timepoint nested within an observation in long format / row-per-timepoint (e.g., weekly stress ratings and mood scores for each participant over 10 weeks), with time-varying predictors and outcomes."
             }
         },
-        "type": "single_choice"
+        "type": "single_choice",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "\"The dataset was then divided into three for training, validation and \ntesting, as detailed in the study protocol. Division was determined by \nservice locations within NHS Trusts and undertaken to create an accu\nrate representation of the model’s ability to generalise to services \nbeyond those whose data were used to develop and validate the models \n(Chekroud and Koutsouleris, 2018). The variables collected and delivery \nof interventions within these service locations are standardised across \nEngland (National Collaborating Centre for Mental Health, 2023). The \ntraining dataset services were three from Trust 1 and three from Trust 2 \n(n=8,064; 50.8 %). The validation dataset services were two from Trust \n3 (n=5,021; 31.7 %). The holdout dataset service was a single one from \nTrust 4 (n=2,774; 17.5 %).\" (Section 2.3; p.2)",
+                "answer": "1"
+            }
+        ]
     },
     {
         "query_id": "3.4.1",
@@ -886,26 +1203,30 @@
             },
             "B": {
                 "value": "Grouped / nested CV",
-                "description": ""
+                "description": "Cross-validation methods that respect group structure (e.g., LGOCV), such that all observations from a group (e.g., patients of the same therapist) are confined to either the training or test fold."
             },
             "C": {
                 "value": "Time series CV",
-                "description": "Cross-validation methods that respect group structure (e.g., LGOCV), such that all observations from a group (e.g., patients of the same therapist) are confined to either the training or test fold."
+                "description": "For example, rolling / expanding window CV, blocked CV."
             },
             "D": {
                 "value": "Mixed-effects ML algorithms",
-                "description": "For example, rolling / expanding window CV, blocked CV."
-            },
-            "E": {
-                "value": "= Other",
                 "description": "For example, applying regularized linear mixed-effect models (e.g., lmmlasso)."
             },
-            "F": {
-                "value": "-99 = Not applicable (if 0 in 3.4)",
+            "Y": {
+                "value": "Other",
+                "description": ""
+            },
+            "Z": {
+                "value": "Not reported",
                 "description": ""
             }
         },
-        "type": "multiple_choice"
+        "type": "multiple_choice",
+        "prefilled": [
+            "Other:"
+        ],
+        "examples": []
     },
     {
         "query_id": "3.5",
@@ -924,19 +1245,21 @@
             },
             "C": {
                 "value": "Adapting decision rules",
-                "description": ""
-            },
-            "D": {
-                "value": "-99 = Not applicable (if 4 in 1.8)",
                 "description": "For example, training for sensitivity or changing the .50 cutoff."
+            },
+            "Z": {
+                "value": "Not reported",
+                "description": ""
             }
         },
-        "type": "multiple_choice"
+        "type": "multiple_choice",
+        "prefilled": [],
+        "examples": []
     },
     {
         "query_id": "3.5.1",
         "label": "sampling",
-        "description": "Sampling method applied ",
+        "description": "Sampling method applied",
         "description_detailed": "",
         "instructions": "",
         "choices": {
@@ -952,60 +1275,86 @@
                 "value": "SMOTE",
                 "description": ""
             },
-            "D": {
-                "value": "= Other",
-                "description": ""
-            },
-            "E": {
-                "value": "-99 = Not applicable (if -99 in 3.5)",
+            "Y": {
+                "value": "Other",
                 "description": ""
             }
         },
-        "type": "multiple_choice"
+        "type": "multiple_choice",
+        "prefilled": [
+            "Other:"
+        ],
+        "examples": []
     },
     {
         "query_id": "4.1",
         "label": "compare",
         "description": "Model comparisons",
-        "description_detailed": "",
+        "description_detailed": "The focus is on model comparisons in terms of predictive performance, excluding comparisons based on variable importance or feature selection.",
         "instructions": "",
         "choices": {
             "A": {
                 "value": "Between a naïve guessing model and any ML model",
-                "description": "The focus is on model comparisons in terms of predictive performance, excluding comparisons based on variable importance or feature selection."
+                "description": "A ML model is compared to a naïve baseline that makes predictions without learning from data (e.g., always predicting the majority class, random guessing, or decision rules based on theory or a very small subset of variables)."
             },
             "B": {
-                "value": "Between an unregularized linear / logistic regression model and simple regularized linear / logistic or complex ML models\n Between different simple regularized linear / logistic ML models",
+                "value": "Between an unregularized linear / logistic regression model and simple regularized linear / logistic or complex ML models",
                 "description": ""
             },
             "C": {
-                "value": "Between a simple regularized linear / logistic and a complex ML model",
-                "description": "A ML model is compared to a naïve baseline that makes predictions without learning from data (e.g., always predicting the majority class, random guessing, or decision rules based on theory or a very small subset of variables)."
+                "value": "Between different simple regularized linear / logistic ML models",
+                "description": "Ridge, LASSO, and elastic net regression are considered simple regularized linear / logistic ML models."
             },
             "D": {
+                "value": "Between a simple regularized linear / logistic and a complex ML model",
+                "description": "Any other algorithm listed in 3.1 is considered a complex model."
+            },
+            "E": {
                 "value": "Between different complex ML models",
-                "description": "Ridge, LASSO, and elastic net regression are considered simple regularized linear / logistic ML models."
+                "description": ""
             }
         },
-        "type": "multiple_choice"
+        "type": "multiple_choice",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "\"Thirteen machine learning algorithms were selected to provide a \nbroad comparison (of a variety of modelling techniques) and to be \nconsistent with research that has used similar methods (Webb et al., \n2020). To provide a benchmark against the machine learning models, an \nordinary least squares regression (OLS) model with all the available \nsame predictors (in the same manner as the machine learning models) \nwas included. The multiple OLS acts as a comparator with penalised \nregression models by fitting the data without any regularisation, making \nit prone to overfitting compared to models with regularisation. Addi\ntionally, two other comparison models akin to those used in similar \nresearch were fitted (Buckman et al., 2021a). The first was an OLS \nregression model with only the pre-treatment GAD-7 score included, as \ninitial symptom severity is one of the most important factors considered \nby clinicians in predicting treatment outcomes (and allocating treat\nment) for their patients (Amati et al., 2018; Buckman et al., 2021b; \nO’Driscoll et al., 2021). Separately, a null model was created using the \nmean post-treatment GAD-7 score in the training and validation dataset \nas the prediction for all test dataset cases. Five models based upon elastic \nnet regularised regression (ENR; Friedman et al., 2010) were included \n(alpha parameters were 0.0; full ridge, 0.25, 0.50, 0.75 and 1.0; full \nlasso), using the ridge and least absolute shrinkage and selection oper\nator (lasso) penalisations to reduce overfitting. Two spline regression \nmodels were used: adaptive splines (Friedman, 1991) and adaptive \npolynomial splines (Stone et al., 1997). In addition, two \ndecision-tree-based algorithms were used: random forest (Breiman, \n2001) and Bayesian Additive Regression Trees (BART; Chipman et al., \n2010). Lastly, three support vector machines (SVM) were included with \nlinear, polynomial and radial kernels (Dimitriadou et al., 2009). Full \ndetails of the models are presented in Supplementary Material 1 \n(Table 3). \nSuperLearner (van der Laan et al., 2007), the chosen ensemble \nmodelling tool, uses cross-validation to estimate the predictive perfor\nmance of individual machine learning algorithms, and ultimately de\ntermines the most accurate model within the ensemble.\" (Section 2.4; p.2)",
+                "answer": "Between a naïve guessing model and any ML model, Between an unregularized linear / logistic regression model and simple regularized linear / logistic or complex ML models, Between different simple regularized linear / logistic ML models , Between a simple regularized linear / logistic and a complex ML model, Between different complex ML models"
+            },
+            {
+                "context": "\"Following that, we use a large database (n = 3385) of trait variables and leadership\n role occupancy to compare the predictive performance of traditional\n (parametric) linear models (LM) versus the non-parametric technique\n of randomforest(RF)analysis.\" (Introduction; p. 2)",
+                "answer": "Between an unregularized linear / logistic regression model and simple regularized linear / logistic or complex ML models"
+            }
+        ]
     },
     {
         "query_id": "4.1.1",
         "label": "bestmodel ",
-        "description": "Best performing model in context of comparison ",
+        "description": "Best performing model in context of comparison",
         "description_detailed": "",
         "instructions": "If the authors identify more than one algorithm as best performing, code 1 (no algorithm outperforms others).\nIf the authors identify an algorithm as best performing despite the reported performances of all other algorithms indicating otherwise, note this in the variable 99 comment.",
         "choices": {
             "1": {
                 "value": "No algorithm outperforms others",
-                "description": "Authors do not identify any algorithm as best performing. "
+                "description": "Authors do not identify any algorithm as best performing."
             },
             "Character: \n\n-99": {
                 "value": "Not applicable (if 0 in 4.1)",
                 "description": "Specify the name of the algorithm the authors identify as best performing."
             }
         },
-        "type": "single_choice"
+        "type": "open_ended",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "\"The mean of the post-treatment GAD-7 scores in the validation \nsample was 7.4 (±5.2) and 37.1 % individuals were in caseness at the \nend of treatment (their GAD-7 score was ≥8). Through training the \nensemble using 10-fold internal cross-validation within the training \nsample (repeated ten times), the BART algorithm produced the lowest \nprediction error when generalising to the validation dataset (MSE [95 % \nCI]=16.72 [16.12; 17.32]; MAE=3.16; R2  =0.38; see Table 2). The BART \nmodel also had the combined lowest prediction error in terms of the \nsecondary outcome metric (MAE) along with the adaptive polynomial \nspline model. Both models’ MAE indicated that on average the predicted \npost-treatment GAD-7 scores differed from the true values by 3.16 \npoints. The linear regression model (with all predictors) had the greatest \nR but was more error prone to error, with higher MSE and MAE values. \nAs MSE was the primary evaluation metric, the BART model was \ndetermined to be the winning model within the ensemble.\" (Section 3.1; p.3)",
+                "answer": "BART"
+            },
+            {
+                "context": "\"Both the LM and the RF\n models were better than this baseline, which is indicative that there is\n value in trait information for predicting leadership role occupancy.\n That said, we also found that RF outperformed LM. Of the top 238\n observations predicted to be occupying a leadership role by the RF, 83\n (34.9%) actually were in a leadership position. For the LM, 66 (27%) of\n the 238 individuals with leadership roles were identified.\" (Section \"Test set\"; p.5)",
+                "answer": "Random Forest"
+            }
+        ]
     },
     {
         "query_id": "4.2",
@@ -1016,36 +1365,51 @@
         "choices": {
             "A": {
                 "value": "No validation",
-                "description": ""
+                "description": "No validation method is used to assess the model’s performance. Model performance is evaluated only on the training data."
             },
             "B": {
                 "value": "Internal, no split",
-                "description": ""
+                "description": "Model performance is assessed using cross-validation within the training data. No independent holdout set is used."
             },
             "C": {
                 "value": "Internal, single split",
-                "description": "No validation method is used to assess the model’s performance. Model performance is evaluated only on the training data."
+                "description": "The dataset is split once into a training and test set (e.g., 80/20). The model is trained on one portion and tested on the remaining portion."
             },
             "D": {
                 "value": "Internal, repeated splits (i.e., some form of nested resampling)",
-                "description": "Model performance is assessed using cross-validation within the training data. No independent holdout set is used."
+                "description": "Model performance is assessed using multiple train-test splits of the same dataset, meaning the initial data split is repeated multiple times (>1 iteration in the outer validation loop)."
             },
             "E": {
                 "value": "External, independent unseen holdout data, same population",
-                "description": "The dataset is split once into a training and test set (e.g., 80/20). The model is trained on one portion and tested on the remaining portion."
+                "description": "Model is validated on a completely independent dataset, but from the same population as the training data (e.g., model is trained on US-participants of study 1 and validated on US-participants of study 2)."
             },
             "F": {
                 "value": "External, independent unseen holdout data, different population",
-                "description": "Model performance is assessed using multiple train-test splits of the same dataset, meaning the initial data split is repeated multiple times (>1 iteration in the outer validation loop)."
+                "description": "Model is validated on a completely independent dataset from a different population (e.g., trained on U.S. participants and validated on U.K. participants)."
+            },
+            "Z": {
+                "value": "Not reported",
+                "description": ""
             }
         },
-        "type": "multiple_choice"
+        "type": "multiple_choice",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "\"Subsequently, only the model with tuned hyperparameters was \ntrained on the combined training and validation dataset, then finally \ntested on the test dataset. The analysis pipeline is shown in Fig. 1. \" (Section 2.4; p.3)",
+                "answer": "Internal; single split"
+            },
+            {
+                "context": "\"Applying these two steps (i.e., cross-validation and a test set), we first removed a random 1/3 of our data as a test set. This test data contained 1,127 observations, of which 129 (11.4%) occupied a leadership role. We used the remaining 2/3 of the observations as model development data. This set of 2,258 observations contained 238 (10.5%) individuals in a leadership position. We used these data for repeated cross-validation. In our cross-validation procedure, we randomly split these 2,258 observations into ten approximately equal parts, and iteratively used nine as training data and the remaining one as validation data until all parts had functioned as validation data once. We repeated this procedure ten times to decrease the influence of chance. Finally, the performance of the RF and LM was evaluated on the test set.\" (Section \"RQ1\" ; p. 4)",
+                "answer": "Internal; single split"
+            }
+        ]
     },
     {
         "query_id": "4.2.1",
         "label": "ratio",
         "description": "Train-test split ratio",
-        "description_detailed": "",
+        "description_detailed": "The train set percentage from the internal data split is relevant for this variable.",
         "instructions": "",
         "choices": {
             "0": {
@@ -1057,12 +1421,23 @@
                 "description": ""
             }
         },
-        "type": "numeric"
+        "type": "numeric",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "\"Subsequently, only the model with tuned hyperparameters was \ntrained on the combined training and validation dataset, then finally \ntested on the test dataset. The analysis pipeline is shown in Fig. 1. \" (Section 2.4; p.3)",
+                "answer": "82.63"
+            },
+            {
+                "context": "\"Applying these two steps (i.e., cross-validation and a test set), we first removed a random 1/3 of our data as a test set. This test data contained 1,127 observations, of which 129 (11.4%) occupied a leadership role. We used the remaining 2/3 of the observations as model development data. This set of 2,258 observations contained 238 (10.5%) individuals in a leadership position. We used these data for repeated cross-validation. In our cross-validation procedure, we randomly split these 2,258 observations into ten approximately equal parts, and iteratively used nine as training data and the remaining one as validation data until all parts had functioned as validation data once. We repeated this procedure ten times to decrease the influence of chance. Finally, the performance of the RF and LM was evaluated on the test set.\" (Section \"RQ1\" ; p. 4)",
+                "answer": "66.66"
+            }
+        ]
     },
     {
         "query_id": "4.3",
         "label": "perfmetric",
-        "description": "Performance measures reported for test set ",
+        "description": "Performance measures reported for test set",
         "description_detailed": "",
         "instructions": "",
         "choices": {
@@ -1167,7 +1542,18 @@
                 "description": ""
             }
         },
-        "type": "multiple_choice"
+        "type": "multiple_choice",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "Table 2, p. 5",
+                "answer": "MSE, R², MAE"
+            },
+            {
+                "context": "\"That said, we also found that RF outperformed LM. Of the top 238 observations predicted to be occupying a leadership role by the RF, 83 (34.9%) actually were in a leadership position. For the LM, 66 (27%) of the 238 individuals with leadership roles were identified. These percentages represent the sensitivity of the models — the proportion of individuals actually occupying a leadership role that are correctly identified as such (also called the true positive rate, the recall, or the probability of detection).\" (Section \"Cross-validation set\"; p.5)",
+                "answer": "SEN"
+            }
+        ]
     },
     {
         "query_id": "4.4",
@@ -1185,13 +1571,22 @@
                 "description": ""
             }
         },
-        "type": "single_choice"
+        "type": "single_choice",
+        "prefilled": [
+            "Other:"
+        ],
+        "examples": [
+            {
+                "context": "\"We used these data for repeated cross-validation. In our cross-validation procedure, we randomly split these 2,258 observations into ten approximately equal parts, and iteratively used nine as training data and the remaining one as validation data until all parts had functioned as validation data once. We repeated this procedure ten times to decrease the influence of chance.\" (Section \"RQ1\"; p.4)",
+                "answer": "1"
+            }
+        ]
     },
     {
-        "query_id": "4.5",
+        "query_id": "4.5.1",
         "label": "highestperf",
-        "description": "Highest performance achieved in the test sample ",
-        "description_detailed": "",
+        "description": "AUC",
+        "description_detailed": "Note the highest performance metrics achieved in the validation sample (either internal or external) for AUC, ACC, and BACC in classification tasks, and for R² and r in regression tasks. Briefly specify which R² version the authors report or write \"not specified\".",
         "instructions": "",
         "choices": {
             "-99": {
@@ -1199,7 +1594,143 @@
                 "description": ""
             }
         },
-        "type": "numeric"
+        "type": "numeric",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "\"The available hyperparameters of the winning model (BART) were \ntuned using ‘caret’ (Max, 2008) and were determined to be: number of \ntrees=50, k=2, α =0.95, β=0.5 and ν=3; see Supplementary Material 1 \nfor further details. Consequently, the obtained performance metrics for \nthe tuned model within the validation dataset were: MSE=16.59 [95 % \nCI=15.92; 17.27]; MAE=3.26; R2=0.40.\" (Section 3.2; p.3)",
+                "answer": "nan"
+            },
+            {
+                "context": "\"\"That said, we also found that RF outperformed LM. Of the top 238 observations predicted to be occupying a leadership role by the RF, 83 (34.9%) actually were in a leadership position. For the LM, 66 (27%) of the 238 individuals with leadership roles were identified. These percentages represent the sensitivity of the models — the proportion of individuals actually occupying a leadership role that are correctly identified as such (also called the true positive rate, the recall, or the probability of detection).\" (Section \"Cross-validation set\"; p.5)",
+                "answer": "nan"
+            }
+        ]
+    },
+    {
+        "query_id": "4.5.2",
+        "label": "highestperf",
+        "description": "ACC",
+        "description_detailed": "Note the highest performance metrics achieved in the validation sample (either internal or external) for AUC, ACC, and BACC in classification tasks, and for R² and r in regression tasks. Briefly specify which R² version the authors report or write \"not specified\".",
+        "instructions": "",
+        "choices": {
+            "-99": {
+                "value": "Not applicable (if \"No validation\" or \"Internal, no split\" in 4.2)",
+                "description": ""
+            }
+        },
+        "type": "numeric",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "\"The available hyperparameters of the winning model (BART) were \ntuned using ‘caret’ (Max, 2008) and were determined to be: number of \ntrees=50, k=2, α =0.95, β=0.5 and ν=3; see Supplementary Material 1 \nfor further details. Consequently, the obtained performance metrics for \nthe tuned model within the validation dataset were: MSE=16.59 [95 % \nCI=15.92; 17.27]; MAE=3.26; R2=0.40.\" (Section 3.2; p.3)",
+                "answer": "nan"
+            },
+            {
+                "context": "\"\"That said, we also found that RF outperformed LM. Of the top 238 observations predicted to be occupying a leadership role by the RF, 83 (34.9%) actually were in a leadership position. For the LM, 66 (27%) of the 238 individuals with leadership roles were identified. These percentages represent the sensitivity of the models — the proportion of individuals actually occupying a leadership role that are correctly identified as such (also called the true positive rate, the recall, or the probability of detection).\" (Section \"Cross-validation set\"; p.5)",
+                "answer": "nan"
+            }
+        ]
+    },
+    {
+        "query_id": "4.5.3",
+        "label": "highestperf",
+        "description": "BACC",
+        "description_detailed": "Note the highest performance metrics achieved in the validation sample (either internal or external) for AUC, ACC, and BACC in classification tasks, and for R² and r in regression tasks. Briefly specify which R² version the authors report or write \"not specified\".",
+        "instructions": "",
+        "choices": {
+            "-99": {
+                "value": "Not applicable (if \"No validation\" or \"Internal, no split\" in 4.2)",
+                "description": ""
+            }
+        },
+        "type": "numeric",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "\"The available hyperparameters of the winning model (BART) were \ntuned using ‘caret’ (Max, 2008) and were determined to be: number of \ntrees=50, k=2, α =0.95, β=0.5 and ν=3; see Supplementary Material 1 \nfor further details. Consequently, the obtained performance metrics for \nthe tuned model within the validation dataset were: MSE=16.59 [95 % \nCI=15.92; 17.27]; MAE=3.26; R2=0.40.\" (Section 3.2; p.3)",
+                "answer": "nan"
+            },
+            {
+                "context": "\"\"That said, we also found that RF outperformed LM. Of the top 238 observations predicted to be occupying a leadership role by the RF, 83 (34.9%) actually were in a leadership position. For the LM, 66 (27%) of the 238 individuals with leadership roles were identified. These percentages represent the sensitivity of the models — the proportion of individuals actually occupying a leadership role that are correctly identified as such (also called the true positive rate, the recall, or the probability of detection).\" (Section \"Cross-validation set\"; p.5)",
+                "answer": "nan"
+            }
+        ]
+    },
+    {
+        "query_id": "4.5.4",
+        "label": "highestperf",
+        "description": "R²",
+        "description_detailed": "Note the highest performance metrics achieved in the validation sample (either internal or external) for AUC, ACC, and BACC in classification tasks, and for R² and r in regression tasks. Briefly specify which R² version the authors report or write \"not specified\".",
+        "instructions": "",
+        "choices": {
+            "-99": {
+                "value": "Not applicable (if \"No validation\" or \"Internal, no split\" in 4.2)",
+                "description": ""
+            }
+        },
+        "type": "numeric",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "\"The available hyperparameters of the winning model (BART) were \ntuned using ‘caret’ (Max, 2008) and were determined to be: number of \ntrees=50, k=2, α =0.95, β=0.5 and ν=3; see Supplementary Material 1 \nfor further details. Consequently, the obtained performance metrics for \nthe tuned model within the validation dataset were: MSE=16.59 [95 % \nCI=15.92; 17.27]; MAE=3.26; R2=0.40.\" (Section 3.2; p.3)",
+                "answer": "nan"
+            },
+            {
+                "context": "\"\"That said, we also found that RF outperformed LM. Of the top 238 observations predicted to be occupying a leadership role by the RF, 83 (34.9%) actually were in a leadership position. For the LM, 66 (27%) of the 238 individuals with leadership roles were identified. These percentages represent the sensitivity of the models — the proportion of individuals actually occupying a leadership role that are correctly identified as such (also called the true positive rate, the recall, or the probability of detection).\" (Section \"Cross-validation set\"; p.5)",
+                "answer": "nan"
+            }
+        ]
+    },
+    {
+        "query_id": "4.5.5",
+        "label": "highestperf",
+        "description": "r",
+        "description_detailed": "Note the highest performance metrics achieved in the validation sample (either internal or external) for AUC, ACC, and BACC in classification tasks, and for R² and r in regression tasks. Briefly specify which R² version the authors report or write \"not specified\".",
+        "instructions": "",
+        "choices": {
+            "-99": {
+                "value": "Not applicable (if \"No validation\" or \"Internal, no split\" in 4.2)",
+                "description": ""
+            }
+        },
+        "type": "numeric",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "\"The available hyperparameters of the winning model (BART) were \ntuned using ‘caret’ (Max, 2008) and were determined to be: number of \ntrees=50, k=2, α =0.95, β=0.5 and ν=3; see Supplementary Material 1 \nfor further details. Consequently, the obtained performance metrics for \nthe tuned model within the validation dataset were: MSE=16.59 [95 % \nCI=15.92; 17.27]; MAE=3.26; R2=0.40.\" (Section 3.2; p.3)",
+                "answer": "nan"
+            },
+            {
+                "context": "\"\"That said, we also found that RF outperformed LM. Of the top 238 observations predicted to be occupying a leadership role by the RF, 83 (34.9%) actually were in a leadership position. For the LM, 66 (27%) of the 238 individuals with leadership roles were identified. These percentages represent the sensitivity of the models — the proportion of individuals actually occupying a leadership role that are correctly identified as such (also called the true positive rate, the recall, or the probability of detection).\" (Section \"Cross-validation set\"; p.5)",
+                "answer": "nan"
+            }
+        ]
+    },
+    {
+        "query_id": "4.5.6",
+        "label": "highestperf",
+        "description": "Specify R² verison",
+        "description_detailed": "Note the highest performance metrics achieved in the validation sample (either internal or external) for AUC, ACC, and BACC in classification tasks, and for R² and r in regression tasks. Briefly specify which R² version the authors report or write \"not specified\".",
+        "instructions": "",
+        "choices": {
+            "-99": {
+                "value": "Not applicable (if \"No validation\" or \"Internal, no split\" in 4.2)",
+                "description": ""
+            }
+        },
+        "type": "open_ended",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "\"The available hyperparameters of the winning model (BART) were \ntuned using ‘caret’ (Max, 2008) and were determined to be: number of \ntrees=50, k=2, α =0.95, β=0.5 and ν=3; see Supplementary Material 1 \nfor further details. Consequently, the obtained performance metrics for \nthe tuned model within the validation dataset were: MSE=16.59 [95 % \nCI=15.92; 17.27]; MAE=3.26; R2=0.40.\" (Section 3.2; p.3)",
+                "answer": "nan"
+            },
+            {
+                "context": "\"\"That said, we also found that RF outperformed LM. Of the top 238 observations predicted to be occupying a leadership role by the RF, 83 (34.9%) actually were in a leadership position. For the LM, 66 (27%) of the 238 individuals with leadership roles were identified. These percentages represent the sensitivity of the models — the proportion of individuals actually occupying a leadership role that are correctly identified as such (also called the true positive rate, the recall, or the probability of detection).\" (Section \"Cross-validation set\"; p.5)",
+                "answer": "nan"
+            }
+        ]
     },
     {
         "query_id": "4.6",
@@ -1217,12 +1748,19 @@
                 "description": ""
             }
         },
-        "type": "single_choice"
+        "type": "single_choice",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "Table 2, p. 5",
+                "answer": "2"
+            }
+        ]
     },
     {
         "query_id": "4.7",
         "label": "sig",
-        "description": "Significance test(s) ",
+        "description": "Significance test(s)",
         "description_detailed": "",
         "instructions": "",
         "choices": {
@@ -1239,7 +1777,18 @@
                 "description": ""
             }
         },
-        "type": "multiple_choice"
+        "type": "multiple_choice",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "Table 1, p.4",
+                "answer": "For other reported results:"
+            },
+            {
+                "context": "\"In Table 2, we provide the coefficients of the LM. The Breusch–Pagan test indicated the existence of heteroskedasticity. Hence, we used the Huber–White sandwich estimator to compute the standard errors. As reported in this table, the LM approach suggests that NFC (β = 0.528, p < .001), extraversion (β = 0.312, p < .001), and agreeableness (β = −0.368, p < .01) are the most important traits for leadership role occupancy, while conscientiousness (β = 0.145, p = .058) and neuroticism (β = −0.153, p = .052) are marginally significant.\" (Section \"RQ2a\"; p. 6)",
+                "answer": "For variable importance measures"
+            }
+        ]
     },
     {
         "query_id": "5.1",
@@ -1294,14 +1843,25 @@
             },
             "L": {
                 "value": "Unspecified variable importance measures",
-                "description": ""
+                "description": "Instead of explicitly naming or describing the reported measures, the authors refer to them in general terms (e.g., simply stating \"variable importance\" without specifying the metric or method used)."
             },
             "Y": {
                 "value": "Other",
                 "description": ""
             }
         },
-        "type": "multiple_choice"
+        "type": "multiple_choice",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "\"Using the model-specific explainability measures available, the in\nclusion proportion for each individual feature used as a splitting rule \nwithin the BART tree was calculated (for further details: see Supple\nmentary Material 1 Table 8).\" (Section 3.3; p.5)",
+                "answer": "Other:"
+            },
+            {
+                "context": "\"In order to explore the importance of each trait in predicting leadership role occupancy on the test data, we examined the increment in the prediction error after perturbing the predictors (Fisher, Rudin, & Dominici, 2019). We perturbed single predictor variables by randomly changing their values 200 times and keeping all other values constant to calculate the “loss drop” in the test set. The loss drop refers to the increase in the quadratic mean of the difference between the predicted likelihood (ranging from 0% to 100%) and the actual leadership role occupancy (0% or 100%).Note that 11.4% of the individuals in the test set were in a leadership role, which means that if a model were to predict 0% (i.e., no leadership role occupancy) for each individual, the root mean squared error (RMSE) would have been 11.4%. Thus, the RMSE will increase when the perturbations result in a decrease (i.e., drop) in predictive performance.\" (Section \"RQ2a\"; p.6)\n\n\"To further explore the interaction between BFI traits and NFC, we present the RF predictions on the test set against BFI and NFC scores in Fig. 5. In this figure, each person is denoted as either a blue circle or a gray triangle. Blue circles are used when the RF predicts leadership role occupancy (N = 129) and as gray triangles when the RF predicts no leadership role occupancy. As illustrated in Fig. 5, across all interactions, the RF frequently predicted leadership role occupancy for individuals scoring higher (at least 4) on NFC. Further, this higher NFC often resulted in predicted leadership role occupancy for individuals higher on openness (>3.5), conscientiousness (>3.0), and extraversion (>3.0); lower on neuroticism (>3.0); and not too high on agreeableness (<4.5). Note that these findings are largely in line with the accumulated local effects plotted in Fig. 3, in which we visualized the effects of each trait separately.\" (Section RQ2c\"; p.8)\n\n\"The importance of interactions between traits in predicting leadership role occupancy is visualized in Fig. 4a. This figure shows that NFC has the strongest interaction effect (H-statistic), meaning that interactions between NFC and the other traits contribute the most to leadership role occupancy predictions. To better understand the interactions between NFC and the other traits, we computed the H-statistic for each pair with NFC. As illustrated in Fig. 4b, the interaction between openness and NFC contributed the most in predicting leadership role occupancy, which we explore next.\" (Section \"RQ2c\"; p. 8)",
+                "answer": "H-Statistic, ALE, Permutation Importance"
+            }
+        ]
     },
     {
         "query_id": "5.2",
@@ -1355,12 +1915,25 @@
                 "description": ""
             }
         },
-        "type": "multiple_choice"
+        "type": "multiple_choice",
+        "prefilled": [
+            "Other:"
+        ],
+        "examples": [
+            {
+                "context": "\"However, data came from \nservices in similar geographical areas, so replication in other primary or \ncommunity care mental health services that treat GAD, both within the \nUK and internationally (Cromarty et al., 2016; Knapstad et al., 2018) \nwould provide a more thorough test of generalisability.\" (Section 4.1; p.5)\n\n\"There was a large amount of unexplained variance for individual \nmodels, although this could be partly attributed to measurement error \n(Bone et al., 2021). Models might have been more accurate with a \nbroader range of predictors, such as those collected through passive \nmeasurement of disorder-specific behaviours\". (Section 4.1; p,6)\n\n\" The hyperparameters were only tuned for \nthe winning model from the first test of generalisation (i.e. the BART \nmodel), so an alternative potentially more accurate model could have \nbeen obtained if all models were tuned prior.\" (Section 4.1; p.6)",
+                "answer": "Lack of representativeness of the data, Mono-method data types, Other:"
+            },
+            {
+                "context": "\"First, though the amount of data we used here was large relative to typical datasets in leadership research, it was by no means “big data,” the space where machine learning is at its best (i.e., volume). Second, in efforts to advance the leader-trait paradigm, we focused on traits. However, several other features such as height and intelligence (Ilies et al., 2004) are important for leadership as well (i.e., variety). Third, we studied the leader trait cross-sectionally and did not focus on changes in the data, such as changes in leadership role occupancy — which would especially be interesting to monitor as changes in contextual factors such as market competition and disruption alter who is preferred as a leader (velocity). Fourth, though our sample is from a trusted source, using validated measures, there is the perennial concern with data quality (i.e., veracity). Scholars will need to remain vigilant when it comes to quality as the hunt for compelling datasets intensifies.\" (Section \"Discussion\"; p. 11)",
+                "answer": "Sample size, Mono-method data types, Other:"
+            }
+        ]
     },
     {
         "query_id": "5.3",
         "label": "interpret",
-        "description": "Interpretation of model comparison ",
+        "description": "Interpretation of model comparison",
         "description_detailed": "",
         "instructions": "",
         "choices": {
@@ -1377,7 +1950,20 @@
                 "description": ""
             }
         },
-        "type": "single_choice"
+        "type": "single_choice",
+        "prefilled": [
+            "Other:"
+        ],
+        "examples": [
+            {
+                "context": "\"The mean of the post-treatment GAD-7 scores in the validation \nsample was 7.4 (±5.2) and 37.1 % individuals were in caseness at the \nend of treatment (their GAD-7 score was ≥8). Through training the \nensemble using 10-fold internal cross-validation within the training \nsample (repeated ten times), the BART algorithm produced the lowest \nprediction error when generalising to the validation dataset (MSE [95 % \nCI]=16.72 [16.12; 17.32]; MAE=3.16; R2  =0.38; see Table 2). The BART \nmodel also had the combined lowest prediction error in terms of the \nsecondary outcome metric (MAE) along with the adaptive polynomial \nspline model. Both models’ MAE indicated that on average the predicted \npost-treatment GAD-7 scores differed from the true values by 3.16 \npoints. The linear regression model (with all predictors) had the greatest \nR but was more error prone to error, with higher MSE and MAE values. \nAs MSE was the primary evaluation metric, the BART model was \ndetermined to be the winning model within the ensemble.\" (Section 3.1; p.3)",
+                "answer": "1"
+            },
+            {
+                "context": "\"Answering our first research question, focusing on the degree to which non-linear effects and interactions help explain the trait‑leadership role occupancy relationship, we compared the predictive performance of a linear model (LM) with the predictive performance of a random forest (RF) model. While comparing the two models, we offered more flexibility to the RF to fit complexity beyond linear additive effects. Our results suggested that the RF outperformed the LM in the cross-validation step and indicated that the RF had some advantage in predicting leadership role occupancy in the test set. These results suggest that modeling complexity beyond linear and additive effects of traits has some added value in predicting leadership role occupancy (RQ 1), supporting the interactionist accounts of the leader-trait paradigm.\" (Section \"Discussion; p.9)",
+                "answer": "2"
+            }
+        ]
     },
     {
         "query_id": "5.4",
@@ -1399,6 +1985,13 @@
                 "description": "Claims are restricted to the analyzed data and/or generalization beyond it is explicitly questioned (e.g., results based on one region are stated not to generalize elsewhere)."
             }
         },
-        "type": "single_choice"
+        "type": "single_choice",
+        "prefilled": [],
+        "examples": [
+            {
+                "context": "\"However, data came from \nservices in similar geographical areas, so replication in other primary or \ncommunity care mental health services that treat GAD, both within the \nUK and internationally (Cromarty et al., 2016; Knapstad et al., 2018) \nwould provide a more thorough test of generalisability.\" (Section 4.1; p.5)",
+                "answer": "2"
+            }
+        ]
     }
 ]

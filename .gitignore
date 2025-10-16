@@ -6,3 +6,5 @@ trial_logs/
 .DS_Store
 pipeline_env/
 __pycache__/
+*.zip
+all_articles/

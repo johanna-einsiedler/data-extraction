@@ -1,0 +1,1084 @@
+{
+  "1.8": {
+    "example_1": {
+      "excerpt": "The outcome variable was whether participants experienced relief from symptoms (yes/no).",
+      "llm_output": "A",
+      "true_answer": "1",
+      "eval": 0
+    },
+    "example_2": {
+      "excerpt": "The study categorized outcomes into three groups: no improvement, partial improvement, and full recovery.",
+      "llm_output": "3",
+      "true_answer": "3",
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "The dependent variable was the number of days patients took to recover, measured on a continuous scale.",
+      "llm_output": "",
+      "true_answer": "4",
+      "eval": 0
+    },
+    "example_4": {
+      "excerpt": "Participants were grouped based on their favorite color: red, blue, or green.",
+      "llm_output": "2",
+      "true_answer": "2",
+      "eval": 1
+    }
+  },
+  "1.2.1": {
+    "example_1": {
+      "excerpt": "Our study focused on predicting the likelihood of disease onset in a minority group, where only 25 cases were documented over the five-year observation period.",
+      "llm_output": "25",
+      "true_answer": "25",
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "The minority group in our dataset comprised approximately 1,200 cases, which were used to train the predictive model.",
+      "llm_output": "1,250",
+      "true_answer": "1,200",
+      "eval": 0
+    },
+    "example_3": {
+      "excerpt": "Due to privacy concerns, the exact number of minority cases in the study was not disclosed.",
+      "llm_output": "Z",
+      "true_answer": "0",
+      "eval": 1
+    }
+  },
+  "3.2": {
+    "example_1": {
+      "excerpt": "Our model used specific hyperparameters in Python, such as learning rate 0.01 and batch size 32.",
+      "llm_output": "B",
+      "true_answer": "Fixed set of hyperparameter values",
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "We employed both Python with fixed hyperparameters and R with specific values for tuning.",
+      "llm_output": "D, B",
+      "true_answer": "Specific set of hyperparameters values (details in a comment) , Fixed set of hyperparameter values",
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "We trained our random forest model using cross validation.",
+      "llm_output": "Z",
+      "true_answer": "0",
+      "eval": 1
+    }
+  },
+  "3.2.1": {
+    "example_1": {
+      "excerpt": "We utilized Python's scikit-learn library, employing RandomizedSearchCV for hyperparameter tuning, which efficiently explores the parameter space through random sampling.",
+      "llm_output": "B",
+      "true_answer": [
+        "Random Search"
+      ],
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "The model was trained using a combination of grid search over learning rates and random search for other parameters, implemented in R with the caret package.",
+      "llm_output": "B,C",
+      "true_answer": [
+        "Grid search",
+        "Random search"
+
+      ],
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "Hyperparameters were optimized using a custom Bayesian optimization approach, implemented in Julia, which adapts based on previous trials.",
+      "llm_output": "D",
+      "true_answer": [
+        "Model-based optimization"
+      ],
+      "eval": 1
+    },
+    "example_4": {
+      "excerpt": "For hyperparameter tuning, we applied a fixed set of predefined values without any automated search, focusing solely on manual selection based on domain knowledge.",
+      "llm_output": "E",
+      "true_answer": [
+        "Optimization heuristics"
+      ],
+      "eval": 1
+    },
+    "example_5": {
+      "excerpt": "We implemented a custom genetic algorithm for hyperparameter optimization, combining elements of evolutionary strategies with gradient-based methods.",
+      "llm_output": "E",
+      "true_answer": [
+        "Genetic algorithm"
+      ],
+      "other_value": "Genetic algorithm",
+      "eval": 0
+    },
+    "example_6": {
+      "excerpt": "We did hyperparameter tuning on all our models.",
+      "llm_output": "Z",
+      "true_answer": [
+        "0"
+      ],
+      "eval": 1
+    }
+  },
+  "3.4": {
+    "example_1": {
+      "excerpt": "The data consists of individual responses without any grouping, collected at a single time point from each participant.",
+      "llm_output": "0",
+      "true_answer": "0",
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "Each school's performance was analyzed by averaging the test scores of its students, with multiple students per school.",
+      "llm_output": "1",
+      "true_answer": "1",
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "Measurements were taken at baseline, 6 weeks, and 12 weeks, with each participant providing data at all three time points.",
+      "llm_output": "1",
+      "true_answer": "2",
+      "eval": 0
+    }
+  },
+  "3.4.1": {
+    "example_1": {
+      "excerpt": "Each school's performance was analyzed by averaging the test scores of its students, with multiple students per school, resulting in a nested data structure.",
+      "llm_output": "Z",
+      "true_answer": [
+        "0"
+      ],
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "We used specialized mixed effects machine learning models to deal with the nested structure of our data.",
+      "llm_output": "D",
+      "true_answer": ["Mixed-effects ML algorithms"],
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "For accommodating the nested data structure, we employed a recently published, novel approach by Asher et al. (2025).",
+      "llm_output": "Y",
+      "true_answer": "other",
+      "eval": 1,
+      "other_value": "Approach by Asher et al."
+    }
+  },
+  "3.5": {
+    "example_1": {
+      "excerpt": "In our study, we utilized Python's imbalanced-learn library to apply RandomOverSampler and SMOTE techniques on the full dataset before splitting it into training and test sets.",
+      "llm_output": "A",
+      "true_answer": [
+        "Up / down / SMOTE / otherwise sampling on full data"
+      ],
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "The researchers employed R's caret package to perform upsampling of the minority class after splitting the data into training and test sets.",
+      "llm_output": "C",
+      "true_answer": [
+        "Up / down / SMOTE / otherwise sampling after split"
+      ],
+      "eval": 0
+    },
+    "example_3": {
+      "excerpt": "We implemented class imbalance learn as a robustness check with two different appraoches: SMOTE sampling on the full data and stratified sampling after the split.",
+      "llm_output": "A,B",
+      "true_answer": [
+          "Up / down / SMOTE / otherwise sampling on full data",
+        "Up / down / SMOTE / otherwise sampling after split"
+
+      ],
+      "eval": 1
+    }
+  },
+  "3.5.1": {
+    "example_1": {
+      "excerpt":  "We implemented class imbalance learn as a robustness check with two different approaches: SMOTE sampling on the full data and stratified sampling after the split.",
+      "llm_output": "C",
+      "true_answer": [
+        "SMOTE"
+      ],
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt":  "In our study, we utilized Python's imbalanced-learn library to apply RandomOverSampler and SMOTE techniques on the full dataset before splitting it into training and test sets.",
+      "llm_output": "C,A",
+      "true_answer": [
+        "Up",
+        "SMOTE"
+      ],
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "To check robustness we applied our sampling techniques both on the full data set as well as after the train / test split.",
+      "llm_output": "Z",
+      "true_answer": [
+        "0"
+      ],
+      "eval": 1
+    }
+  },
+  "4.1": {
+    "example_1": {
+      "excerpt": "We compared the performance of a naïve guessing model with that of a random forest classifier, to assess the baseline accuracy improvement.",
+      "llm_output": "A",
+      "true_answer": [
+        "Between a naïve guessing model and any ML model"
+      ],
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "The study evaluated an unregularized logistic regression model against a regularized logistic regression model to examine the impact of L1 and L2 regularization on model performance.",
+      "llm_output": "C",
+      "true_answer": [
+        "Between an unregularized linear / logistic regression model and simple regularized linear / logistic or complex ML models"
+      ],
+      "eval": 0
+    },
+    "example_3": {
+      "excerpt": "We implemented a simple regularized logistic regression model in Python and compared it to a complex neural network model as well as a naive baseline, regarding simplicity and prediction accuracy.",
+      "llm_output": "A,B",
+      "true_answer": [
+        "Between a naïve guessing model and any ML model",
+        "Between an unregularized linear / logistic regression model and simple regularized linear / logistic or complex ML models"
+
+      ],
+      "eval": 1
+    },
+    "example_4": {
+      "excerpt": "We are training a random forest model and evaluate its precision and recall.",
+      "llm_output": "Z",
+      "true_answer": [
+        "0"
+      ],
+      "eval": 1
+    }
+
+  },
+  "4.1.1": {
+    "example_1": {
+      "excerpt": "Our experiments revealed that no single algorithm consistently outperformed the others across all evaluation metrics.",
+      "llm_output": "A",
+      "true_answer": "Option 1",
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "Model B achieved superior performance compared to all other models in terms of accuracy and computational efficiency.",
+      "llm_output": "B",
+      "true_answer": "Option 2",
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "While Model C showed promising results, it did not outperform the others in any significant way.",
+      "llm_output": "A",
+      "true_answer": "Option 1",
+      "eval": 1
+    },
+    "example_4": {
+      "excerpt": "The results were inconclusive, with different models performing better under different conditions.",
+      "llm_output": "A",
+      "true_answer": "Option 1",
+      "eval": 1
+    },
+    "example_5": {
+      "excerpt": "Model A was the clear winner, outperforming all others in every metric we tested.",
+      "llm_output": "A",
+      "true_answer": "Option 2",
+      "eval": 0
+    }
+  },
+  "4.2": {
+    "example_1": {
+      "excerpt": "We evaluated our model using k-fold cross-validation to assess its generalization performance.",
+      "llm_output": "D",
+      "true_answer": [
+        "Internal; repeated splits (i.e.; some form of nested resampling)"
+      ],
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "The model was developed in R and tested on an independent holdout dataset from the same population to validate its performance.",
+      "llm_output": "A",
+      "true_answer": [
+        "External; independent unseen holdout data; same population"
+      ],
+      "eval": 0
+    },
+    "example_3": {
+      "excerpt": "We validated the model internally with a single train-test split and also tested it on data from a different population.",
+      "llm_output": "C,F",
+      "true_answer": [
+        "Internal; single split",
+        "External; independent unseen holdout data; different population"
+      ],
+      "eval": 1
+    }
+  },
+  "2.6": {
+    "example_1": {
+      "excerpt": "The training and testing datasets were standardized separately to prevent data leakage.",
+      "llm_output": "2",
+      "true_answer": "2",
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "The entire dataset was normalized before splitting into training and validation sets.",
+      "llm_output": "3",
+      "true_answer": "1",
+      "eval": 0
+    },
+    "example_3": {
+      "excerpt": "We applied various data pre-processing steps.",
+      "llm_output": "Z",
+      "true_answer": "0",
+      "eval": 1
+    }
+  },
+  "4.2.1": {
+    "example_1": {
+      "excerpt": "The dataset was split into a training set of 80% and a test set of 20% to evaluate model performance.",
+      "llm_output": "80",
+      "true_answer": "80",
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "We divided the data into a 90-10 ratio for training and testing purposes.",
+      "llm_output": "85",
+      "true_answer": "90",
+      "eval": 0
+    },
+    "example_3": {
+      "excerpt": "The data was split into training and test sets using a standard ratio.",
+      "llm_output": "Z",
+      "true_answer": "0",
+      "eval": 1
+    }
+  },
+  "4.5": {
+    "example_1": {
+      "excerpt": "The highest performance observed in the experimental group was 3%, indicating a modest improvement over the control group.",
+      "llm_output": "3",
+      "true_answer": "3",
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "Among all tested configurations, the highest performance achieved was 92.5%, demonstrating the effectiveness of the optimized algorithm.",
+      "llm_output": "92",
+      "true_answer": "92.5",
+      "eval": 0
+    },
+    "example_3": {
+      "excerpt": "The system exhibited superior performance in all scenarios, though the exact peak value was not explicitly documented in the trial results.",
+      "llm_output": "0",
+      "true_answer": "0",
+      "eval": 1
+    }
+  },
+  "5.3": {
+    "example_1": {
+      "excerpt": "In this study, we developed a new machine learning model using a dataset of 10,000 samples. The model achieved an accuracy of 92% on the test set.",
+      "llm_output": "1",
+      "true_answer": "1",
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "Our experiments showed that the CNN-based approach outperformed the SVM method, suggesting that deep learning architectures are more effective for image classification tasks.",
+      "llm_output": "2",
+      "true_answer": "2",
+      "eval": 1
+    }
+  },
+  "0.7": {
+    "example_1": {
+      "excerpt": "In this study, we utilized open-source software and all our code is available on GitHub to ensure transparency and reproducibility of our findings.",
+      "llm_output": "2",
+      "true_answer": "2",
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "Our study employed proprietary software developed in-house, which is not available for public use due to intellectual property constraints.",
+      "llm_output": "1",
+      "true_answer": "1",
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "While we leveraged open-source libraries for data analysis, the core codebase remains proprietary and is not shared publicly.",
+      "llm_output": "2",
+      "true_answer": "1",
+      "eval": 0
+    }
+  },
+  "0.7.1": {
+    "example_1": {
+      "excerpt": "All data processing and analysis were conducted using Python, with extensive use of the pandas library for data manipulation and scikit-learn for machine learning tasks.",
+      "llm_output": "B",
+      "true_answer": [
+        "Python"
+      ],
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "The study used Fortran for the machine learning part.",
+      "llm_output": "Y",
+      "true_answer": [
+        "Fortran"
+      ],
+      "eval": 0
+    },
+    "example_3": {
+      "excerpt": "Custom ML algorithms were implemented in Julia, leveraging its high-performance capabilities. The random forest model was implemented in Python.",
+      "llm_output": "C,B",
+      "true_answer": [
+        "Julia",
+        "Python"
+      ],
+      "eval": 1
+    }
+  },
+  "0.7.2": {
+    "example_1": {
+      "excerpt": "We used Python 3.11.",
+      "llm_output": "2",
+      "true_answer": "2",
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "The analysis was conducted using Python.",
+      "llm_output": "1",
+      "true_answer": "1",
+      "eval": 1
+    }
+  },
+  "0.7.3": {
+    "example_1": {
+      "excerpt": "We implemented our approach using scikit-learn for feature engineering and TensorFlow for building the neural network model.",
+      "llm_output": [
+        "scikit-learn",
+        "TensorFlow"
+      ],
+      "true_answer": [
+        "scikit-learn",
+        "TensorFlow"
+      ],
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "The framework leverages Keras for rapid prototyping.",
+      "llm_output": [
+        "PyTorch",
+        "Keras"
+      ],
+      "true_answer": [
+        "Keras"      ],
+      "eval": 0
+    },
+    "example_3": {
+      "excerpt": "We programmed everything from scratch.",
+      "llm_output": [
+        "Z"
+      ],
+      "true_answer": "0",
+      "eval": 0
+    }
+  },
+  "0.7.4": {
+    "example_1": {
+      "excerpt": "All analyses were conducted using Python version 3.8.0 and scikit-learn version 1.0.2.",
+      "llm_output": "2",
+      "true_answer": "2",
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "We implemented our solution using Python and scikit-learn.",
+      "llm_output": "1",
+      "true_answer": "1",
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "The model was built using TensorFlow.",
+      "llm_output": "2",
+      "true_answer": "1",
+      "eval": 0
+    }
+  },
+  "0.8": {
+    "example_1": {
+      "excerpt": "The dataset used in this study is fully available in a public repository without any access restrictions.",
+      "llm_output": "4",
+      "true_answer": "4",
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "The data can be obtained upon request by contacting the corresponding author.",
+      "llm_output": "2",
+      "true_answer": "1",
+      "eval": 0
+    },
+    "example_3": {
+      "excerpt": "The data used in this study is not available to the public due to confidentiality agreements.",
+      "llm_output": "0",
+      "true_answer": "0",
+      "eval": 1
+    }
+  },
+  "0.9": {
+    "example_1": {
+      "excerpt": "This study was preregistered with the Open Science Framework (OSF) under the identifier osf.io/abcd.",
+      "llm_output": "2",
+      "true_answer": "2",
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "The research protocol was not preregistered prior to data collection.",
+      "llm_output": "1",
+      "true_answer": "1",
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "The analysis plan was registered after data collection began.",
+      "llm_output": "2",
+      "true_answer": "1",
+      "eval": 0
+    }
+  },
+  "1.1": {
+    "example_1": {
+      "excerpt": "The study recruited a total of 25 participants, evenly divided between the treatment and control groups.",
+      "llm_output": "25",
+      "true_answer": "25",
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "Data was collected from over 1,200 respondents across three distinct demographic regions.",
+      "llm_output": "1,300",
+      "true_answer": "1,200",
+      "eval": 0
+    },
+    "example_3": {
+      "excerpt": "The experiment utilized a large sample size to ensure statistical significance.",
+      "llm_output": "Z",
+      "true_answer": "0",
+      "eval": 1
+    }
+  },
+  "1.2": {
+    "example_1": {
+      "excerpt": "The final model included three predictor variables: age, gender, and income level.",
+      "llm_output": "3",
+      "true_answer": "3",
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "After feature selection, 25 predictors were used in the logistic regression analysis.",
+      "llm_output": "24",
+      "true_answer": "25",
+      "eval": 0
+    },
+    "example_3": {
+      "excerpt": "The analysis incorporated a range of variables,",
+      "llm_output": "Z",
+      "true_answer": "0",
+      "eval": 1
+    }
+  },
+  "1.3": {
+    "example_1": {
+      "excerpt": "The study recruited a convenience sample of 250 participants from local communities.",
+      "llm_output": "convenience sample from local communities",
+      "true_answer": "convenience-based sample of residents from surrounding areas",
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "Data was collected from a random sample of 1000 adults aged 18-65.",
+      "llm_output": "random sample of adults between 18-65",
+      "true_answer": "randomly selected adults aged 18 to 65",
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "The research analyzed a stratified sample of students from urban schools.",
+      "llm_output": "a random sample of university students",
+      "true_answer": "stratified sample of students from urban schools",
+      "eval": 0
+    }
+  },
+  "1.4": {
+    "example_1": {
+      "excerpt": "This study analyzed data from the USA.",
+      "llm_output": "A,B",
+      "true_answer": [
+        "USA"
+      ],
+      "eval": 0
+    },
+    "example_2": {
+      "excerpt": "The research was conducted in Germany.",
+      "llm_output": "D",
+      "true_answer": [
+        "Germany"
+      ],
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "The data was collected in Brazil.",
+      "llm_output": "Y",
+      "true_answer": [
+        "Brazil"
+      ],
+      "eval": 0,
+      "other_value": "Brazil"
+    }
+  },
+  "1.5": {
+    "example_1": {
+      "excerpt": "We used Python with OpenCV library to process and analyze image data for our predictors.",
+      "llm_output": "D",
+      "true_answer": [
+        "Higher-dimensional data from text / image / audio"
+      ],
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "The aim was to statistically model performance metrics.",
+      "llm_output": "C",
+      "true_answer": [
+        "Performance data"
+      ],
+      "eval": 0
+    },
+    "example_3": {
+      "excerpt": "Predictors were extracted from audio files and digital trace data. ",
+      "llm_output": "D,C",
+      "true_answer": [
+        "Digital trace data",
+        "Higher-dimensional data from text / image / audio"
+
+      ],
+      "eval": 1
+    }
+  },
+  "1.6": {
+    "example_1": {
+      "excerpt": "We collected our features by processing 300 images of dogs.",
+      "llm_output": "D",
+      "true_answer": [
+       "Higher-dimensional data from text / image / audio"
+      ],
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "The study collected digital traces from social media platforms to then predict how people would behave in the lab, when being shown a controversial advertisement.",
+      "llm_output": "A",
+      "true_answer": [
+        "Behavioral observation data"
+      ],
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "Biophysical data was captured using ECG signals and combined with expert judgements of their attention.",
+      "llm_output": "E,F",
+      "true_answer": [
+        "Biophysical measures",
+        "Rating / judgement data"
+      ],
+      "eval": 1
+    }
+  },
+  "1.7": {
+    "example_1": {
+      "excerpt": "The model was trained to predict patient outcomes following a specific treatment protocol. The prediction task focused on whether patients would achieve full recovery within 6 months, with an accuracy of 85% on the validation set.",
+      "llm_output": "patient recovery",
+      "true_answer": "recovery of patients",
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "We developed a system to predict the likelihood of customer churn using historical transaction data. The model achieved an AUC-ROC score of 0.92 in cross-validation.",
+      "llm_output": "customer churn prediction",
+      "true_answer": "prediction customer churn",
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "Our approach focused on predicting energy consumption levels in smart grids, with a root mean squared error (RMSE) of 0.15 across test scenarios.",
+      "llm_output": "trying to model weather forecasts",
+      "true_answer": "predicting energy consumption levels",
+      "eval": 0
+    }
+  },
+
+  "1.9": {
+    "example_1": {
+      "excerpt": "The study employed a longitudinal design, tracking participants' cognitive development over a span of five years to predict future academic outcomes.",
+      "llm_output": "2",
+      "true_answer": "2",
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "Data was collected at a single time point, providing a cross-sectional snapshot of the variables under investigation.",
+      "llm_output": "2",
+      "true_answer": "1",
+      "eval": 0
+    },
+    "example_3": {
+      "excerpt": "The predictive model utilized measurements taken at baseline and follow-up to forecast long-term health trajectories.",
+      "llm_output": "2",
+      "true_answer": "2",
+      "eval": 1
+    }
+  },
+  "2.1": {
+    "example_1": {
+      "excerpt": "The analysis included all participants with complete data. Missing values were handled using listwise deletion.",
+      "llm_output": "0",
+      "true_answer": "0",
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "Missing data were generally low across all variables, with less than 5% missing for any single variable.",
+      "llm_output": "1",
+      "true_answer": "1",
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "For the income variable, 10 participants did not provide data, and 5 did not answer the education question.",
+      "llm_output": "2",
+      "true_answer": "2",
+      "eval": 1
+    }
+  },
+  "2.2": {
+    "example_1": {
+      "excerpt": "We applied listwise deletion to handle missing values, ensuring that only complete cases were analyzed.",
+      "llm_output": "A",
+      "true_answer": [
+        "Listwise deletion"
+      ],
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "Missing data was addressed using a combination of mean imputation for numerical variables and mode imputation for categorical variables.",
+      "llm_output": "C",
+      "true_answer": [
+        "Mean / median / modus imputation"
+      ],
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "We employed multiple imputations by chained equations (MICE) with 10 imputed datasets to account for missing data.",
+      "llm_output": "E",
+      "true_answer": [
+        "Multiple imputation methods (if reported; specify algorithm and number of datasets m in comment)"
+      ],
+      "eval": 1
+    },
+    "example_4": {
+      "excerpt": "A threshold-based approach was used to remove cases with more than 10% missing data. Additionally, k-nearest neighbors imputation was applied for the remaining missing values.",
+      "llm_output": "B,D",
+      "true_answer": [
+        "k-nearest neighbors (k-NN) imputation",
+        "Threshold-based deletion "
+      ],
+      "eval": 1
+    }
+  },
+  "2.3": {
+    "example_1": {
+      "excerpt": "We utilized Python's NLTK library to extract meaningful features from the text data, which included sentiment scores and keyword frequencies.",
+      "llm_output": "G",
+      "true_answer": [
+        "Extracting features from text / image / audio data"
+      ],
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "In addition to the survey data, we enriched our features through qualitative interviews",
+      "llm_output": "Y",
+      "true_answer": [
+        "Qualitative"
+      ],
+      "eval": 0
+    },
+    "example_3": {
+      "excerpt": "We performed  clustering and extracted features from iamges using deep learning.",
+      "llm_output": "B,G",
+      "true_answer": [
+        "Clustering (grouping raw data to features)",
+        "Extracting features from text / image / audio data"
+      ],
+      "eval": 1
+    }
+  },
+  "2.4": {
+    "example_1": {
+      "excerpt": "We implemented standardization using z-scores in Python and also applied a logarithmic transformation to handle skewness in the data.",
+      "llm_output": "A,D",
+      "true_answer": [
+        "Logarithmic transformation",
+        "Standardization (z-scores)"
+      ],
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "The data preprocessing involved centering the features.",
+      "llm_output": "B",
+      "true_answer": [
+        "Centering"
+      ],
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "For robust feature engineering, we employed Winsorization and a custom technique in Julia to handle outliers.",
+      "llm_output": "G,Y",
+      "true_answer": [
+        "Winsorization of outliers"
+      ],
+      "other_value": "Custom technique",
+      "eval": 0
+    }
+  },
+  "2.5": {
+    "example_1": {
+      "excerpt": "We employed mutual information and correlation analysis as filter methods for feature selection.",
+      "llm_output": "B",
+      "true_answer": [
+        "Empirically; filter methods"
+      ],
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "The study utilized recursive feature elimination with cross-validation, implemented in R using the caret package, to select the most relevant predictors.",
+      "llm_output": "C",
+      "true_answer": [
+        "Empirically; wrapper methods"
+      ],
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "We selected some relevant features.",
+      "llm_output": "Z",
+      "true_answer": "0",
+      "eval": 1
+    }
+  },
+  "3.1": {
+    "example_1": {
+      "excerpt": "We implemented  RandomForestClassifier and GradientBoostingClassifier for robust predictions.",
+      "llm_output": "F,G",
+      "true_answer": [
+        "Random Forest",
+        "Gradient Boosting Machine (GBM)"
+      ],
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "Our approach utilized Bayesian methods, specifically Bayesian Linear Regression and BART.",
+      "llm_output": "D,K",
+      "true_answer": [
+        "Bayesian Linear Regression",
+        "Bayesian Additive Regression Trees (BART)"
+      ],
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "The solution leveraged custom Python for deep learning tasks.",
+      "llm_output": "Y",
+      "true_answer": [
+
+      ],
+      "other_value": "Custom",
+      "eval": 0
+    }
+  },
+  "3.3": {
+    "example_1": {
+      "excerpt": "We used StratifiedKFold for cross-validation, ensuring balanced class distribution across folds.",
+      "llm_output": "B",
+      "true_answer": [
+        "Single k fold CV"
+      ],
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "The analysis utilized R's caret package with repeated k-fold cross-validation to assess model stability.",
+      "llm_output": "C",
+      "true_answer": [
+        "Repeated k fold CV"
+      ],
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "A custom resampling approach was developed in Julia, incorporating elements of both bootstrap and leave-one-out methods.",
+      "llm_output": "Y",
+      "true_answer": [
+        "Y"
+      ],
+      "other_value": "Custom",
+      "eval": 0
+    }
+  },
+  "4.3": {
+    "example_1": {
+      "excerpt": "We evaluated our model using Root Mean Squared Error (RMSE) and R-squared to assess both predictive accuracy and goodness of fit.",
+      "llm_output": "B,D",
+      "true_answer": [
+        "Root Mean Squared Error (RMSE)",
+        "R-squared"
+      ],
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "The model's performance was measured using Area Under the ROC Curve (AUC) and Accuracy (ACC), achieving 0.85 and 82% respectively.",
+      "llm_output": "K,I,V",
+      "true_answer": [
+        "K",
+        "I"
+      ],
+      "eval": 0
+    },
+    "example_3": {
+      "excerpt": "Our model was assessed using a custom metric that combines elements of MAE and magic.",
+      "llm_output": "Y",
+      "true_answer":["other"],
+      "other_value": "custom metric combining MAE and magic",
+      "eval": 1
+    }
+  },
+  "4.4": {
+    "example_1": {
+      "excerpt": "In this study, we evaluated the model's performance exclusively on the validation set to ensure generalization.",
+      "llm_output": "1",
+      "true_answer": "1",
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "The training accuracy and loss curves are presented in Figure 3, demonstrating the model's learning progression.",
+      "llm_output": "2",
+      "true_answer": "2",
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "Although we analyzed both training and validation metrics, the final model selection was based solely on validation performance.",
+      "llm_output": "2",
+      "true_answer": "1",
+      "eval": 0
+    }
+  },
+  "4.6": {
+    "example_1": {
+      "excerpt": "The study reported 95% confidence intervals for all primary outcomes, providing a clear measure of uncertainty around the effect estimates.",
+      "llm_output": "2",
+      "true_answer": "2",
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "Performance metrics were analyzed using t-tests only.",
+      "llm_output": "1",
+      "true_answer": "1",
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "Standard errors were provided for all estimates, as well as confidence intervals.",
+      "llm_output": "1",
+      "true_answer": "2",
+      "eval": 0
+    }
+  },
+  "4.7": {
+    "example_1": {
+      "excerpt": "We conducted significance tests using Python's scipy library to compare the performance of different machine learning models.",
+      "llm_output": "A",
+      "true_answer": [
+        "For model comparisons"
+      ],
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "Significance tests were implemented assess variable importance and difference in model performance.",
+      "llm_output": "A,B",
+      "true_answer": [
+        "For variable importance measures ",
+        "For model comparisons"
+      ],
+
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "We used Bayesian statistics.",
+      "llm_output": "Z",
+      "true_answer": [
+        "0"
+      ],
+      "eval": 1
+    }
+  },
+  "5.1": {
+    "example_1": {
+      "excerpt": "The study applied SHAP values to interpret feature contributions and used LIME for local explanations of model predictions.",
+      "llm_output": "E,F",
+      "true_answer": [
+        "SHAP Values",
+        "LIME (Local Interpretable Model-agnostic Explanations)"
+      ],
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "The research utilized Partial Dependence Plots to visualize feature effects.",
+      "llm_output": "I",
+      "true_answer": [
+        "Partial Dependence Plots (PDP)"
+      ],
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "The novel approach employed the Einsiedler method.",
+      "llm_output": "Y",
+      "true_answer": [
+  
+      ],
+      "other_value": "Einsiedler method",
+      "eval": 0
+    }
+  },
+  "5.2": {
+    "example_1": {
+      "excerpt": "Our analysis was limited by the sample size and high computational demands of the machine learning models.",
+      "llm_output": "E,I",
+      "true_answer": [
+        "Sample size",
+        "High computational demands of ML"
+      ],
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "The study solely relied on quantiative analysis of survey data, leading to mono-method bias.",
+      "llm_output": "G",
+      "true_answer": [
+        "Mono-method data types (e.g. exclusively relying on rating / judgement data)"
+      ],
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "The model might be biased towards minority groups.",
+      "llm_output": "J",
+      "true_answer": ["Model fairness / alignment"
+      ],
+      "eval": 1
+    }
+  },
+  "5.4": {
+    "example_1": {
+      "excerpt": "Our model demonstrated strong performance on the provided dataset, but we did not assess its applicability beyond this specific sample.",
+      "llm_output": "2",
+      "true_answer": "2",
+      "eval": 1
+    },
+    "example_2": {
+      "excerpt": "The results suggest that our model's findings could be extended to other populations with similar characteristics.",
+      "llm_output": "1",
+      "true_answer": "1",
+      "eval": 1
+    },
+    "example_3": {
+      "excerpt": "The model perfomed great on our training data.",
+      "llm_output": "0",
+      "true_answer": "0",
+      "eval": 1
+    }
+  }
+}

@@ -1,0 +1,12 @@
+--- CHUNK 1 ---
+Section 1 text.
+
+--- CHUNK 2 ---
+text.Section 2 text longer than chu
+
+--- CHUNK 3 ---
+n chun chunk size, so it should be
+
+--- CHUNK 4 ---
+d be d be split accordingly.
+

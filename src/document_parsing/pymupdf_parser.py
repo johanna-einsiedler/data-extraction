@@ -1,8 +1,14 @@
+import os
+import re
+import sys
 from pathlib import Path
+from typing import List
 
 import fitz  # PyMuPDF
 
-from .base_parser import BaseParser
+sys.path.append(os.path.dirname(__file__))
+
+from base_parser import BaseParser
 
 
 class PyMuPDFParser(BaseParser):

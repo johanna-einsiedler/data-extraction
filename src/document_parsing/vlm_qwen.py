@@ -1,11 +1,16 @@
+import os
+import re
+import sys
 from pathlib import Path
 from typing import List
 
 import fitz  # PyMuPDF
+
+sys.path.append(os.path.dirname(__file__))
+
+from base_parser import BaseParser
 from PIL import Image
 from together import Together
-
-from .base_parser import BaseParser
 
 
 class QwenParser(BaseParser):

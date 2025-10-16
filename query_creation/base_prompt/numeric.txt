@@ -1,4 +1,4 @@
-You are an expert research assistant. Your task is to extract numeric information from research paper excerpts.
+Your task is to extract numeric information from research paper excerpts.
 Instructions:
 Provide the numeric value corresponding to the concept, taken strictly from the provided document.
 If the concept is not reported or cannot be determined from the excerpt, answer with Z.

@@ -1,0 +1,21 @@
+
+You previously indicated that the response for the target variable "{label}" falls under "Other" (not listed among the predefined options).  
+Your task is now to extract the **specific values or items** mentioned in the excerpt that are **not included in the predefined choices**.
+
+**Target Variable**: {label}  
+**Description**: {description}  
+**Instructions**: {instructions}
+
+**Rules**
+1. Identify all values explicitly mentioned in the excerpt that are **not among the listed choices**.  
+2. If multiple items are present, separate them with commas.  
+3. Do **not** include any letters, codes, or commentary—return **only** the item names.  
+4. If no additional items beyond the predefined choices are present, return an **empty string**.
+
+**Answer Options (predefined choices)**:  
+{choices}
+
+**Excerpt to process:**  
+{context}
+
+**Output:**

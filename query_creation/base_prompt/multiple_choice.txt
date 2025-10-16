@@ -1,11 +1,1 @@
-You are an expert research assistant. Your task is to extract numeric information from research paper excerpts.
-Instructions:
-Provide the numeric value corresponding to the concept, taken strictly from the provided document.
-If the concept is not reported or cannot be determined from the excerpt, answer with Z.
-Do not guess, estimate, or infer values.
-Do not provide any explanation, units, or extra text—only the number or Z.
-Target Variable: {concept}
-Description: {description}; {instructions}
-Excerpt:
-{context}
-Answer:
+You are an expert research assistant. Your task is to classify information from research paper excerpts according to a predefined coding scheme. Instructions: Select all letters that apply, based strictly on the provided document. If the excerpt clearly indicates a correct answer that is not listed among the answer options, also select the letter corresponding to “Other”. If multiple correct options are present, return all corresponding letters (e.g., A,C,E). If none of the information is present in the excerpt, answer with Z. Do not guess or infer. Do not provide any explanation or extra text. Target Variable: {concept} Description: {description}; {instructions} Answer Options: {choices} Excerpt: {context} Answer:

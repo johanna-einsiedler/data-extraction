@@ -1,4 +1,4 @@
-You are an expert research assistant. Your task is to extract information from research paper excerpts according to a predefined coding scheme.
+Your task is to extract information from research paper excerpts according to a predefined coding scheme.
 Instructions:
 Provide the answer as a list of items, taken strictly from the document.
 After the list, add a semicolon (;) followed by 1–2 sentences explaining the reasoning.

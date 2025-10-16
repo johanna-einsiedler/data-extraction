@@ -1,8 +1,25 @@
 # answer_generator.py
 from typing import Any, Dict, List, Optional
 
+import numpy as np
 from openai import OpenAI
 from together import Together
+
+
+def escape_braces_keep_context(template: str, placeholder: str = "context") -> str:
+    """
+    Escape all braces in the template except the one for {context}.
+    """
+    # Temporarily replace the placeholder with a token
+    token = "___PLACEHOLDER___"
+    template = template.replace(f"{{{placeholder}}}", token)
+
+    # Escape all remaining braces
+    template = template.replace("{", "{{").replace("}", "}}")
+
+    # Put the placeholder back
+    template = template.replace(token, f"{{{placeholder}}}")
+    return template
 
 
 class AnswerGenerator:
@@ -49,56 +66,56 @@ class AnswerGenerator:
         #         "Question: {query}\n\n"
         #         "Answer concisely:"
         #     )
-
+        query = escape_braces_keep_context(query, "context")
         prompt = query.format(context=context_text)
         result: Dict[str, Any] = {}
+        messages = []
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
 
         if self.api_type == "openai":
-            if return_logprobs:
-                # completions API doesn't support system prompts, so prepend manually
-                if system_prompt:
-                    full_prompt = f"{system_prompt}\n\n{prompt}"
-                else:
-                    full_prompt = prompt
-
-                response = self.client.completions.create(
+            # response = self.client.chat.completions.create(
+            #     model=self.model,
+            #     messages=messages,
+            #     top_logprobs=20,
+            #     # max_tokens=max_tokens,
+            # )
+            if self.model == "o3-mini-2025-01-31":
+                response = self.client.responses.create(
+                    instructions=system_prompt,
                     model=self.model,
-                    prompt=full_prompt,
-                    max_tokens=max_tokens,
-                    logprobs=0,  # returns logprobs for all tokens
+                    input=prompt,  # top_logprobs=20
                 )
-                choice = response.choices[0]
-                result["text"] = choice.text
-                result["logprobs"] = {
-                    "tokens": choice.logprobs.tokens,
-                    "token_logprobs": choice.logprobs.token_logprobs,
-                }
-            else:
-                messages = []
-                if system_prompt:
-                    messages.append({"role": "system", "content": system_prompt})
-                messages.append({"role": "user", "content": prompt})
+                text = response.output_text
+                token_logprobs = np.nan
 
+            else:
                 response = self.client.chat.completions.create(
                     model=self.model,
-                    messages=messages,
-                    max_tokens=max_tokens,
+                    messages=messages,  # not wrapped again!
+                    logprobs=True,
+                    # top_logprobs=5,
                 )
-                result["text"] = response.choices[0].message.content
+                text = response.choices[0].message.content
+                tokens_list = response.choices[0].logprobs.content
+
+                # Build dict: token -> logprob
+                token_logprobs = {t.token: t.logprob for t in tokens_list}
+                print(token_logprobs)
+
+            result["text"] = text
+            result["logprobs"] = token_logprobs
 
         elif self.api_type == "together":
-            messages = []
-            if system_prompt:
-                messages.append({"role": "system", "content": system_prompt})
-            messages.append({"role": "user", "content": prompt})
-
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
-                max_output_tokens=max_tokens,
+                logprobs=1,
+                # max_output_tokens=max_tokens,
             )
             result["text"] = response.choices[0].message.content
             # Together API does not expose token logprobs directly
-            result["logprobs"] = None
+            result["logprobs"] = response.choices[0].logprobs
 
         return result

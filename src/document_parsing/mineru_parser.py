@@ -1,10 +1,15 @@
 import os
+import re
 import shutil
 import subprocess
+import sys
 import uuid
 from pathlib import Path
+from typing import List
 
-from .base_parser import BaseParser
+sys.path.append(os.path.dirname(__file__))
+
+from base_parser import BaseParser
 
 
 class MinerUParser(BaseParser):

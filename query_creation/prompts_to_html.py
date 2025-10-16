@@ -1,8 +1,9 @@
+import html  # For escaping HTML special characters
 import json
 
+# Load JSON data
 with open("queries_with_prompts.json", "r", encoding="utf-8") as f:
     json_data = json.load(f)
-
 
 # HTML template with scrollable table
 html_head = """
@@ -48,14 +49,15 @@ html_footer = """
 
 # Build table rows
 rows = ""
-for item in json_data:
+for qid, item in json_data.items():  # iterate over key, value
+    prompts = item.get("prompts", {})
     rows += "<tr>\n"
-    rows += f"<td>{item.get('query_id', '')}</td>\n"
-    rows += f"<td><pre>{item.get('base_prompt', '')}</pre></td>\n"
-    rows += f"<td><pre>{item.get('reasoning_prompt', '')}</pre></td>\n"
-    rows += f"<td><pre>{item.get('rewritten_prompt', '')}</pre></td>\n"
-    rows += f"<td><pre>{item.get('synthetic_few_shot_examples', '')}</pre></td>\n"
-    rows += f"<td><pre>{item.get('synthetic_few_shot_prompt', '')}</pre></td>\n"
+    rows += f"<td>{html.escape(qid)}</td>\n"
+    rows += f"<td><pre>{html.escape(prompts.get('base_prompt', ''))}</pre></td>\n"
+    rows += f"<td><pre>{html.escape(prompts.get('reasoning_prompt', ''))}</pre></td>\n"
+    rows += f"<td><pre>{html.escape(prompts.get('rewritten_prompt', ''))}</pre></td>\n"
+    rows += f"<td><pre>{html.escape(prompts.get('synthetic_few_shot_examples', ''))}</pre></td>\n"
+    rows += f"<td><pre>{html.escape(prompts.get('synthetic_few_shot_prompt', ''))}</pre></td>\n"
     rows += "</tr>\n"
 
 # Combine everything

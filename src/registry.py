@@ -1,6 +1,9 @@
+import json
 import os
+from pathlib import Path
 
 from dotenv import find_dotenv, load_dotenv
+from together import Together
 
 from answer_generation.answer_generator import AnswerGenerator
 from chunking import length_chunker
@@ -26,7 +29,7 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 PARSERS = {
     "GROBIDParser": {
         "cls": grobid_parser.GROBIDParser,
-        "kwargs": {"check_server": False},  # no eager server check
+        "kwargs": {},  # no eager server check
     },
     "PyMuPDFParser": {
         "cls": pymupdf_parser.PyMuPDFParser,
@@ -63,8 +66,25 @@ RETRIEVERS = {
     "TopKRetriever": topk_retriever.TopKRetriever,
 }
 
+
+client = Together(
+    api_key=os.environ.get("TOGETHER_API_KEY"),
+)
+
+models = client.models.list()
+
+base_dir = Path(__file__).resolve().parent
+with open(
+    base_dir / "answer_generation" / "filtered_models.json", "r", encoding="utf-8"
+) as f:
+    LLMS_META = json.load(f)
+
+
 LLMS = {
-    "gpt-3.5-turbo-instruct": AnswerGenerator(
-        api_type="openai", model="gpt-3.5-turbo-instruct", api_key=OPENAI_API_KEY
-    ),
+    meta["id"]: AnswerGenerator(
+        api_type=meta["api_type"],
+        model=meta["id"],
+        api_key=TOGETHER_API_KEY if meta["api_type"] == "together" else OPENAI_API_KEY,
+    )
+    for meta in LLMS_META
 }

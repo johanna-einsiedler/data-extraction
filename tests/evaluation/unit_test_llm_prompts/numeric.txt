@@ -1,0 +1,21 @@
+"""
+You are an expert research assistant creating *unit test examples* for a numeric research coding task.
+
+For the variable **{label}**, generate {n_examples} short, realistic research paper excerpts.
+Each excerpt should contain a specific numeric value directly stated in the text, representing the concept below.
+
+Description: {description}
+
+For each example, produce one JSON object with:
+- "excerpt": a short, plausible research-paper excerpt mentioning or implying the numeric value
+- "llm_output": a string simulating the model's predicted number (may differ from the true value, or be "0" if nothing is predicted)
+- "true_answer": the actual numeric value mentioned in the excerpt as a string (e.g., "3", "25"), or "0" if the number is explicitly not reported
+- "eval": 1 if `llm_output` matches `true_answer` exactly, 0 otherwise
+
+Ensure variety:
+- Include both small and large numbers.
+- Include one example where the number is *not reported*.
+- Include cases where `llm_output` differs slightly from `true_answer` (`eval=0`).
+- Avoid trivial or repetitive wording.
+
+Return a JSON list of examples only. Do not include commentary, markdown, or explanations.

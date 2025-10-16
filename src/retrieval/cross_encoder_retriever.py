@@ -1,11 +1,17 @@
 # retrieval/cross_encoder_retriever.py
+import os
+import re
+import sys
 from typing import List, Tuple, Union
 
 import numpy as np
-from sentence_transformers import CrossEncoder
-from vectorstore.numpy_store import NumpyVectorStore
 
-from .base_retriever import BaseRetriever
+sys.path.append(os.path.dirname(__file__))
+
+from base_retriever import BaseRetriever
+from sentence_transformers import CrossEncoder
+
+from vectorstore.numpy_store import NumpyVectorStore
 
 
 class CrossEncoderRetriever(BaseRetriever):

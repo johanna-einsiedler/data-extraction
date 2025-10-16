@@ -1,0 +1,23 @@
+{
+    "1.2.1": { "depends_on": ["1.8"], "not_applicable_if": [{"1.8": 4}] },
+    "2.6": { "depends_on": ["4.2"], "not_applicable_if": [
+        {"4.2": "No validation"},
+        {"4.2": "Internal, no split"}
+    ]},
+    "3.2.1": { "depends_on": ["3.2"], "not_applicable_if": [{"3.2": "Fixed set of hyperparameter values"}] },
+    "3.4.1": { "depends_on": ["3.4"], "not_applicable_if": [{"3.4": 0}] },
+    "3.5": { "depends_on": ["1.8"], "not_applicable_if":[{"1.8": 4}] },
+    "3.5.1": { "depends_on": ["3.5"], "not_applicable_if": [{"3.5": -99}] },
+    "4.1.1": { "depends_on": ["4.1"], "not_applicable_if": [{"4.1": 0}] },
+    "4.2.1": { "depends_on": ["4.2"], "not_applicable_if":  [
+        {"4.2": "No validation"}, 
+        {"4.2": "Internal, no split"}, 
+        {"4.2": "External, independent unseen holdout data, same population"}, 
+        {"4.2": "External, independent unseen holdout data, different population"}
+    ]},
+    "4.5": { "depends_on": ["4.2"], "not_applicable_if": [
+        {"4.2": "No validation"}, 
+        {"4.2": "Internal, no split"}
+    ]},
+    "5.3": { "depends_on": ["4.1"], "not_applicable_if": [{"4.1": 0}] }
+}

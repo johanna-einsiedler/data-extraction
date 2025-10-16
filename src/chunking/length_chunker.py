@@ -1,8 +1,12 @@
 # chunkers/length_chunker.py
+import os
 import re
+import sys
 from typing import List
 
-from .base_chunker import BaseChunker
+sys.path.append(os.path.dirname(__file__))
+
+from base_chunker import BaseChunker
 
 
 class LengthChunker(BaseChunker):
