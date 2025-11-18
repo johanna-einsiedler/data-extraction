@@ -1,33 +1,13 @@
-# chunkers/length_chunker.py
-import os
-import re
-import sys
 from typing import List
 
-sys.path.append(os.path.dirname(__file__))
-
-from base_chunker import BaseChunker
+from .base_chunker import BaseChunker, Chunk
 
 
 class LengthChunker(BaseChunker):
-    def chunk(self, text: str) -> List[str]:
-        # Remove XML/HTML tags → keep only visible text
-        clean_text = re.sub(r"<[^>]+>", "", text)
+    """Simple fixed-length chunker that ignores document structure."""
 
-        step = self.chunk_size - self.chunk_overlap
-        chunks = [
-            clean_text[i : i + self.chunk_size] for i in range(0, len(clean_text), step)
-        ]
-
-        # Apply overlap if needed
-        if self.chunk_overlap > 0 and len(chunks) > 1:
-            adjusted = []
-            for i, chunk in enumerate(chunks):
-                if i > 0:
-                    overlap = chunks[i - 1][-self.chunk_overlap :]
-                    chunk = overlap + " " + chunk
-                adjusted.append(chunk)
-            return adjusted
-
-        # ✅ Always return something
-        return chunks
+    def chunk(self, text: str) -> List[Chunk]:
+        """Slice the document into size-limited windows with optional overlap."""
+        clean_text = self._sanitize(text, remove_tags=True)
+        windows = self._token_windows(clean_text)
+        return [Chunk(chunk_text) for chunk_text in windows]

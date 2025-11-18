@@ -1,3 +1,5 @@
+"""Unit tests ensuring objective caching logic behaves deterministically."""
+
 import hashlib
 import json
 import os

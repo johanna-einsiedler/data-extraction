@@ -32,15 +32,24 @@ class AnswerGenerator:
         model: model name, e.g., "gpt-4.1" or "o3-mini-high"
         """
         self.api_type = api_type.lower()
+        self.api_key = api_key
         self.model = model
+        self._client = None
 
-        if self.api_type == "openai":
-            self.client = OpenAI(api_key=api_key)
-
-        elif self.api_type == "together":
-            self.client = Together(api_key=api_key)
-        else:
+        if self.api_type not in {"openai", "together"}:
             raise ValueError(f"Unsupported api_type: {api_type}")
+
+    def _ensure_client(self):
+        if not self.api_key:
+            raise ValueError(
+                f"API key is required for {self.api_type.title()} AnswerGenerator."
+            )
+        if self._client is None:
+            if self.api_type == "openai":
+                self._client = OpenAI(api_key=self.api_key)
+            else:
+                self._client = Together(api_key=self.api_key)
+        return self._client
 
     def generate(
         self,
@@ -74,6 +83,8 @@ class AnswerGenerator:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
 
+        client = self._ensure_client()
+
         if self.api_type == "openai":
             # response = self.client.chat.completions.create(
             #     model=self.model,
@@ -82,7 +93,7 @@ class AnswerGenerator:
             #     # max_tokens=max_tokens,
             # )
             if self.model == "o3-mini-2025-01-31":
-                response = self.client.responses.create(
+                response = client.responses.create(
                     instructions=system_prompt,
                     model=self.model,
                     input=prompt,  # top_logprobs=20
@@ -91,7 +102,7 @@ class AnswerGenerator:
                 token_logprobs = np.nan
 
             else:
-                response = self.client.chat.completions.create(
+                response = client.chat.completions.create(
                     model=self.model,
                     messages=messages,  # not wrapped again!
                     logprobs=True,
@@ -102,20 +113,19 @@ class AnswerGenerator:
 
                 # Build dict: token -> logprob
                 token_logprobs = {t.token: t.logprob for t in tokens_list}
-                print(token_logprobs)
 
             result["text"] = text
             result["logprobs"] = token_logprobs
 
         elif self.api_type == "together":
-            response = self.client.chat.completions.create(
+            response = client.chat.completions.create(
                 model=self.model,
                 messages=messages,
                 logprobs=1,
                 # max_output_tokens=max_tokens,
             )
             result["text"] = response.choices[0].message.content
-            # Together API does not expose token logprobs directly
-            result["logprobs"] = response.choices[0].logprobs
+            logprob_payload = getattr(response.choices[0], "logprobs", None)
+            result["logprobs"] = logprob_payload if logprob_payload is not None else None
 
         return result

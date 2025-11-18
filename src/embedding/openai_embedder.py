@@ -1,22 +1,31 @@
 # embeddings/openai_embedder.py
-import os
-import re
-import sys
-from typing import List
+"""OpenAI embeddings client with lazy API instantiation."""
+
+from typing import List, Optional
 
 import numpy as np
-
-sys.path.append(os.path.dirname(__file__))
-
-from base_embedder import BaseEmbedder
 from openai import OpenAI
+
+from .base_embedder import BaseEmbedder
 
 
 class OpenAIEmbedder(BaseEmbedder):
-    def __init__(self, api_key: str, model: str = "text-embedding-3-large"):
-        self.client = OpenAI(api_key=api_key)
+    """Proxy embedder that talks to OpenAI's /embeddings endpoint."""
+
+    def __init__(self, api_key: Optional[str], model: str = "text-embedding-3-large"):
+        self.api_key = api_key
         self.model = model
+        self._client: Optional[OpenAI] = None
+
+    def _ensure_client(self) -> OpenAI:
+        """Instantiate the OpenAI client only when needed."""
+        if not self.api_key:
+            raise ValueError("OpenAI API key is required for OpenAIEmbedder.")
+        if self._client is None:
+            self._client = OpenAI(api_key=self.api_key)
+        return self._client
 
     def embed(self, texts: List[str]) -> np.ndarray:
-        response = self.client.embeddings.create(model=self.model, input=texts)
+        client = self._ensure_client()
+        response = client.embeddings.create(model=self.model, input=texts)
         return np.array([item.embedding for item in response.data])

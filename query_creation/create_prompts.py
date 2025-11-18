@@ -1,62 +1,67 @@
 import ast
 import json
 import os
-import re
+from pathlib import Path
 
 from dotenv import find_dotenv, load_dotenv
 from together import Together
 
 dotenv_path = find_dotenv()
 load_dotenv(dotenv_path)
+BASE_DIR = Path(__file__).resolve().parent
 
 os.environ["TOGETHER_API_KEY"] = os.getenv("TOGETHER_API_KEY")
 
-TEMPLATE_DIRS = {
-    "system": "system_prompt",
-    "base": "base_prompt",
-    # "few_shot": "few_shot_prompt",
-    "base_reasoning": "base_prompt_with_reasoning",
-    "follow_up": "follow_up_prompt_other",
+TEMPLATE_SOURCES = {
+    "base": BASE_DIR / "base_prompt",
+    "base_reasoning": BASE_DIR / "base_prompt_with_reasoning",
+    "system_single_outcome": BASE_DIR / "system_prompt_single_outcome.txt",
+    "system_multiple_outcomes": BASE_DIR / "system_prompt_multiple_outcomes.txt",
+    "follow_up": BASE_DIR / "follow_up_prompt_other.txt",
 }
-
 client = Together()
 
 
 def load_templates():
+    """Load prompt templates from configured sources and return them as a dict."""
     templates = {}
-    for category, dir_path in TEMPLATE_DIRS.items():
-        templates[category] = {}
-        if os.path.exists(dir_path):
-            for filename in os.listdir(dir_path):
-                if filename.endswith(".txt"):
-                    template_type = filename.replace(".txt", "")
-                    with open(
-                        os.path.join(dir_path, filename), "r", encoding="utf-8"
-                    ) as f:
-                        templates[category][template_type] = f.read().strip()
+    for category, source in TEMPLATE_SOURCES.items():
+        source_path = Path(source)
+        if source_path.is_dir():
+            templates[category] = {}
+            for template_file in sorted(source_path.glob("*.txt")):
+                templates[category][template_file.stem] = template_file.read_text(
+                    encoding="utf-8"
+                ).strip()
+        elif source_path.is_file():
+            templates[category] = source_path.read_text(encoding="utf-8").strip()
+        else:
+            templates[category] = {}
     return templates
 
 
 def load_prompt(file_name="rewriting_prompt.txt"):
-    path = os.path.join(os.path.dirname(__file__), file_name)
-    if os.path.exists(path):
-        with open(path, "r", encoding="utf-8") as f:
-            return f.read().strip()
+    """Load a single prompt file relative to this module, if it exists."""
+    path = BASE_DIR / file_name
+    if path.exists():
+        return path.read_text(encoding="utf-8").strip()
     return None
 
 
 def load_few_shot_templates(folder_path):
+    """Load all few-shot templates from the given folder (relative to this module)."""
     templates = {}
-    for filename in os.listdir(folder_path):
-        if filename.endswith(".txt"):
-            query_type = os.path.splitext(filename)[0]
-            file_path = os.path.join(folder_path, filename)
-            with open(file_path, "r", encoding="utf-8") as f:
-                templates[query_type] = f.read()
+    folder = BASE_DIR / folder_path
+    if not folder.exists():
+        return templates
+    for template_file in sorted(folder.glob("*.txt")):
+        query_type = template_file.stem
+        templates[query_type] = template_file.read_text(encoding="utf-8")
     return templates
 
 
 def format_choices(choices):
+    """Convert a choices mapping into a multi-line string suitable for prompt templates."""
     formatted = []
     for key, info in choices.items():
         value = info.get("value", "")
@@ -69,15 +74,23 @@ def format_choices(choices):
 
 
 def create_prompts(record, templates):
+    """Combine a record with each available template and return the rendered prompts."""
     q_type = record.get("type")
     prompts = {}
 
-    for category, templates_dict in templates.items():
-        template = templates_dict.get(q_type)
+    for category, template_source in templates.items():
+        if isinstance(template_source, dict):
+            template = template_source.get(q_type)
+        else:
+            template = template_source
         if not template:
             continue
 
-        if q_type in ["multiple_choice", "single_choice"]:
+        if isinstance(template_source, dict) and q_type in [
+            "multiple_choice",
+            "single_choice",
+        ]:
+            # Multiple/single choice prompts expect a rendered list of answer options.
             choices_str = (
                 format_choices(record.get("choices", {}))
                 if record.get("choices")
@@ -90,14 +103,16 @@ def create_prompts(record, templates):
                 choices=choices_str,
                 context="{context}",
             )
-        else:
+        elif isinstance(template_source, dict):
             prompt = template.format(
                 concept=record.get("description", ""),
                 description=record.get("description_detailed", ""),
                 instructions=record.get("instructions", ""),
                 context="{context}",
             )
-
+        else:
+            prompt = template
+        # Store the final prompt keyed by its template category.
         prompts[category] = prompt
 
     return prompts
@@ -131,7 +146,6 @@ def build_excel_few_shot_examples(record):
             examples.append(example)
 
     return "\n\n".join(examples) if examples else None
-    return "\n\n".join(examples)
 
 
 def map_values_to_letters(values_list, choices):
@@ -166,7 +180,7 @@ def generate_prompts_with_rewrite(
     records, templates, rewriting_prompt, model="openai/gpt-oss-120b", only_base=False
 ):
     results = {}  # use dict keyed by query_id
-    few_shot_templates = load_few_shot_templates("synthetic_few_shot/")
+    few_shot_templates = load_few_shot_templates("synthetic_few_shot")
 
     for record in records:
         qid = record.get("query_id")

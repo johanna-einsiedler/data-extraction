@@ -1,122 +1,50 @@
+"""Golden tests for the evaluation pipeline using curated prompt/answer pairs."""
+
+from pathlib import Path
 import json
 import os
 import sys
-from pathlib import Path
 
 import pytest
 from dotenv import find_dotenv, load_dotenv
 
-# Load your LLM client
-# from your_llm_module import client, get_llm_text, LLMS
-# ---------- Setup ----------
+# Load API keys for optional parser instantiation
 dotenv_path = find_dotenv()
 load_dotenv(dotenv_path)
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 TOGETHER_API_KEY = os.getenv("TOGETHER_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-CURRENT_DIR = os.path.dirname(__file__)
-PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, "..", ".."))
-SRC_DIR = os.path.join(PROJECT_ROOT, "src")
-sys.path.insert(0, SRC_DIR)
-
+CURRENT_DIR = Path(__file__).parent
+PROJECT_ROOT = CURRENT_DIR.parents[1]
+SRC_DIR = PROJECT_ROOT / "src"
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
 
 from evaluate import evaluate_answer
 from objective import get_llm_text
 from registry import CHUNKERS, EMBEDDERS, LLMS, LLMS_META, PARSERS, RETRIEVERS
 
-# Example: Load your unit test examples
-with open("unit_test_examples.json", "r", encoding="utf-8") as f:
-    UNIT_TESTS = json.load(f)
-
-QUERIES_JSON_PATH = Path(
-    "../../query_creation/queries_with_prompts.json"
-)  # Path to your JSON file
+QUERIES_JSON_PATH = PROJECT_ROOT / "query_creation" / "queries_with_prompts.json"
 
 
 def load_queries():
+    """Load the canonical query definitions used across evaluation tests."""
     with open(QUERIES_JSON_PATH, "r", encoding="utf-8") as f:
-        query_dict = json.load(f)
-
-    queries = {}
-    for qid, q in query_dict.items():
-        queries[qid] = q  # keep original structure
-    return queries
+        return json.load(f)
 
 
 QUERIES = load_queries()
 
-
-# Load the test examples
-with open("unit_test_examples.json", "r", encoding="utf-8") as f:
-    UNIT_TESTS = json.load(f)
-
-import json
-from pathlib import Path
-
-# Load queries
-QUERIES_JSON_PATH = Path("../../query_creation/queries_with_prompts.json")
-
-
-def load_queries():
-    with open(QUERIES_JSON_PATH, "r", encoding="utf-8") as f:
-        query_dict = json.load(f)
-    return {qid: q for qid, q in query_dict.items()}
-
-
-QUERIES = load_queries()
-
-# Load unit test examples
-UNIT_TESTS_PATH = Path(__file__).parent / "unit_test_examples.json"
+UNIT_TESTS_PATH = CURRENT_DIR / "unit_test_examples.json"
 with open(UNIT_TESTS_PATH, "r", encoding="utf-8") as f:
-    UNIT_TESTS = json.load(f)
+    _UNIT_TESTS_RAW = json.load(f)
 
-keep_keys = [
-    "1.8",
-    "1.2.1",
-    "3.2",
-    "3.2.1",
-    "3.4",
-    "3.4.1",
-    "3.5",
-    "3.5.1",
-    "4.1",
-    "4.2",
-    "2.6",
-    "4.2.1",
-    "5.3",
-    "0.7",
-    "0.7.1",
-    "0.7.2",
-    "0.7.3",
-    "0.7.4",
-    "0.8",
-    "0.9",
-    "1.1",
-    "1.2",
-    "1.3",
-    "1.4",
-    "1.5",
-    "1.6",
-    "1.7",
-    "1.9",
-    "2.2",
-    "2.1",
-    "2.3",
-    "2.4",
-    "2.5",
-    "3.1",
-    "4.3",
-    "4.4",
-    "4.6",
-    "4.7",
-    "5.15.2",
-    "5.4",
-]
-UNIT_TESTS = {k: UNIT_TESTS[k] for k in keep_keys if k in UNIT_TESTS}
+KEEP_KEYS = ['1.8', '1.2.1', '3.2', '3.2.1', '3.4', '3.4.1', '3.5', '3.5.1', '4.1', '4.2', '2.6', '4.2.1', '5.3', '0.7', '0.7.1', '0.7.2', '0.7.3', '0.7.4', '0.8', '0.9', '1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '1.7', '1.9', '2.2', '2.1', '2.3', '2.4', '2.5', '3.1', '4.3', '4.4', '4.6', '4.7', '5.15.2', '5.4']
+UNIT_TESTS = {k: _UNIT_TESTS_RAW[k] for k in KEEP_KEYS if k in _UNIT_TESTS_RAW}
+
 # Parameter to control whether to call real LLM or use fake outputs
 EVAL_LLM = False  # Set to True to call actual LLM
-
 
 @pytest.mark.parametrize(
     "query_id,ex_name,example",

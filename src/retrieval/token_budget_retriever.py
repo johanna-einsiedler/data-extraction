@@ -1,14 +1,7 @@
 # retrieval/token_budget_retriever.py
-import os
-import re
-import sys
 from typing import Callable, List, Tuple
 
-sys.path.append(os.path.dirname(__file__))
-
-from base_retriever import BaseRetriever
-
-from vectorstore.numpy_store import NumpyVectorStore
+from .base_retriever import BaseRetriever, VectorStoreProtocol, default_tokenizer
 
 
 class TokenBudgetRetriever(BaseRetriever):
@@ -20,9 +13,9 @@ class TokenBudgetRetriever(BaseRetriever):
                                             Defaults to simple whitespace split.
         """
         self.token_budget = token_budget
-        self.tokenizer = tokenizer or (lambda x: x.split())
+        self.tokenizer = tokenizer or default_tokenizer
 
-    def retrieve(self, query_vec, store: NumpyVectorStore) -> List[Tuple[str, float]]:
+    def retrieve(self, query_vec, store: VectorStoreProtocol) -> List[Tuple[str, float]]:
         if not hasattr(store, "texts") or not store.texts:
             return []
 

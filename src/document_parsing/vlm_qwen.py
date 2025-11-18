@@ -1,77 +1,76 @@
-import os
-import re
-import sys
-from pathlib import Path
-from typing import List
+import base64
+import io
+from typing import Optional
 
-import fitz  # PyMuPDF
-
-sys.path.append(os.path.dirname(__file__))
-
-from base_parser import BaseParser
-from PIL import Image
 from together import Together
+
+from .base_parser import BaseParser, ParseResult
+from .utils import pdf_to_images
+
+
+def _encode_image_to_data_url(image) -> str:
+    """Serialize a PIL image to a data URL for Together's image_url payload."""
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    encoded = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    return f"data:image/png;base64,{encoded}"
 
 
 class QwenParser(BaseParser):
-    def __init__(self, api_key, model_name: str = "Qwen/Qwen2.5-7B-Instruct-Turbo"):
-        """
-        Together API parser for Qwen2.5-VL models.
-        """
+    """Call Together's Qwen2.5-VL 72B model on page images to produce Markdown."""
+
+    def __init__(
+        self,
+        api_key: str,
+        model_name: str = "Qwen/Qwen2.5-VL-72B-Instruct",
+        max_output_tokens: Optional[int] = 2048,
+    ):
+        if not api_key:
+            raise ValueError("Together API key is required for QwenParser.")
         self.client = Together(api_key=api_key)
         self.model_name = model_name
+        self.max_output_tokens = max_output_tokens
 
-    def pdf_to_images(self, pdf_path: str) -> List[Image.Image]:
-        """
-        Convert each PDF page into a PIL image.
-        """
-        doc = fitz.open(pdf_path)
-        images = []
-        for page in doc:
-            pix = page.get_pixmap()
-            img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-            images.append(img)
-        return images
+    def parse_page(self, page_image) -> str:
+        """Upload a page image to Qwen2.5-VL via chat.completions and return Markdown."""
+        data_url = _encode_image_to_data_url(page_image)
+        prompt = """Convert the following scientific article page into polished Markdown:
+- Use # / ## headings that mirror the document structure.
+- Preserve tables using Markdown table syntax.
+- Keep bullet or numbered lists intact.
+- Retain mathematical expressions, figure references, and inline citations.
+- Respond with Markdown only."""
 
-    def parse_page(self, page_content: str) -> str:
-        """
-        Parse a single page via Together API.
-        """
         response = self.client.chat.completions.create(
-            model=self.model_name, messages=[{"role": "user", "content": page_content}]
+            model=self.model_name,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                        {"type": "image_url", "image_url": {"url": data_url}},
+                    ],
+                }
+            ],
+            max_output_tokens=self.max_output_tokens,
         )
-        return response.choices[0].message.content
+        message = response.choices[0].message
+        return message.content if isinstance(message.content, str) else str(message.content)
 
-    def parse(self, file_path: str) -> str:
-        """
-        Parse the PDF and return the full Markdown text.
-        """
-        images = self.pdf_to_images(file_path)
-        results = []
+    def parse(self, file_path: str) -> ParseResult:
+        """Parse a PDF into Markdown by processing each page image with Qwen VL."""
+        images = pdf_to_images(file_path)
+        if not images:
+            raise ValueError(f"No pages found when converting {file_path} to images.")
 
-        for i, img in enumerate(images):
-            # Convert image to text via OCR first
-            # Here we use pytesseract, since Together API expects text input
-            from pytesseract import image_to_string
+        page_markdown = []
+        for img in images:
+            page_text = self.parse_page(img)
+            if page_text:
+                page_markdown.append(page_text.strip())
 
-            page_text = image_to_string(img)
-
-            # Skip empty pages
-            if not page_text.strip():
-                continue
-
-            # Prompt Qwen via Together API
-            prompt = f"""Convert the following scientific article text into well - structured Markdown .
-                - Use # and ## headings to match the section and subsection titles .
-                - Format inline citations as ( Author , Year ) if available .
-                Use bullet points for lists .
-                - Preserve all mathematical notation and code blocks in Markdown syntax .
-                - Render tables using Markdown syntax (| ... |)
-                - Output clean Markdown only no explanation .
-                Input : \n
-                {page_text}"""
-            result = self.parse_page(prompt)
-            results.append(result)
-
-        # Combine all pages
-        return "\n\n".join(results)
+        content = "\n\n".join(page_markdown)
+        return ParseResult(
+            content=content,
+            metadata={"parser": "qwen", "model": self.model_name},
+        )

@@ -1,3 +1,5 @@
+"""Embedding tests covering local and OpenAI-backed embedders."""
+
 import os
 import sys
 from unittest.mock import MagicMock, patch

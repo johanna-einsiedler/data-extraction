@@ -8,5 +8,17 @@ text.Section 2 text longer than chu
 n chun chunk size, so it should be
 
 --- CHUNK 4 ---
-d be d be split accordingly.
+ld bed be split accordingly.
+
+--- CHUNK 5 ---
+ngly.Section 1 text.
+
+--- CHUNK 6 ---
+text.Section 2 text longer than chu
+
+--- CHUNK 7 ---
+n chun chunk size, so it should be
+
+--- CHUNK 8 ---
+ld bed be split accordingly.
 

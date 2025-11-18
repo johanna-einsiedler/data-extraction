@@ -1,0 +1,31 @@
+[project]
+name = "paper_extraction_pipeline"
+version = "0.1.0"
+description = "Utilities for generating prompts and running the paper extraction pipeline."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "typer>=0.9",
+]
+
+[project.scripts]
+pipe = "pipeline_cli:main"
+
+[tool.setuptools]
+py-modules = ["pipeline_cli"]
+
+[tool.pytest.ini_options]
+markers = [
+    "requires_openai_api: marks tests that need an OpenAI API key",
+    "integration: marks integration tests that may be slow or use external services",
+]
+filterwarnings = [
+    "ignore::pydantic.warnings.PydanticDeprecatedSince20",
+    "ignore:.*SwigPy.*:DeprecationWarning",
+    "ignore:.*swigvarlink.*:DeprecationWarning",
+]
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+

@@ -1,3 +1,5 @@
+"""Helper script for generating artificial evaluation examples via Together API."""
+
 import json
 import os
 import re
@@ -26,6 +28,7 @@ QUERIES_JSON_PATH = Path(
 
 
 def load_queries():
+    """Load the query catalog so we can sample prompts for artificial examples."""
     with open(QUERIES_JSON_PATH, "r", encoding="utf-8") as f:
         query_dict = json.load(f)
 

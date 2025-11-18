@@ -6,7 +6,7 @@ from dotenv import find_dotenv, load_dotenv
 from together import Together
 
 from answer_generation.answer_generator import AnswerGenerator
-from chunking import length_chunker
+from chunking import base_chunker, length_chunker, structure_chunker, text_chunker
 from document_parsing import (
     grobid_parser,
     mineru_parser,
@@ -15,8 +15,14 @@ from document_parsing import (
     vlm_gemini,
     vlm_qwen,
 )
-from embedding import bge_embedder
-from retrieval import topk_retriever
+from embedding import base_embedder, bge_embedder, e5_embedder, openai_embedder
+from retrieval import (
+    base_retriever,
+    cross_encoder_retriever,
+    rcs_retriever,
+    token_budget_retriever,
+    topk_retriever,
+)
 
 dotenv_path = find_dotenv()
 load_dotenv(dotenv_path)
@@ -56,22 +62,59 @@ PARSERS = {
 
 CHUNKERS = {
     "LengthChunker": length_chunker.LengthChunker,
+    "BaseChunker": base_chunker.BaseChunker,
+    "StructureChunker": structure_chunker.StructureChunker,
+    "TextStructureChunker": text_chunker.TextStructureChunker,
 }
 
+class LazyEmbedder(base_embedder.BaseEmbedder):
+    """Wrap embedder construction so heavy dependencies load only if needed."""
+
+    def __init__(self, factory):
+        self._factory = factory
+        self._instance = None
+
+    def _ensure(self):
+        if self._instance is None:
+            self._instance = self._factory()
+        return self._instance
+
+    def embed(self, texts):
+        return self._ensure().embed(texts)
+
+    def __getattr__(self, item):
+        # Delegate any other attribute access to the wrapped embedder
+        return getattr(self._ensure(), item)
+
+
 EMBEDDERS = {
-    "BGEEmbedder": bge_embedder.BGEEmbedder(),
+    "BGEEmbedder": LazyEmbedder(lambda: bge_embedder.BGEEmbedder()),
+    "E5Embedder": LazyEmbedder(lambda: e5_embedder.E5Embedder()),
 }
+
+if OPENAI_API_KEY:
+    EMBEDDERS["OpenAIEmbedder"] = LazyEmbedder(
+        lambda: openai_embedder.OpenAIEmbedder(api_key=OPENAI_API_KEY)
+    )
 
 RETRIEVERS = {
     "TopKRetriever": topk_retriever.TopKRetriever,
+    "BaseRetriever": base_retriever.BaseRetriever,
+    "CrossEncoderRetriever": cross_encoder_retriever.CrossEncoderRetriever,
+    "TokenBudgetRetriever": token_budget_retriever.TokenBudgetRetriever,
+    "RCSRetriever": rcs_retriever.RCSRetriever,
 }
 
 
-client = Together(
-    api_key=os.environ.get("TOGETHER_API_KEY"),
-)
-
-models = client.models.list()
+client = None
+models = []
+if TOGETHER_API_KEY:
+    try:
+        client = Together(api_key=TOGETHER_API_KEY)
+        models = client.models.list()
+    except Exception:
+        # Fail gracefully during local testing when Together API is unavailable
+        models = []
 
 base_dir = Path(__file__).resolve().parent
 with open(
@@ -80,11 +123,13 @@ with open(
     LLMS_META = json.load(f)
 
 
+LLM_META_MAP = {meta["id"]: meta for meta in LLMS_META}
+
 LLMS = {
-    meta["id"]: AnswerGenerator(
+    meta_id: AnswerGenerator(
         api_type=meta["api_type"],
-        model=meta["id"],
+        model=meta_id,
         api_key=TOGETHER_API_KEY if meta["api_type"] == "together" else OPENAI_API_KEY,
     )
-    for meta in LLMS_META
+    for meta_id, meta in LLM_META_MAP.items()
 }

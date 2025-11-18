@@ -1,34 +1,35 @@
 # retrieval/cross_encoder_retriever.py
-import os
-import re
-import sys
 from typing import List, Tuple, Union
 
 import numpy as np
-
-sys.path.append(os.path.dirname(__file__))
-
-from base_retriever import BaseRetriever
 from sentence_transformers import CrossEncoder
 
-from vectorstore.numpy_store import NumpyVectorStore
+from .base_retriever import BaseRetriever, VectorStoreProtocol
 
 
 class CrossEncoderRetriever(BaseRetriever):
+    supports_rerank = True
+    supports_top_m = True
     def __init__(
         self,
         model_name: str = "cross-encoder/ms-marco-MiniLM-L-6-v2",
         top_m: int = 10,
         k: int = 5,
+        model=None,
+        device: str | None = None,
+        batch_size: int | None = None,
     ):
         self.top_m = top_m  # number of candidates to rerank
         self.k = k  # number of final retrieved chunks
-        self.model = CrossEncoder(model_name)
+        self.model_name = model_name
+        self.model = model
+        self.device = device
+        self.batch_size = batch_size
 
     def retrieve(
         self,
         query_vec: Union[np.ndarray, List[float]],
-        store: NumpyVectorStore,
+        store: VectorStoreProtocol,
         raw_query_text: str = None,
     ) -> List[Tuple[str, float]]:
         """
@@ -55,7 +56,13 @@ class CrossEncoderRetriever(BaseRetriever):
         pairs = [[raw_query_text, t] for t in chunk_texts]
 
         # Step 3: Get relevance scores from CrossEncoder
-        scores = self.model.predict(pairs)
+        if self.model is None:
+            self.model = CrossEncoder(self.model_name, device=self.device)
+
+        if self.batch_size:
+            scores = self.model.predict(pairs, batch_size=self.batch_size)
+        else:
+            scores = self.model.predict(pairs)
 
         # Step 4: Combine text + score, sort, and return top-k
         sorted_chunks = sorted(

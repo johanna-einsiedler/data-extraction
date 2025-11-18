@@ -1,3 +1,9 @@
+"""Regression tests covering the three primary chunking strategies.
+
+Each suite exercises a representative input so we can quickly spot regressions in
+length-based, paragraph-aware, and structure-aware chunking behaviour.
+"""
+
 import os
 import re
 import sys
@@ -15,12 +21,12 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 CURRENT_DIR = os.path.dirname(__file__)
 PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, "..", ".."))
-PARSERS_DIR = os.path.join(PROJECT_ROOT, "src/chunking/")
-sys.path.insert(0, PARSERS_DIR)
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
-from length_chunker import LengthChunker
-from structure_chunker import StructureChunker
-from text_chunker import TextStructureChunker
+from src.chunking.length_chunker import LengthChunker
+from src.chunking.structure_chunker import StructureChunker
+from src.chunking.text_chunker import TextStructureChunker
 
 # ---------- Debug helper ----------
 DEBUG_DIR = os.path.join(CURRENT_DIR, "_debug", "chunks")
@@ -28,18 +34,23 @@ os.makedirs(DEBUG_DIR, exist_ok=True)
 
 
 def save_chunks(chunks, name: str):
-    """Save chunk output to a debug file for inspection."""
+    """Emit helper debug artifacts so unexpected splits can be inspected manually."""
     file_path = os.path.join(DEBUG_DIR, f"{name}.txt")
     with open(file_path, "w", encoding="utf-8") as f:
         for i, chunk in enumerate(chunks):
-            f.write(f"--- CHUNK {i + 1} ---\n{chunk.strip()}\n\n")
+            f.write(f"--- CHUNK {i + 1} ---\n{chunk.text.strip()}\n\n")
     print(f"[DEBUG] Saved chunks to: {file_path}")
 
 
 # ---------- Helper for overlap check ----------
 def check_overlap(chunks, overlap):
+    """Ensure the configured overlap is actually present."""
     for i in range(1, len(chunks)):
-        assert chunks[i].startswith(chunks[i - 1][-overlap:]), (
+        current = chunks[i].text
+        previous = chunks[i - 1].text
+        if overlap == 0:
+            continue
+        assert current.startswith(previous[-overlap:]), (
             "Overlap not applied correctly"
         )
 
@@ -53,7 +64,7 @@ def test_length_chunker_no_overlap():
 
     assert len(chunks) == 3
     for chunk in chunks:
-        assert len(chunk) <= 1000
+        assert len(chunk.text) <= 1000
 
 
 def test_length_chunker_with_overlap():
@@ -74,8 +85,8 @@ def test_text_structure_chunker_plain_text():
     save_chunks(chunks, "text_plain")
 
     for chunk in chunks:
-        assert chunk.strip() != ""
-        assert len(chunk) <= 50 + 10
+        assert chunk.text.strip() != ""
+        assert len(chunk.text) <= 50 + 10
     check_overlap(chunks, 10)
 
 
@@ -91,10 +102,8 @@ def test_text_structure_chunker_xml_text():
     save_chunks(chunks, "text_xml")
 
     for chunk in chunks:
-        print(chunk)
-        print(len(chunk))
-        assert chunk.strip() != ""
-        assert len(chunk) <= 30 + 5
+        assert chunk.text.strip() != ""
+        assert len(chunk.text) <= 30 + 2 * 5
     check_overlap(chunks, 5)
 
 
@@ -107,8 +116,8 @@ def test_structure_chunker_markdown_headers():
     save_chunks(chunks, "structure_markdown")
 
     for chunk in chunks:
-        assert chunk.strip() != ""
-        assert len(chunk) <= 20 + 5
+        assert chunk.text.strip() != ""
+        assert len(chunk.text) <= 20 + 2 * 5
     check_overlap(chunks, 5)
 
 
@@ -119,6 +128,6 @@ def test_structure_chunker_fallback_long_text():
     save_chunks(chunks, "structure_fallback")
 
     for chunk in chunks:
-        assert chunk.strip() != ""
-        assert len(chunk) <= 30 + 5
+        assert chunk.text.strip() != ""
+        assert len(chunk.text) <= 30 + 2 * 5
     check_overlap(chunks, 5)

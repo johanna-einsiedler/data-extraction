@@ -1,12 +1,18 @@
-import html  # For escaping HTML special characters
+"""Render the generated prompts JSON into an HTML table for quick inspection."""
+
+from __future__ import annotations
+
+import html
 import json
+from pathlib import Path
+from typing import Dict, Mapping
 
-# Load JSON data
-with open("queries_with_prompts.json", "r", encoding="utf-8") as f:
-    json_data = json.load(f)
+BASE_DIR = Path(__file__).resolve().parent
+PROMPT_JSON_PATH = BASE_DIR / "queries_with_prompts.json"
+OUTPUT_HTML_PATH = BASE_DIR / "research_prompts.html"
 
-# HTML template with scrollable table
-html_head = """
+
+HTML_HEAD = """\
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -39,7 +45,7 @@ html_head = """
 <tbody>
 """
 
-html_footer = """
+HTML_FOOTER = """\
 </tbody>
 </table>
 </div>
@@ -47,24 +53,49 @@ html_footer = """
 </html>
 """
 
-# Build table rows
-rows = ""
-for qid, item in json_data.items():  # iterate over key, value
-    prompts = item.get("prompts", {})
-    rows += "<tr>\n"
-    rows += f"<td>{html.escape(qid)}</td>\n"
-    rows += f"<td><pre>{html.escape(prompts.get('base_prompt', ''))}</pre></td>\n"
-    rows += f"<td><pre>{html.escape(prompts.get('reasoning_prompt', ''))}</pre></td>\n"
-    rows += f"<td><pre>{html.escape(prompts.get('rewritten_prompt', ''))}</pre></td>\n"
-    rows += f"<td><pre>{html.escape(prompts.get('synthetic_few_shot_examples', ''))}</pre></td>\n"
-    rows += f"<td><pre>{html.escape(prompts.get('synthetic_few_shot_prompt', ''))}</pre></td>\n"
-    rows += "</tr>\n"
 
-# Combine everything
-html_content = html_head + rows + html_footer
+def load_prompts(path: Path) -> Dict[str, Mapping[str, str]]:
+    """Load the JSON file containing prompts grouped by query identifier."""
+    with open(path, "r", encoding="utf-8") as fh:
+        return json.load(fh)
 
-# Save to file
-with open("research_prompts.html", "w", encoding="utf-8") as f:
-    f.write(html_content)
 
-print("HTML file generated: research_prompts.html")
+def render_rows(prompt_data: Mapping[str, Mapping[str, str]]) -> str:
+    """Render a table row for each query with the key prompt variants."""
+    rows = []
+    for qid, item in prompt_data.items():
+        prompts = item.get("prompts", {})
+        rows.append(
+            "\n".join(
+                [
+                    "<tr>",
+                    f"<td>{html.escape(qid)}</td>",
+                    f"<td><pre>{html.escape(prompts.get('base_prompt', '') or '')}</pre></td>",
+                    f"<td><pre>{html.escape(prompts.get('reasoning_prompt', '') or '')}</pre></td>",
+                    f"<td><pre>{html.escape(prompts.get('rewritten_prompt', '') or '')}</pre></td>",
+                    f"<td><pre>{html.escape(prompts.get('synthetic_few_shot_examples', '') or '')}</pre></td>",
+                    f"<td><pre>{html.escape(prompts.get('synthetic_few_shot_prompt', '') or '')}</pre></td>",
+                    "</tr>",
+                ]
+            )
+        )
+    return "\n".join(rows)
+
+
+def write_html(content: str, path: Path) -> None:
+    """Persist the rendered HTML to disk."""
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write(content)
+
+
+def main() -> None:
+    """Entry point for the CLI script."""
+    data = load_prompts(PROMPT_JSON_PATH)
+    rows = render_rows(data)
+    html_content = HTML_HEAD + rows + HTML_FOOTER
+    write_html(html_content, OUTPUT_HTML_PATH)
+    print(f"HTML file generated: {OUTPUT_HTML_PATH}")
+
+
+if __name__ == "__main__":
+    main()

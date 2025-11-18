@@ -1,0 +1,11 @@
+Metadata-Version: 2.4
+Name: paper_extraction_pipeline
+Version: 0.1.0
+Summary: Utilities for generating prompts and running the paper extraction pipeline.
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: typer>=0.9
+
+This is the repository for the project "Assessing the potential for automated article coding and data extraction in the social sciences", pregregistered on OSF: https://osf.io/quxdb.
+
+This is work in progress.

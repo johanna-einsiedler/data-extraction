@@ -12,7 +12,7 @@ class BaseEmbedder(ABC):
     @abstractmethod
     def embed(self, texts: List[str]) -> np.ndarray:
         """Convert list of texts into embeddings (2D array)."""
-        pass
+        raise NotImplementedError
 
     def embed_query(
         self,
@@ -47,3 +47,20 @@ class BaseEmbedder(ABC):
 
         else:
             raise ValueError(f"Unknown query embedding strategy: {strategy}")
+
+
+class DefaultEmbedder(BaseEmbedder):
+    """Lightweight fallback embedder for tests and CPU-only environments."""
+
+    def embed(self, texts: List[str]) -> np.ndarray:
+        vectors = []
+        for text in texts:
+            stripped = text.strip()
+            length = float(len(stripped))
+            words = float(len(stripped.split())) if stripped else 0.0
+            # Simple checksum-style feature to add variance but deterministic
+            checksum = float(sum(ord(ch) for ch in stripped) % 10_000)
+            vectors.append(np.array([length, words, checksum], dtype=np.float32))
+        if not vectors:
+            return np.zeros((0, 3), dtype=np.float32)
+        return np.vstack(vectors)

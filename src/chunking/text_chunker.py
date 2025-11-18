@@ -1,92 +1,97 @@
-import os
 import re
-import sys
 import xml.etree.ElementTree as ET
 from typing import List
 
-sys.path.append(os.path.dirname(__file__))
-
-from base_chunker import BaseChunker
+from .base_chunker import BaseChunker, Chunk
 
 
 class TextStructureChunker(BaseChunker):
-    def chunk(self, text: str) -> List[str]:
-        # Detect structure (XML or plain text)
-        if text.strip().startswith("<"):
-            try:
-                root = ET.fromstring(text.strip())
-                paragraphs = [
-                    elem.text.strip()
-                    for elem in root.iter()
-                    if elem.tag.lower() in {"p", "section", "article", "div"}
-                    and elem.text
-                ]
-            except ET.ParseError:
-                paragraphs = re.split(r"\n\s*\n", text.strip())
-        else:
-            paragraphs = re.split(r"\n\s*\n", text.strip())
+    """Chunker that respects paragraph/section boundaries where possible."""
 
-        def split_para(para: str) -> List[str]:
-            """Split paragraph into chunks roughly by sentence boundaries."""
+    def chunk(self, text: str) -> List[Chunk]:
+        """Break text or lightweight markup into paragraph- and sentence-level chunks."""
+        raw = text.strip()
+
+        if raw.startswith("<"):
+            try:
+                root = ET.fromstring(raw)
+                paragraphs = []
+                for elem in root.iter():
+                    if elem.tag.lower() in {"p", "section", "article", "div"}:
+                        text_content = "".join(elem.itertext()).strip()
+                        if text_content:
+                            paragraphs.append(
+                                (
+                                    self._sanitize(text_content, remove_tags=True),
+                                    elem.tag.lower(),
+                                )
+                            )
+                if not paragraphs:
+                    raise ET.ParseError("No structural elements with text")
+            except ET.ParseError:
+                paragraphs = [
+                    (p, "paragraph")
+                    for p in re.split(r"\n\s*\n", self._sanitize(raw, remove_tags=True))
+                ]
+        else:
+            paragraphs = [
+                (p, "paragraph")
+                for p in re.split(r"\n\s*\n", self._sanitize(raw, remove_tags=True))
+            ]
+
+        paragraphs = [(p.strip(), tag) for p, tag in paragraphs if p and p.strip()]
+
+        def split_para(para: str, tag: str) -> List[Chunk]:
+            """Sentence-aware splitting to avoid chopping within sentences."""
             sentences = re.split(r"(?<=[.!?])\s+", para)
-            result, current = [], ""
+            result: List[Chunk] = []
+            current = ""
             for sent in sentences:
                 if len(current) + len(sent) + 1 <= self.chunk_size:
                     current += (" " if current else "") + sent
                 else:
                     if current:
-                        result.append(current.strip())
+                        result.append(Chunk(current.strip(), {"source_tag": tag}))
                     current = sent
             if current:
-                result.append(current.strip())
+                result.append(Chunk(current.strip(), {"source_tag": tag}))
             return result
 
-        def force_cut(text: str) -> List[str]:
-            """Hard cut into pieces <= chunk_size, preserving overlap."""
-            chunks = []
-            step = self.chunk_size - self.chunk_overlap
-            start = 0
-            while start < len(text):
-                end = start + self.chunk_size
-                chunks.append(text[start:end])
-                start += step
-            return chunks
+        chunks: List[Chunk] = []
 
-        chunks: List[str] = []
-
-        # Paragraph-level processing
-        for para in paragraphs:
+        for para, tag in paragraphs:
             if len(para) > self.chunk_size:
-                chunks.extend(split_para(para))
-            elif chunks and len(chunks[-1]) + len(para) + 2 <= self.chunk_size:
-                chunks[-1] += "\n\n" + para
+                chunks.extend(split_para(para, tag))
+            elif (
+                chunks
+                and len(chunks[-1].text) + len(para) + 2 <= self.chunk_size
+                and chunks[-1].metadata.get("source_tag") == tag
+            ):
+                chunks[-1].text += "\n\n" + para
             else:
-                chunks.append(para.strip())
+                chunks.append(Chunk(para, {"source_tag": tag}))
 
-        # ✅ Post-process: ensure no chunk exceeds chunk_size + overlap
-        final_chunks: List[str] = []
+        final_chunks: List[Chunk] = []
         for chunk in chunks:
-            if len(chunk) > self.chunk_size + self.chunk_overlap:
-                # Try sentence-based secondary split
-                subchunks = split_para(chunk)
-                # If still too long (maybe no punctuation), fall back to hard cut
+            if len(chunk.text) > self.chunk_size + self.chunk_overlap:
+                subchunks = split_para(
+                    chunk.text, chunk.metadata.get("source_tag", "paragraph")
+                )
                 for sc in subchunks:
-                    if len(sc) > self.chunk_size + self.chunk_overlap:
-                        final_chunks.extend(force_cut(sc))
+                    if len(sc.text) > self.chunk_size + self.chunk_overlap:
+                        forced = self._force_cut(sc.text)
+                        for piece in forced:
+                            piece.metadata.update(sc.metadata)
+                        final_chunks.extend(forced)
                     else:
                         final_chunks.append(sc)
             else:
                 final_chunks.append(chunk)
 
-        # ✅ Apply global overlap across all final chunks
-        if self.chunk_overlap > 0 and len(final_chunks) > 1:
-            adjusted = []
-            for i, chunk in enumerate(final_chunks):
-                if i > 0:
-                    overlap_text = final_chunks[i - 1][-self.chunk_overlap :]
-                    # Ensure overlap_text is prefixed to current chunk
-                    chunk = overlap_text + chunk
-                adjusted.append(chunk)
-            final_chunks = adjusted
+        cleaned: List[Chunk] = []
+        for chunk in final_chunks:
+            sanitized = self._sanitize(chunk.text, remove_tags=True)
+            if sanitized:
+                cleaned.append(Chunk(sanitized, chunk.metadata))
 
-        return final_chunks
+        return self._apply_overlap(cleaned)

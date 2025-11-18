@@ -1,17 +1,13 @@
 # retrieval/rcs_retriever.py
 import os
 import re
-import sys
+import logging
 from typing import List, Tuple
-
-sys.path.append(os.path.dirname(__file__))
-
-from base_retriever import BaseRetriever
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
 from together import Together
 
-from vectorstore.numpy_store import NumpyVectorStore
+from .base_retriever import BaseRetriever, VectorStoreProtocol
 
 dotenv_path = find_dotenv()
 load_dotenv(dotenv_path)
@@ -20,14 +16,19 @@ TOGETHER_API_KEY = os.getenv("TOGETHER_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 
+logger = logging.getLogger(__name__)
+
+
 class RCSRetriever(BaseRetriever):
+    supports_rerank = True
+    supports_top_m = True
     def __init__(
         self,
         llm_model: str,
         top_m: int = 10,
         k: int = 5,
         summary_length: int = 300,
-        client=Together(api_key=TOGETHER_API_KEY),  # optional generic API client
+        client=None,
     ):
         """
         Args:
@@ -41,18 +42,25 @@ class RCSRetriever(BaseRetriever):
         self.top_m = top_m
         self.k = k
         self.llm_model = llm_model
-        self.client = client
 
-        # Auto-select OpenAI if model includes 'gpt'
-        if "gpt" in llm_model.lower():
+        if client is not None:
+            self.client = client
+        elif "gpt" in llm_model.lower():
             from openai import OpenAI
 
+            if not OPENAI_API_KEY:
+                raise ValueError("OPENAI_API_KEY environment variable is required for GPT models")
             self.client = OpenAI(api_key=OPENAI_API_KEY)
+        else:
+            if not TOGETHER_API_KEY:
+                raise ValueError(
+                    "TOGETHER_API_KEY environment variable is required for non-GPT models"
+                )
+            self.client = Together(api_key=TOGETHER_API_KEY)
 
-    def retrieve(self, query_vec, store: NumpyVectorStore) -> List[Tuple[str, float]]:
+    def retrieve(self, query_vec, store: VectorStoreProtocol) -> List[Tuple[str, float]]:
         # 1. Initial top-m retrieval
         top_chunks = store.query(query_vec, top_k=self.top_m)
-        print(top_chunks)
         reranked = []
         for chunk, score in top_chunks:
             prompt = f"""
@@ -71,14 +79,12 @@ class RCSRetriever(BaseRetriever):
                     model=self.llm_model,  # or another model like "gpt-3.5-turbo"
                     messages=[{"role": "user", "content": prompt}],
                 )
-                print(response)
                 # Extract the response content
                 content = response.choices[0].message.content
             else:
                 response = self.client.completions.create(
                     model=self.llm_model, prompt=prompt
                 )
-                print(response)
                 choice = response.choices[0]
                 content = choice.text
 
@@ -91,6 +97,12 @@ class RCSRetriever(BaseRetriever):
                 score = 0
 
             reranked.append((chunk, score))
+        logger.info(
+            "RCS reranked %d chunk(s) using %s; top scores: %s",
+            len(reranked),
+            self.llm_model,
+            [s for _, s in reranked[:5]],
+        )
 
         # 2. Rerank by relevance
         reranked.sort(key=lambda x: x[1], reverse=True)

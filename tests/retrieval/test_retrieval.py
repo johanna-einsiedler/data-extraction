@@ -1,3 +1,5 @@
+"""Integration-style tests that exercise the different retriever implementations."""
+
 import json
 import math
 import os
@@ -241,13 +243,75 @@ def test_rcs_retriever_reranking(llm_model):
 
     store = SimpleStore()
 
+    class DummyLLMClient:
+        def __init__(self):
+            self.chat = self.Chat(self)
+            self.completions = self.Completions(self)
+
+        class Chat:
+            def __init__(self, outer):
+                self.completions = self.Completions(outer)
+
+            class Completions:
+                def __init__(self, outer):
+                    self.outer = outer
+
+                def create(self, *, model, messages):
+                    prompt = messages[0]["content"]
+                    return self.outer._build_response(prompt, as_text=False)
+
+        class Completions:
+            def __init__(self, outer):
+                self.outer = outer
+
+            def create(self, *, model, prompt):
+                return self.outer._build_response(prompt, as_text=True)
+
+        @staticmethod
+        def _extract_chunk(prompt: str) -> str:
+            marker = "Chunk:"
+            return prompt.split(marker, 1)[1].strip() if marker in prompt else prompt
+
+        def _build_response(self, prompt: str, as_text: bool):
+            chunk = self._extract_chunk(prompt)
+            lowered = chunk.lower()
+            relevant = "artificial intelligence" in lowered or "computational systems" in lowered
+            relevance = 9 if relevant else 1
+            payload = json.dumps({"summary": chunk[:80], "relevance_score": relevance})
+
+            if as_text:
+                class Choice:
+                    def __init__(self, text):
+                        self.text = text
+
+                class Response:
+                    def __init__(self, text):
+                        self.choices = [Choice(text)]
+
+                return Response(payload)
+
+            class Message:
+                def __init__(self, content):
+                    self.content = content
+
+            class Choice:
+                def __init__(self, content):
+                    self.message = Message(content)
+
+            class Response:
+                def __init__(self, content):
+                    self.choices = [Choice(content)]
+
+            return Response(payload)
+
+    client = DummyLLMClient()
     retriever = RCSRetriever(
-        llm_model=llm_model,  # Use parameterized model
+        llm_model=llm_model,
         top_m=2,
         k=2,
+        client=client,
     )
 
-    # Call retriever
     results = retriever.retrieve(query, store)
 
     # Save results for debugging
@@ -305,9 +369,23 @@ def cross_encoder_store():
 
 @pytest.fixture
 def cross_encoder_retriever():
-    return CrossEncoderRetriever(
+    retriever = CrossEncoderRetriever(
         model_name="cross-encoder/ms-marco-MiniLM-L-6-v2", top_m=3, k=2
     )
+
+    class DummyModel:
+        def predict(self, pairs):
+            scores = []
+            for _, chunk in pairs:
+                lowered = chunk.lower()
+                if "programming" in lowered or "web development" in lowered:
+                    scores.append(0.9)
+                else:
+                    scores.append(0.1)
+            return scores
+
+    retriever.model = DummyModel()
+    return retriever
 
 
 # ---- Tests ----
@@ -315,7 +393,7 @@ def test_cross_encoder_retriever_init():
     retriever = CrossEncoderRetriever(top_m=3, k=2)
     assert retriever.top_m == 3
     assert retriever.k == 2
-    assert retriever.model is not None
+    assert retriever.model is None
 
 
 def test_cross_encoder_retriever_returns_top_k(

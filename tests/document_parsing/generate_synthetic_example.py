@@ -1,3 +1,5 @@
+"""Utility for generating the synthetic PDF used across parser regression tests."""
+
 import io
 import json
 import xml.etree.ElementTree as ET

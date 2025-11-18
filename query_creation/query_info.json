@@ -17,7 +17,16 @@
         },
         "type": "single_choice",
         "prefilled": [],
-        "examples": []
+        "examples": [
+            {
+                "context": "Approximately half of generalised anxiety disorder (GAD) patients do not recover from first-line treatments, and\nno validated prediction models exist to inform individuals or clinicians of potential treatment benefits. This study\naimed to develop and validate an accurate and explainable prediction model of post-treatment GAD symptom\nseverity. Data from adults receiving treatment for GAD in eight Improving Access to Psychological Therapies\n(IAPT) services (n=15,859) were separated into training, validation and holdout datasets. Thirteen machine\nlearning algorithms were compared using 10-fold cross-validation, against two simple clinically relevant comparison\nmodels.",
+                "answer": "1"
+            },
+            {
+                "context": "Understanding the traits that define a leader is a perennial quest. An ongoing debate surrounds the complexity\nrequired to unravel the leader trait paradigm. With the advancement of machine learning, scholars are now bet-\nter equipped to model leadership as an outcome of complex patterns in traits. However, interpreting those\nmodels is often harder. In this paper, we guide researchers in the application of machine learning techniques\nto uncover complex relationships. Specifically, we demonstrate how applying machine learning can help to as-\nsess the complexity of a relationship and show techniques that help interpret the outcomes of“black box” ma-\nchine learning algorithms. While demonstrating techniques to uncover complex relationships, we are using\nthe Big Five Inventory and need for cognition to predict leadership role occupancy. Among our sample (n =\n3385), we find that the leader trait paradigm can benefit from modeling complexity beyond linear effects and\ngenerate several interpretable results.",
+                "answer": "1"
+            }
+        ]
     },
     {
         "query_id": "0.7.1",
@@ -67,6 +76,10 @@
             {
                 "context": "\"Analyses were undertaken in R (R Core Team, 2022).\" (Section 2.3; p. 2)",
                 "answer": "R"
+            },
+            {
+                "context": "Understanding the traits that define a leader is a perennial quest. An ongoing debate surrounds the complexity\nrequired to unravel the leader trait paradigm. With the advancement of machine learning, scholars are now bet-\nter equipped to model leadership as an outcome of complex patterns in traits. However, interpreting those\nmodels is often harder. In this paper, we guide researchers in the application of machine learning techniques\nto uncover complex relationships. Specifically, we demonstrate how applying machine learning can help to as-\nsess the complexity of a relationship and show techniques that help interpret the outcomes of“black box” ma-\nchine learning algorithms. While demonstrating techniques to uncover complex relationships, we are using\nthe Big Five Inventory and need for cognition to predict leadership role occupancy. Among our sample (n =\n3385), we find that the leader trait paradigm can benefit from modeling complexity beyond linear effects and\ngenerate several interpretable results.",
+                "answer": "0"
             }
         ]
     },
@@ -88,7 +101,16 @@
         },
         "type": "single_choice",
         "prefilled": [],
-        "examples": []
+        "examples": [
+            {
+                "context": "Approximately half of generalised anxiety disorder (GAD) patients do not recover from first-line treatments, and\nno validated prediction models exist to inform individuals or clinicians of potential treatment benefits. This study\naimed to develop and validate an accurate and explainable prediction model of post-treatment GAD symptom\nseverity. Data from adults receiving treatment for GAD in eight Improving Access to Psychological Therapies\n(IAPT) services (n=15,859) were separated into training, validation and holdout datasets. Thirteen machine\nlearning algorithms were compared using 10-fold cross-validation, against two simple clinically relevant comparison\nmodels.",
+                "answer": "1"
+            },
+            {
+                "context": "Understanding the traits that define a leader is a perennial quest. An ongoing debate surrounds the complexity\nrequired to unravel the leader trait paradigm. With the advancement of machine learning, scholars are now bet-\nter equipped to model leadership as an outcome of complex patterns in traits. However, interpreting those\nmodels is often harder. In this paper, we guide researchers in the application of machine learning techniques\nto uncover complex relationships. Specifically, we demonstrate how applying machine learning can help to as-\nsess the complexity of a relationship and show techniques that help interpret the outcomes of“black box” ma-\nchine learning algorithms. While demonstrating techniques to uncover complex relationships, we are using\nthe Big Five Inventory and need for cognition to predict leadership role occupancy. Among our sample (n =\n3385), we find that the leader trait paradigm can benefit from modeling complexity beyond linear effects and\ngenerate several interpretable results.",
+                "answer": "1"
+            }
+        ]
     },
     {
         "query_id": "0.7.3",
@@ -110,6 +132,10 @@
             {
                 "context": "\"SuperLearner (van der Laan et al., 2007), the chosen ensemble \nmodelling tool, uses cross-validation to estimate the predictive perfor\nmance of individual machine learning algorithms, and ultimately de\ntermines the most accurate model within the ensemble.\" (Section 2.4; p. 2)\n\n\"The available hyperparameters of the winning model (BART) were tuned using ‘caret’ (Max, 2008) and were determined to be: number of \ntrees=50, k=2, α =0.95, β=0.5 and ν =3; see Supplementary Material 1 for further details.\" (Section 3.2; p.3)",
                 "answer": "Specific packages mentioned:"
+            },
+            {
+                "context": "Understanding the traits that define a leader is a perennial quest. An ongoing debate surrounds the complexity\nrequired to unravel the leader trait paradigm. With the advancement of machine learning, scholars are now bet-\nter equipped to model leadership as an outcome of complex patterns in traits. However, interpreting those\nmodels is often harder. In this paper, we guide researchers in the application of machine learning techniques\nto uncover complex relationships. Specifically, we demonstrate how applying machine learning can help to as-\nsess the complexity of a relationship and show techniques that help interpret the outcomes of“black box” ma-\nchine learning algorithms. While demonstrating techniques to uncover complex relationships, we are using\nthe Big Five Inventory and need for cognition to predict leadership role occupancy. Among our sample (n =\n3385), we find that the leader trait paradigm can benefit from modeling complexity beyond linear effects and\ngenerate several interpretable results.",
+                "answer": "0"
             }
         ]
     },
@@ -131,7 +157,16 @@
         },
         "type": "single_choice",
         "prefilled": [],
-        "examples": []
+        "examples": [
+            {
+                "context": "Approximately half of generalised anxiety disorder (GAD) patients do not recover from first-line treatments, and\nno validated prediction models exist to inform individuals or clinicians of potential treatment benefits. This study\naimed to develop and validate an accurate and explainable prediction model of post-treatment GAD symptom\nseverity. Data from adults receiving treatment for GAD in eight Improving Access to Psychological Therapies\n(IAPT) services (n=15,859) were separated into training, validation and holdout datasets. Thirteen machine\nlearning algorithms were compared using 10-fold cross-validation, against two simple clinically relevant comparison\nmodels.",
+                "answer": "1"
+            },
+            {
+                "context": "Understanding the traits that define a leader is a perennial quest. An ongoing debate surrounds the complexity\nrequired to unravel the leader trait paradigm. With the advancement of machine learning, scholars are now bet-\nter equipped to model leadership as an outcome of complex patterns in traits. However, interpreting those\nmodels is often harder. In this paper, we guide researchers in the application of machine learning techniques\nto uncover complex relationships. Specifically, we demonstrate how applying machine learning can help to as-\nsess the complexity of a relationship and show techniques that help interpret the outcomes of“black box” ma-\nchine learning algorithms. While demonstrating techniques to uncover complex relationships, we are using\nthe Big Five Inventory and need for cognition to predict leadership role occupancy. Among our sample (n =\n3385), we find that the leader trait paradigm can benefit from modeling complexity beyond linear effects and\ngenerate several interpretable results.",
+                "answer": "1"
+            }
+        ]
     },
     {
         "query_id": "0.8",
@@ -165,6 +200,10 @@
         "prefilled": [],
         "examples": [
             {
+                "context": "Approximately half of generalised anxiety disorder (GAD) patients do not recover from first-line treatments, and\nno validated prediction models exist to inform individuals or clinicians of potential treatment benefits. This study\naimed to develop and validate an accurate and explainable prediction model of post-treatment GAD symptom\nseverity. Data from adults receiving treatment for GAD in eight Improving Access to Psychological Therapies\n(IAPT) services (n=15,859) were separated into training, validation and holdout datasets. Thirteen machine\nlearning algorithms were compared using 10-fold cross-validation, against two simple clinically relevant comparison\nmodels.",
+                "answer": "0"
+            },
+            {
                 "context": "\" In this paper we make use of data of the LISS (Longitudinal Internet\n Studies for the Social sciences) panel administered by CentERdata (Til\nburg University, The Netherlands). The LISS panel is a representative\n sample of Dutch individuals (Scherpenzeel & Das, 2010) and is based\n on a true probability sample of households drawn from the population\n register. The data we used (n = 3642) were gathered in 2013.\" (Section \"Participants\"; p. 3)",
                 "answer": "3"
             }
@@ -192,6 +231,10 @@
             {
                 "context": "\"The methods for this study were preregistered and were adhered to \nwithout deviation (see: https://osf.io/s23hc/).\" (Section 2; p. 2)",
                 "answer": "2"
+            },
+            {
+                "context": "Understanding the traits that define a leader is a perennial quest. An ongoing debate surrounds the complexity\nrequired to unravel the leader trait paradigm. With the advancement of machine learning, scholars are now bet-\nter equipped to model leadership as an outcome of complex patterns in traits. However, interpreting those\nmodels is often harder. In this paper, we guide researchers in the application of machine learning techniques\nto uncover complex relationships. Specifically, we demonstrate how applying machine learning can help to as-\nsess the complexity of a relationship and show techniques that help interpret the outcomes of“black box” ma-\nchine learning algorithms. While demonstrating techniques to uncover complex relationships, we are using\nthe Big Five Inventory and need for cognition to predict leadership role occupancy. Among our sample (n =\n3385), we find that the leader trait paradigm can benefit from modeling complexity beyond linear effects and\ngenerate several interpretable results.",
+                "answer": "1"
             }
         ]
     },
@@ -236,7 +279,7 @@
         "prefilled": [],
         "examples": [
             {
-                "context": "Supplement 1, Table 1",
+                "context": "Table 1\nBaseline predictors submitted to SuperLearner ensemble\nPredictor variables \nCategorical\tContinuous\nEmployment status\tAge\nEthnicity\tAgoraphobia score\nGender\tGAD-7 individual question scores, 1-7\nLong-term health condition\tGAD-7 (pre-treatment) score\nMedication status\tIMD Decile\n\tPHQ-9 individual question scores, 1-9\n\tPHQ-9 (pre-treatment) score\n\tSocial Phobia score\n\tSocial Phobia score\n\tSpecific Phobia score\n\tWSAS Question 2\n\tWSAS Question 3\n\tWSAS Question 4\n\tWSAS Question 5\n\tWeeks from referral to assessment\n\tWeeks from assessment to treatment\nNote. GAD-7 (Spitzer et al., 2006), PHQ-9 (Kroenke et al., 2001), WSAS (Mundt et al., 2002).",
                 "answer": "21"
             },
             {
@@ -608,7 +651,7 @@
         "prefilled": [],
         "examples": [
             {
-                "context": "Table 3; Supplement 1",
+                "context": "Table 3\nSupervised machine learning algorithms overview\nAlgorithm\tDescription\nTraditional\n\t•\tStatistical linear (continuous variable) or logistic (binary or discrete categories) regression.\n•\tInterpretable due to their simplicity, but when independent variables are highly collinear (have a linear association) the models are susceptible to overfitting.\nOrdinary least squares regression (OLS)\n\t•\tVersion of linear least squares method.\n•\tSeeks to minimise the sum of squares of the difference between the predictions and dependent variable from a linear function.\nRegularisation\n(Friedman et al., 2010)\n•\tSeeks to reduce the risk of overfitting by penalising collinear independent variables.\nRidge\t•\tFor independent variables that are collinear, their coefficients are shrunk towards zero (although not removed).\nLeast Absolute Shrinkage and Selection Operator (LASSO)\t•\tFor collinear covariates (noisy variables) their coefficients are shrunk (reduced) to zero.\n•\tConsequently, their contribution to predictions is eliminated.\nElastic net\t•\tUses a combination of ridge and LASSO (shrinking) penalties to regularise regression models.\n•\tThe parameter penalty (α) is assigned to a value between .01 and .99 to determine the balance between ridge and LASSO.\nSpline\t•\tPiecewise polynomial function (called a spline); a function that is composed of polynomials with set intervals (smoothness functions) to model data.\nAdaptive Splines\n(Friedman, 1991)\n•\tNon-parametric regression that aims to automatically model non-linearities and variable interactions.\n•\tSearches for optimal combinations of simple linear piecewise (sub) functions, to then be aggregated for prediction.\nAdaptive Polynomial Splines\n(Stone et al., 1997)\n•\tProduces a single polynomial function (rather than multiple as done for adaptive splines) that seeks to model the entire non-linear dataset.\n•\tRegarded as a special case of multiple linear regression; a linear regression function with a combination of unknown coefficients.\nDecision tree\n(Breiman et al., 1984)\n•\tCategory of algorithms that use a set of pre-defined rules or methods to detect non-linear patterns within data.\n•\tPredictors are separated, with the process being determined by the model’s hyperparameters (that define the training process) and then stacked, whereby multiple predictions from individual trees are combined into one.\n•\tDecision trees are then formed and are ultimately aggregated to produce a forest.\n•\tEach internal node refers to a rule test on a given feature (predictor) whereas a leaf node is the prediction/classification and is not split. \n•\tPruning is the process of removing decision rules from the aggregated tree to reduce complexity.\nRandom forest\n(Breiman, 2001)\n•\tUses bagging as a stacking method, whereby a random sample is selected for prediction with replacement.\n•\tUndertaken within a bootstrapped sample, where an individual dataset is resampled to create multiple, smaller datasets.\n•\tTakes the average prediction across multiple (largely uncorrelated) trees that reduces overfitting to ultimately produce an aggregate tree.\nBayesian Additive Regression Trees (BART)\n(Chipman et al., 2010)\n\t•\tUses Bayesian reasoning to calculate the posterior (structure and data values in leaf nodes) probability.\n•\tThe tree is aggregated by taking the sum of tree posteriors (i.e. leaf nodes). \n•\tDiffers from random forest in that it is underpinned by a statistical model rather than an algorithm and takes the sum of independent tree estimates rather than the average.\nSupport vector machine\n(Steinwart & Christmann, 2008)\n•\tAims to create the optimal line or hyperplane that separates data into classes (although can also be used for regression).\n•\tEach predictor is a dimension within the multidimensional space.\n•\tUses pre-set linear, radial or polynomial kernels, mathematical functions used for data manipulation within the algorithm and determines the ability to capture non-linearity within the data.\nNote. Adapted from (Jiang et al., 2020).",
                 "answer": "1"
             },
             {
@@ -643,6 +686,10 @@
             {
                 "context": "\"Missing baseline data were single imputed using the ‘missForest’ package (Stekhoven and Bühlmann, 2012), following conventions from other prediction model development and validation studies (Buckman et al., 2021a; Webb et al., 2020), with missingness varying by predictor from nil to 22.7 % (long-term health condition).\" (Section 2.3; p.2)",
                 "answer": "2"
+            },
+            {
+                "context": "Understanding the traits that define a leader is a perennial quest. An ongoing debate surrounds the complexity\nrequired to unravel the leader trait paradigm. With the advancement of machine learning, scholars are now bet-\nter equipped to model leadership as an outcome of complex patterns in traits. However, interpreting those\nmodels is often harder. In this paper, we guide researchers in the application of machine learning techniques\nto uncover complex relationships. Specifically, we demonstrate how applying machine learning can help to as-\nsess the complexity of a relationship and show techniques that help interpret the outcomes of“black box” ma-\nchine learning algorithms. While demonstrating techniques to uncover complex relationships, we are using\nthe Big Five Inventory and need for cognition to predict leadership role occupancy. Among our sample (n =\n3385), we find that the leader trait paradigm can benefit from modeling complexity beyond linear effects and\ngenerate several interpretable results.",
+                "answer": "0"
             }
         ]
     },
@@ -691,6 +738,10 @@
             {
                 "context": "\"Missing baseline data were single imputed using the ‘missForest’ package (Stekhoven and Bühlmann, 2012), following conventions from other prediction model development and validation studies (Buckman et al., 2021a; Webb et al., 2020), with missingness varying by predictor from nil to 22.7 % (long-term health condition).\" (Section 2.3; p.2)",
                 "answer": "Other:"
+            },
+            {
+                "context": "Understanding the traits that define a leader is a perennial quest. An ongoing debate surrounds the complexity\nrequired to unravel the leader trait paradigm. With the advancement of machine learning, scholars are now bet-\nter equipped to model leadership as an outcome of complex patterns in traits. However, interpreting those\nmodels is often harder. In this paper, we guide researchers in the application of machine learning techniques\nto uncover complex relationships. Specifically, we demonstrate how applying machine learning can help to as-\nsess the complexity of a relationship and show techniques that help interpret the outcomes of“black box” ma-\nchine learning algorithms. While demonstrating techniques to uncover complex relationships, we are using\nthe Big Five Inventory and need for cognition to predict leadership role occupancy. Among our sample (n =\n3385), we find that the leader trait paradigm can benefit from modeling complexity beyond linear effects and\ngenerate several interpretable results.",
+                "answer": "0"
             }
         ]
     },
@@ -853,6 +904,10 @@
             {
                 "context": "\"The first was an OLS \nregression model with only the pre-treatment GAD-7 score included, as \ninitial symptom severity is one of the most important factors considered \nby clinicians in predicting treatment outcomes (and allocating treat\nment) for their patients (Amati et al., 2018; Buckman et al., 2021b; \nO’Driscoll et al., 2021).\" (Section 2.4; p.2)",
                 "answer": "Theoretically derived"
+            },
+            {
+                "context": "Understanding the traits that define a leader is a perennial quest. An ongoing debate surrounds the complexity\nrequired to unravel the leader trait paradigm. With the advancement of machine learning, scholars are now bet-\nter equipped to model leadership as an outcome of complex patterns in traits. However, interpreting those\nmodels is often harder. In this paper, we guide researchers in the application of machine learning techniques\nto uncover complex relationships. Specifically, we demonstrate how applying machine learning can help to as-\nsess the complexity of a relationship and show techniques that help interpret the outcomes of“black box” ma-\nchine learning algorithms. While demonstrating techniques to uncover complex relationships, we are using\nthe Big Five Inventory and need for cognition to predict leadership role occupancy. Among our sample (n =\n3385), we find that the leader trait paradigm can benefit from modeling complexity beyond linear effects and\ngenerate several interpretable results.",
+                "answer": "0"
             }
         ]
     },
@@ -1034,6 +1089,10 @@
         ],
         "examples": [
             {
+                "context": "\"Approximately half of generalised anxiety disorder (GAD) patients do not recover from first-line treatments, and\nno validated prediction models exist to inform individuals or clinicians of potential treatment benefits. This study\naimed to develop and validate an accurate and explainable prediction model of post-treatment GAD symptom\nseverity. Data from adults receiving treatment for GAD in eight Improving Access to Psychological Therapies\n(IAPT) services (n=15,859) were separated into training, validation and holdout datasets. Thirteen machine\nlearning algorithms were compared using 10-fold cross-validation, against two simple clinically relevant comparison\nmodels. \"",
+                "answer": "Hyperparameter values not mentioned"
+            },
+            {
                 "context": "\"We explored 66 combinations of hyperparameters containing six values for the number of candidate variables for each split (i.e., 1, 2, 3, 4, 5, and 6) and 11 values for the minimal terminal node size (1, 5, 10, 25, 50, 100, 200, 300, 400, 500, and 600).\" (Section \"RQ1\"; p.4)",
                 "answer": "Specific set of hyperparameters values"
             }
@@ -1187,6 +1246,10 @@
             {
                 "context": "\"The dataset was then divided into three for training, validation and \ntesting, as detailed in the study protocol. Division was determined by \nservice locations within NHS Trusts and undertaken to create an accu\nrate representation of the model’s ability to generalise to services \nbeyond those whose data were used to develop and validate the models \n(Chekroud and Koutsouleris, 2018). The variables collected and delivery \nof interventions within these service locations are standardised across \nEngland (National Collaborating Centre for Mental Health, 2023). The \ntraining dataset services were three from Trust 1 and three from Trust 2 \n(n=8,064; 50.8 %). The validation dataset services were two from Trust \n3 (n=5,021; 31.7 %). The holdout dataset service was a single one from \nTrust 4 (n=2,774; 17.5 %).\" (Section 2.3; p.2)",
                 "answer": "1"
+            },
+            {
+                "context": "Understanding the traits that define a leader is a perennial quest. An ongoing debate surrounds the complexity\nrequired to unravel the leader trait paradigm. With the advancement of machine learning, scholars are now bet-\nter equipped to model leadership as an outcome of complex patterns in traits. However, interpreting those\nmodels is often harder. In this paper, we guide researchers in the application of machine learning techniques\nto uncover complex relationships. Specifically, we demonstrate how applying machine learning can help to as-\nsess the complexity of a relationship and show techniques that help interpret the outcomes of“black box” ma-\nchine learning algorithms. While demonstrating techniques to uncover complex relationships, we are using\nthe Big Five Inventory and need for cognition to predict leadership role occupancy. Among our sample (n =\n3385), we find that the leader trait paradigm can benefit from modeling complexity beyond linear effects and\ngenerate several interpretable results.",
+                "answer": "0"
             }
         ]
     },
@@ -1226,7 +1289,12 @@
         "prefilled": [
             "Other:"
         ],
-        "examples": []
+        "examples": [
+            {
+                "context": "\"Approximately half of generalised anxiety disorder (GAD) patients do not recover from first-line treatments, and\nno validated prediction models exist to inform individuals or clinicians of potential treatment benefits. This study\naimed to develop and validate an accurate and explainable prediction model of post-treatment GAD symptom\nseverity. Data from adults receiving treatment for GAD in eight Improving Access to Psychological Therapies\n(IAPT) services (n=15,859) were separated into training, validation and holdout datasets. Thirteen machine\nlearning algorithms were compared using 10-fold cross-validation, against two simple clinically relevant comparison\nmodels. \"",
+                "answer": "0"
+            }
+        ]
     },
     {
         "query_id": "3.5",
@@ -1254,7 +1322,12 @@
         },
         "type": "multiple_choice",
         "prefilled": [],
-        "examples": []
+        "examples": [
+            {
+                "context": "Understanding the traits that define a leader is a perennial quest. An ongoing debate surrounds the complexity\nrequired to unravel the leader trait paradigm. With the advancement of machine learning, scholars are now bet-\nter equipped to model leadership as an outcome of complex patterns in traits. However, interpreting those\nmodels is often harder. In this paper, we guide researchers in the application of machine learning techniques\nto uncover complex relationships. Specifically, we demonstrate how applying machine learning can help to as-\nsess the complexity of a relationship and show techniques that help interpret the outcomes of“black box” ma-\nchine learning algorithms. While demonstrating techniques to uncover complex relationships, we are using\nthe Big Five Inventory and need for cognition to predict leadership role occupancy. Among our sample (n =\n3385), we find that the leader trait paradigm can benefit from modeling complexity beyond linear effects and\ngenerate several interpretable results.",
+                "answer": "0"
+            }
+        ]
     },
     {
         "query_id": "3.5.1",
@@ -1546,7 +1619,7 @@
         "prefilled": [],
         "examples": [
             {
-                "context": "Table 2, p. 5",
+                "context": "Table 2\nEnsemble validation dataset results.\nCategory of algorithm Algorithm MSE\nSE MAE R2\n[95 % CI]\nMultiple predictor OLS Linear regression 16.86\nPenalised regression Ridge regression 16.81\nElastic net (alpha =0.25) 16.83\nElastic net (alpha =0.50) 16.83\nElastic net (alpha =0.75) 16.84\nLASSO regression 16.84\nSpline regression Adaptive splines 16.94\nAdaptive polynomial splines 16.77\nDecision tree Random forest 16.78\nBayesian additive regression trees 16.72\nSupport vector regression SVR (polynomial) 19.61\nSVR (linear) 17.10\nSVR (radial) 17.65\nSingle predictor OLS Linear regression 23.52\nNull model Post-treatment mean 26.99\n[16.27 17.44]\n[16.23 17.39]\n[16.24 17.41]\n[16.25 17.42]\n[16.25 17.42]\n[16.25 17.42]\n[16.32 17.56]\n[16.17 17.37]\n[16.20 17.36]\n[16.12 17.32]\n[18.89 20.33]\n[16.48 17.71]\n[17.01 18.29]\n[22.63 24.40]\n[25.98 28.01]\nNote. MSE =mean squared error; CI =confidence interval; SE =standard error of MSE; MAE =mean absolute error; R2\nleast squares; SVR =support vector regression.\n0.38 3.20 0.38\n0.37 3.20 0.38\n0.38 3.20 0.38\n0.38 3.20 0.38\n0.38 3.20 0.38\n0.38 3.20 0.38\n0.40 3.17 0.37\n0.39 3.16 0.38\n0.38 3.19 0.38\n0.39 3.16 0.38\n0.47 3.38 0.30\n0.40 3.19 0.37\n0.41 3.22 0.36\n0.45 3.90 0.40\n0.52 4.21 N/A\n=coefficient of determination; OLS =ordinary",
                 "answer": "MSE, R², MAE"
             },
             {
@@ -1752,8 +1825,12 @@
         "prefilled": [],
         "examples": [
             {
-                "context": "Table 2, p. 5",
+                "context": "Table 2\nEnsemble validation dataset results.\nCategory of algorithm Algorithm MSE\nSE MAE R2\n[95 % CI]\nMultiple predictor OLS Linear regression 16.86\nPenalised regression Ridge regression 16.81\nElastic net (alpha =0.25) 16.83\nElastic net (alpha =0.50) 16.83\nElastic net (alpha =0.75) 16.84\nLASSO regression 16.84\nSpline regression Adaptive splines 16.94\nAdaptive polynomial splines 16.77\nDecision tree Random forest 16.78\nBayesian additive regression trees 16.72\nSupport vector regression SVR (polynomial) 19.61\nSVR (linear) 17.10\nSVR (radial) 17.65\nSingle predictor OLS Linear regression 23.52\nNull model Post-treatment mean 26.99\n[16.27 17.44]\n[16.23 17.39]\n[16.24 17.41]\n[16.25 17.42]\n[16.25 17.42]\n[16.25 17.42]\n[16.32 17.56]\n[16.17 17.37]\n[16.20 17.36]\n[16.12 17.32]\n[18.89 20.33]\n[16.48 17.71]\n[17.01 18.29]\n[22.63 24.40]\n[25.98 28.01]\nNote. MSE =mean squared error; CI =confidence interval; SE =standard error of MSE; MAE =mean absolute error; R2\nleast squares; SVR =support vector regression.\n0.38 3.20 0.38\n0.37 3.20 0.38\n0.38 3.20 0.38\n0.38 3.20 0.38\n0.38 3.20 0.38\n0.38 3.20 0.38\n0.40 3.17 0.37\n0.39 3.16 0.38\n0.38 3.19 0.38\n0.39 3.16 0.38\n0.47 3.38 0.30\n0.40 3.19 0.37\n0.41 3.22 0.36\n0.45 3.90 0.40\n0.52 4.21 N/A\n=coefficient of determination; OLS =ordinary",
                 "answer": "2"
+            },
+            {
+                "context": "Understanding the traits that define a leader is a perennial quest. An ongoing debate surrounds the complexity\nrequired to unravel the leader trait paradigm. With the advancement of machine learning, scholars are now bet-\nter equipped to model leadership as an outcome of complex patterns in traits. However, interpreting those\nmodels is often harder. In this paper, we guide researchers in the application of machine learning techniques\nto uncover complex relationships. Specifically, we demonstrate how applying machine learning can help to as-\nsess the complexity of a relationship and show techniques that help interpret the outcomes of“black box” ma-\nchine learning algorithms. While demonstrating techniques to uncover complex relationships, we are using\nthe Big Five Inventory and need for cognition to predict leadership role occupancy. Among our sample (n =\n3385), we find that the leader trait paradigm can benefit from modeling complexity beyond linear effects and\ngenerate several interpretable results.",
+                "answer": "1"
             }
         ]
     },
@@ -1781,7 +1858,7 @@
         "prefilled": [],
         "examples": [
             {
-                "context": "Table 1, p.4",
+                "context": "Table 1\nDemographics and group comparison.\nSample Characteristics Training (%) Validation (%) Testing (%) Group Comparison (Chi Square or ANOVA)\nOverall 8064 (50.8) 5021 (31.7) 2774 (17.5)\nEmployment status X2 (14, N=15574)=754.1, p<0.001\nEmployed 5300 (65.7) 3674 (73.2) 2066 (74.5)\nUnemployed but seeking work 338 (4.2) 147 (2.9) 242 (8.7)\nStudent 548 (6.8) 257 (5.1) 301 (10.9)\nLong-term sick or disabled 463 (5.7) 117 (2.3) 31 (1.1)\nHomemaker 368 (4.6) 157 (3.1) 49 (1.8)\nNot working 466 (5.8) 339 (6.8) 3 (0.1)\nVoluntary work 48 (0.6) 14 (0.3) 5 (0.2)\nRetired 461 (5.7) 114 (2.3) 66 (2.4)\nMissing 72 (0.9) 202 (4.0) 11 (0.4)\nEthnicity X2 (10, N=15323)=221.0, p<0.001\nAsian 736 (9.1) 218 (4.3) 153 (5.5)\nBlack 686 (8.5) 428 (8.5) 115 (4.1)\nChinese 51 (0.6) 37 (0.7) 31 (1.1)\nMixed 442 (5.5) 227 (4.5) 149 (5.4)\nOther 346 (4.3) 134 (2.7) 81 (2.9)\nWhite 5638 (69.9) 3718 (74.0) 2133 (76.9)\nMissing 442 (5.5) 259 (5.2) 112 (4.0)\nGendery X2 (2, N=15824)=3.7, p=0.159\nFemale 5809 (72.0) 3534 (70.4) 1992 (71.8)\nMale 2239 (27.8) 1469 (29.3) 781 (28.2\nMissing 16 (0.2) 18 (0.4) 1 (0.0)\nLong term health condition X2 (2, N=12257)=155.9, p<0.001\nNo 4969 (61.6) 2233 (44.5) 1957 (70.5)\nYes 1993 (24.7) 434 (8.6) 671 (24.2)\nMissing 1102 (13.7) 2354 (46.9) 146 (5.3)\nMedication status X2 (4, N=14850)=81.8, p<0.001\nNot prescribed 4913 (60.9) 3190 (63.5) 1956 (70.5)\nPrescribed and taking 2338 (29.0) 1119 (22.3) 680 (24.5)\nPrescribed not taking 378 (4.7) 161 (3.2) 115 (4.1)\nMissing 435 (5.4) 23 (0.5) 551 (19.9)\nMean (± SD)\nAge 38.5 (14.2) 35.1 (11.2) 33.9 (11.9) F(2, 15856)=185.8 (p<0.001)\nIMD Decile\n4.6 (2.4)\n2.8 (1.3)\n3.6 (1.9)\nF(2, 15708)¼1206 (p<0.001)\nmissing (n; %)\n66; 0.8\n59; 1.2\n23; 0.8\nAgoraphobia score\n2.4 (2.6)\n2.2 (2.5)\n2.2 (2.3)\nF(2, 15527)=12.5 (p<0.001)\nmissing (n; %)\n23; 0.3\n290; 5.8\n16; 0.6\nSocial phobia score\n2.6 (2.4)\n2.5 (2.2)\n2.5 (2.1)\nF(2, 15527)=2.7 (p=0.065)\nmissing (n; %)\n23; 0.3\n290; 5.8\n16; 0.6\nSpecific phobia score\n2.1 (2.6)\n1.8 (2.5)\n1.9 (2.3)\nF(2, 15527)=20.1 (p<0.001)\nmissing (n; %)\n23; 0.3\n290; 5.8\n16; 0.6\nGAD-7 Nervousness 2.3 (0.8) 2.2 (0.9) 2.3 (0.8) F(2, 15856)=18.7 (p<0.001)\nGAD-7 Worry (control) 2.3 (0.9) 2.2 (0.9) 2.2 (0.9) F(2, 15856)=12.3 (p<0.001)\nGAD-7 Worry (excessiveness) 2.3 (0.9) 2.2 (0.9) 2.3 (0.8) F(2, 15856)=18.7 (p<0.001)\nGAD-7 Trouble relaxation 2.0 (0.9) 2.0 (0.9) 2.0 (0.9) F(2, 15856)=3.3 (p=0.036)\nGAD-7 Restlessness 1.2 (1.1) 1.1 (1.0) 1.0 (1.0) F(2, 15856)=17.9 (p<0.001)\nGAD-7 Annoyance/Irritability 1.7 (1.0) 1.7 (1.0) 1.6 (1.0) F(2, 15856)=14.0 (p<0.001)\nGAD-7 Apprehensive expectation 1.7 (1.1) 1.6 (1.1) 1.6 (1.1) F(2, 15856)=17.6 (p<0.001)\nGAD-7 (pre-treatment) total 13.9 (4.7) 13.4 (4.7) 13.2 (4.5) F(2, 15856)=27.2 (p<0.001)\nGAD-7 (post-treatment) total 7.5 (5.6) 7.4 (5.2) 7.3 (4.9) F(2, 15856)=2.8 (p=0.064)\nPHQ-9 Anhedonia 1.0 (0.9) 0.9 (0.9) 0.9 (0.8) F(2, 15856)=21.13 (p<0.001)\nPHQ-9 Depressed mood 1.6 (1.0) 1.5 (0.9) 1.5 (0.9) F(2, 15856)=57.6 (p<0.001)\nPHQ-9 Sleep 1.8 (1.1) 1.7 (1.1) 1.7 (1.0) F(2, 15856)=25.5 (p<0.001)\nPHQ-9 Energy 1.9 (1.0) 1.8 (1.0) 1.8 (0.9) F(2, 15856)=32.5 (p<0.001)\nPHQ-9 Appetite 1.3 (1.1) 1.1 (1.1) 1.1 (1.0) F(2, 15856)=56.2 (p<0.001)\nPHQ-9 Failure 1.7 (1.1) 1.6 (1.0) 1.6 (1.0) F(2, 15856)=9.0 (p<0.001)\nPHQ-9 Concentration 1.5 (1.1) 1.4 (1.0) 1.4 (1.0) F(2, 15856)=4.2 (p=0.015)\nPHQ-9 Psychomotor symptoms 0.8 (1.0) 0.7 (1.0) 0.7 (0.9) F(2, 15856)=32.5 (p<0.001)\nPHQ-9 Suicidal ideation 0.3 (0.7) 0.3 (0.6) 0.3 (0.6) F(2, 15856)=7.0 (p<0.001)\nPHQ-9 (pre-treatment) total 12.9 (5.9) 11.9 (5.7) 11.4 (5.4) F(2, 15856)=81.1 (p<0.001)\nNumber of sessions 7.38 (4.37) 7.44 (4.70) 7.04 (4.11) F(2, 15856)¼8.1 (p<0.001)\nWeeks from ref. to assess.\n3.8 (4.7)\n3.7 (3.7) 3.7 (2.5) F(2, 15854)=2.0(p=0.136)\nmissing (n; %)\n2; 0.0\nWeeks from assess. to treatment\n9.8 (9.2)\nmissing (n; %)\n502; 6.2\nWSAS question 2\n3.1 (2.3)\nmissing (n; %)\n23; 0.3\nWSAS question 3\n3.7 (2.4)\nmissing (n; %)\n24; 0.3\nWSAS question 4\n3.1 (2.5)\nmissing (n; %)\n24; 0.3\nWSAS question 5\n3.5 (2.4)\nmissing (n; %)\n24; 0.3\n6.7 (7.7)\n85; 1.7\n2.9 (2.3)\n313; 6.2\n3.6 (2.3)\n317; 6.3\n3.1 (2.4)\n319; 6.4\n3.5 (2.3)\n321; 6.4\n8.0 (6.4)\n140; 5.0\n2.7 (2.0)\n18; 0.6\n3.3 (2.1)\n18; 0.6\n2.8 (2.2)\n18; 0.6\n3.1 (2.2)\n18; 0.6\nF(2, 15129)=203.9 (p<0.001)\nF(2, 15502)=30.0 (p<0.001)\nF(2, 15497)=31.5 (p<0.001)\nF(2, 15495)=19.7 (p<0.001)\nF(2, 15493)=40.9 (p<0.001)\nNote. yService users were asked about their ‘gender’ and were provided with these options; we note that this does not consider the full range of experience but are the\nonly categories available within IAPT services. Welch t-tests are reported for significant ANOVA (<0.001) in Supplementary Material 1 (Table 4).",
                 "answer": "For other reported results:"
             },
             {

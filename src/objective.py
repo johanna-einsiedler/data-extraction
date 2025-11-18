@@ -4,6 +4,7 @@ import os
 import re
 import sys
 import time
+import logging
 from concurrent.futures import (
     ThreadPoolExecutor,  # <-- Add this at the top of your script
 )
@@ -17,13 +18,130 @@ import pandas as pd
 from dotenv import find_dotenv, load_dotenv
 
 from answer_generation.answer_generator import AnswerGenerator
+from document_parsing.base_parser import ParseResult
 from evaluate import evaluate_answer
-from registry import CHUNKERS, EMBEDDERS, LLMS, LLMS_META, PARSERS, RETRIEVERS
+from registry import (
+    CHUNKERS,
+    EMBEDDERS,
+    LLM_META_MAP,
+    LLMS,
+    LLMS_META,
+    OPENAI_API_KEY,
+    PARSERS,
+    RETRIEVERS,
+    TOGETHER_API_KEY,
+)
 from vectorstore.numpy_store import NumpyVectorStore
 
 dotenv_path = find_dotenv()
 load_dotenv(dotenv_path)
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+_LLM_STRIP_PATTERNS = [
+    (r"<(think|reason|thought)>.*?</\1>", dict(flags=re.DOTALL | re.IGNORECASE)),
+    (
+        r"\((thinking|reasoning|step-by-step reasoning):.*?\)",
+        dict(flags=re.DOTALL | re.IGNORECASE),
+    ),
+    (r"<!--\s*(think|reasoning|steps).*?-->", dict(flags=re.DOTALL | re.IGNORECASE)),
+    (
+        r"^(Thoughts?:|Reasoning:|Step\s*\d*:|Internal monologue:|Chain-of-thought:)\s*",
+        dict(flags=re.IGNORECASE | re.MULTILINE),
+    ),
+]
+
+logger = logging.getLogger(__name__)
+if not logger.handlers:
+    logging.basicConfig(level=logging.INFO)
+
+
+def load_full_document_text(parsed_path: Path) -> str:
+    """Return a string representation of the parsed document."""
+    if parsed_path.suffix == ".json":
+        with open(parsed_path, "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+        if isinstance(data, str):
+            return data
+        if isinstance(data, list):
+            return "\n\n".join(str(item) for item in data)
+        return json.dumps(data, ensure_ascii=False, indent=2)
+
+    # XML or plain-text fallback
+    return parsed_path.read_text(encoding="utf-8")
+
+
+def _clean_llm_text(text):
+    """Remove internal reasoning markers frequently returned by LLM APIs."""
+    if not isinstance(text, str):
+        return text
+    cleaned = text
+    for pattern, kwargs in _LLM_STRIP_PATTERNS:
+        cleaned = re.sub(pattern, "", cleaned, **kwargs)
+    return cleaned.strip()
+
+
+def get_llm_text(output):
+    """
+    Normalize assorted LLM responses (string/dict/list) into a cleaned string.
+    Handles direct strings, OpenAI-style choices, Together responses, and
+    nested structures while stripping out internal reasoning markers.
+    """
+    if output is None:
+        return ""
+
+    if isinstance(output, str):
+        return _clean_llm_text(output)
+
+    if isinstance(output, (list, tuple, set)):
+        parts = [get_llm_text(item) for item in output]
+        return "\n".join([p for p in parts if p])
+
+    if isinstance(output, dict):
+        if "text" in output:
+            return get_llm_text(output["text"])
+        if "message" in output:
+            return get_llm_text(output["message"])
+        if "content" in output:
+            return get_llm_text(output["content"])
+        if "choices" in output:
+            parts = [get_llm_text(choice) for choice in output.get("choices", [])]
+            return "\n".join([p for p in parts if p])
+
+        parts = []
+        for key, value in output.items():
+            if key in {"logprobs", "usage"}:
+                continue
+            parts.append(get_llm_text(value))
+        return "\n".join([p for p in parts if p])
+
+    if hasattr(output, "content"):
+        return get_llm_text(getattr(output, "content"))
+
+    return _clean_llm_text(str(output))
+
+
+def _select_prompt(qid: str, qdata: dict, default_prompt: str, use_default: bool) -> tuple[str, str | None]:
+    """Resolve which prompt variant to use and return (prompt_type, prompt_text)."""
+
+    prompts = qdata.get("prompts", {})
+    prompt_type = default_prompt
+
+    if (
+        qdata.get("type") in {"multiple_choice", "single_choice"}
+        and "binary_prompts" in prompts
+        and len(qdata.get("choices", [])) > 2
+        and not use_default
+    ):
+        return "binary_prompts", None
+
+    if prompt_type == "true_few_shot_prompt" and not prompts.get("true_few_shot_prompt"):
+        prompt_type = "synthetic_few_shot_prompt"
+
+    prompt_text = prompts.get(prompt_type)
+    if not prompt_text:
+        raise ValueError(f"No prompt found for query {qid} under '{prompt_type}'")
+
+    return prompt_type, prompt_text
 
 
 def get_parser(name, **overrides):
@@ -37,6 +155,7 @@ def get_parser(name, **overrides):
 QUERIES_JSON_PATH = Path(
     "../query_creation/queries_with_prompts.json"
 )  # Path to your JSON file
+OUTCOMES_PATH = PROJECT_ROOT / "data" / "true_labels" / "outcomes.json"
 
 
 def load_queries():
@@ -47,6 +166,17 @@ def load_queries():
     for qid, q in query_dict.items():
         queries[qid] = q  # keep original structure
     return queries
+
+
+try:
+    with open(OUTCOMES_PATH, "r", encoding="utf-8") as f:
+        OUTCOMES = json.load(f)
+except FileNotFoundError:
+    OUTCOMES = {}
+    print(
+        f"[objective] Warning: outcomes file not found at {OUTCOMES_PATH}. "
+        "Proceeding with empty outcomes map."
+    )
 
 
 def load_true_answers(
@@ -253,25 +383,40 @@ def check_dependency(qid, evaluated_results, dependency_rules, doc_id):
 # ---------------------------------------------------------------------
 def ensure_parsed(file_path: Path, parser_name: str):
     """Ensure a file is parsed. Return path to cached or newly parsed output."""
-    print(os.getcwd())
     pdir = parsed_dir(parser_name)
     pdir.mkdir(parents=True, exist_ok=True)
 
-    json_path = pdir / f"{file_path.stem}.json"
-    txt_path = pdir / f"{file_path.stem}.txt"
+    stem = file_path.stem
+    json_path = pdir / f"{stem}.json"
+    txt_path = pdir / f"{stem}.txt"
+    md_path = pdir / f"{stem}.md"
+    xml_path = pdir / f"{stem}.xml"
+    meta_path = pdir / f"{stem}.meta.json"
 
     print(json_path, txt_path)
 
     # 1️⃣ Use cached version if it exists
-    if json_path.exists():
-        return json_path
-    if txt_path.exists():
-        return txt_path
+    for cached in (json_path, txt_path, md_path, xml_path):
+        if cached.exists():
+            return cached
 
     # 2️⃣ Run parser
     parser = get_parser(parser_name)
     result = parser.parse(str(file_path))  # make sure your parser uses `out_dir`
     # 3️⃣ Save result depending on type
+    if isinstance(result, ParseResult):
+        format_hint = result.format or "markdown"
+        target_path = {
+            "tei_xml": xml_path,
+            "markdown": md_path,
+        }.get(format_hint, md_path)
+        with open(target_path, "w", encoding="utf-8") as fh:
+            fh.write(result.content)
+        if result.metadata:
+            with open(meta_path, "w", encoding="utf-8") as fh:
+                json.dump(result.metadata, fh, ensure_ascii=False, indent=2)
+        return target_path
+
     if isinstance(result, (dict, list)):
         with open(json_path, "w", encoding="utf-8") as fh:
             json.dump(result, fh, ensure_ascii=False, indent=2)
@@ -285,17 +430,17 @@ def ensure_parsed(file_path: Path, parser_name: str):
                 fh.write(result)
             return xml_path
         else:
-            with open(txt_path, "w", encoding="utf-8") as fh:
+            with open(md_path, "w", encoding="utf-8") as fh:
                 fh.write(result)
-            return txt_path
+            return md_path
 
     elif isinstance(result, Path):
         return result
 
     # 4️⃣ fallback: save repr
-    with open(txt_path, "w", encoding="utf-8") as fh:
+    with open(md_path, "w", encoding="utf-8") as fh:
         fh.write(repr(result))
-    return txt_path
+    return md_path
 
 
 def make_json_safe(obj):
@@ -336,40 +481,7 @@ def get_cleaned_text_and_logprobs(llm_output):
     token_logprobs = getattr(logprobs_obj, "token_logprobs", []) if logprobs_obj else []
 
     # Clean text
-    def clean_text(text):
-        if not isinstance(text, str):
-            return text
-        # Remove angle-bracket markers
-        text = re.sub(
-            r"<(think|reason|thought)>.*?</\1>",
-            "",
-            text,
-            flags=re.DOTALL | re.IGNORECASE,
-        )
-        # Remove parenthetical markers
-        text = re.sub(
-            r"\((thinking|reasoning|step-by-step reasoning):.*?\)",
-            "",
-            text,
-            flags=re.DOTALL | re.IGNORECASE,
-        )
-        # Remove HTML comment style
-        text = re.sub(
-            r"<!--\s*(think|reasoning|steps).*?-->",
-            "",
-            text,
-            flags=re.DOTALL | re.IGNORECASE,
-        )
-        # Remove prefix keywords
-        text = re.sub(
-            r"^(Thoughts?:|Reasoning:|Step\s*\d*:|Internal monologue:|Chain-of-thought:)\s*",
-            "",
-            text,
-            flags=re.IGNORECASE | re.MULTILINE,
-        )
-        return text.strip()
-
-    cleaned_text = clean_text(text)
+    cleaned_text = _clean_llm_text(text)
 
     # Build logprobs for only tokens in cleaned text
     logprobs_dict = {}
@@ -422,16 +534,19 @@ def ensure_chunks(
     else:
         parsed = parsed_path.read_text(encoding="utf-8")
 
+    if not isinstance(parsed, str):
+        parsed = json.dumps(parsed, ensure_ascii=False)
+
     # Run chunker (pass params if supported)
     chunker = CHUNKERS[chunker_name](chunk_size=chunk_size, chunk_overlap=overlap)
-    if hasattr(chunker, "chunk"):
-        chunks = chunker.chunk(parsed)
-    else:
-        raise ValueError(f"Chunker {chunker_name} does not support chunking interface.")
+    chunk_objects = chunker.chunk(parsed)
+    chunk_payload = [
+        {"text": chunk.text, "metadata": chunk.metadata} for chunk in chunk_objects
+    ]
 
     # Save chunks
     with open(out_path, "w", encoding="utf-8") as fh:
-        json.dump(chunks, fh, ensure_ascii=False, indent=2)
+        json.dump(chunk_payload, fh, ensure_ascii=False, indent=2)
     return out_path
 
 
@@ -455,16 +570,21 @@ def ensure_embedding(
     # Load chunks
     with open(chunks_path, "r", encoding="utf-8") as fh:
         try:
-            chunks = json.load(fh)
+            chunks_data = json.load(fh)
         except json.JSONDecodeError:
-            chunks = fh.read().split("\n\n")
+            chunks_data = fh.read().split("\n\n")
+
+    if chunks_data and isinstance(chunks_data[0], dict):
+        chunk_texts = [item.get("text", "") for item in chunks_data]
+    else:
+        chunk_texts = chunks_data
 
     # Embed
-    embeddings = EMBEDDERS[embedder_name].embed(chunks)
+    embeddings = EMBEDDERS[embedder_name].embed(chunk_texts)
 
     # Save in NumpyVectorStore
     store = NumpyVectorStore(save_path=out_path)
-    store.add(embeddings, chunks)
+    store.add(embeddings, chunk_texts)
     store.save()
 
     return out_path
@@ -615,53 +735,79 @@ def objective(trial, verbose: bool = False):
 
     def log(msg: str):
         if verbose:
-            print(msg, file=sys.stderr, flush=True)
+            logger.info(msg)
 
     cache = load_cache()
 
     try:
         trial_start_time = time.time()
+        mode = trial.suggest_categorical("mode", ["rag", "full"])
 
         # ---------------- Trial-level hyperparameters ----------------
         parser_name = trial.suggest_categorical("parser", list(PARSERS.keys()))
-        mode = "rag"
-        chunk_size = trial.suggest_categorical(
-            "chunk_size", [100, 250, 500, 750, 1000, 2500, 5000]
-        )
-        chunk_overlap = trial.suggest_categorical("chunk_overlap", [0, 250, 750])
-        if chunk_overlap >= chunk_size:
-            raise optuna.TrialPruned()
-        if parser_name in ["PyMuPDFParser", "PyMuPDFTesseractParser"]:
-            allowed_chunkers = [
-                k for k in CHUNKERS if k not in ["StructureChunker", "TextChunker"]
-            ]
-        else:
-            allowed_chunkers = list(CHUNKERS.keys())
-        chunker_name = trial.suggest_categorical("chunker", allowed_chunkers)
-        embedder_name = trial.suggest_categorical("embedder", list(EMBEDDERS.keys()))
-        retriever_name = trial.suggest_categorical("retriever", list(RETRIEVERS.keys()))
-        retriever_cls = RETRIEVERS[retriever_name]
-        k = trial.suggest_categorical("k", [1, 3, 5, 10, 20])
-        retriever_params = {"k": k}
-        if hasattr(retriever_cls, "token_budget"):
-            retriever_params["token_budget"] = trial.suggest_categorical(
-                "token_budget", [200, 500, 1000, 2000]
+        if mode == "rag":
+            chunk_size = trial.suggest_categorical(
+                "chunk_size", [100, 250, 500, 750, 1000, 2500, 5000]
             )
-        if getattr(retriever_cls, "supports_rerank", False):
-            retriever_params["rerank"] = trial.suggest_categorical(
-                "rerank", [True, False]
+            chunk_overlap = trial.suggest_categorical("chunk_overlap", [0, 250, 750])
+            if chunk_overlap >= chunk_size:
+                raise optuna.TrialPruned()
+            if parser_name in ["PyMuPDFParser", "PyMuPDFTesseractParser"]:
+                allowed_chunkers = [
+                    k for k in CHUNKERS if k not in ["StructureChunker", "TextChunker"]
+                ]
+            else:
+                allowed_chunkers = list(CHUNKERS.keys())
+            chunker_name = trial.suggest_categorical("chunker", allowed_chunkers)
+            embedder_name = trial.suggest_categorical(
+                "embedder", list(EMBEDDERS.keys())
             )
-            if retriever_params["rerank"] and getattr(
-                retriever_cls, "supports_top_m", False
-            ):
-                retriever_params["top_m"] = trial.suggest_categorical(
-                    "top_m", [5, 10, 20, 50]
+            retriever_name = trial.suggest_categorical(
+                "retriever", list(RETRIEVERS.keys())
+            )
+            retriever_cls = RETRIEVERS[retriever_name]
+            k = trial.suggest_categorical("k", [1, 3, 5, 10, 20])
+            retriever_params = {"k": k}
+            if hasattr(retriever_cls, "token_budget"):
+                retriever_params["token_budget"] = trial.suggest_categorical(
+                    "token_budget", [200, 500, 1000, 2000]
                 )
-        retriever = retriever_cls(**retriever_params)
+            if getattr(retriever_cls, "supports_rerank", False):
+                retriever_params["rerank"] = trial.suggest_categorical(
+                    "rerank", [True, False]
+                )
+                if retriever_params["rerank"] and getattr(
+                    retriever_cls, "supports_top_m", False
+                ):
+                    retriever_params["top_m"] = trial.suggest_categorical(
+                        "top_m", [5, 10, 20, 50]
+                    )
+            retriever = retriever_cls(**retriever_params)
+            query_embedding = trial.suggest_categorical(
+                "query_embedding", ["raw", "label_def"]
+            )
+        else:
+            chunk_size = None
+            chunk_overlap = None
+            chunker_name = "FullDocument"
+            embedder_name = "N/A"
+            retriever_name = "N/A"
+            retriever = None
+            k = None
+            query_embedding = "full_document"
+
         llm_model = trial.suggest_categorical("llm_model", list(LLMS.keys()))
-        query_embedding = trial.suggest_categorical(
-            "query_embedding", ["raw", "label_def"]
-        )
+        llm_meta = LLM_META_MAP.get(llm_model, {})
+        llm_api_type = llm_meta.get("api_type")
+        langextract_api_key = None
+        langextract_model_id = None
+        if llm_api_type == "openai":
+            langextract_api_key = OPENAI_API_KEY
+            langextract_model_id = llm_model
+        elif llm_api_type == "together":
+            langextract_api_key = TOGETHER_API_KEY
+            langextract_model_id = llm_model
+
         # Choose default prompt at trial level
         # Non-binary prompts
 
@@ -736,6 +882,17 @@ def objective(trial, verbose: bool = False):
             # ---------------- Document setup ----------------
             match = re.match(r"^(\d+)", parsed_path.stem)
             doc_name = match.group(1) if match else parsed_path.stem
+            outcome = OUTCOMES.get(doc_name, "")
+            if outcome == "":
+                system_prompt = SYSTEM_PROMPTS["single_outcome"]
+                print("outcome none")
+            else:
+                system_prompt = SYSTEM_PROMPTS["multiple_outcomes"].format(
+                    OUTCOME=outcome
+                )
+                print("multiple outcomes")
+            print("outcome: ", outcome)
+            print(system_prompt)
             if doc_name not in doc_id_map:
                 doc_id_map[doc_name] = next_id
                 next_id += 1
@@ -768,21 +925,27 @@ def objective(trial, verbose: bool = False):
             doc_results = list(existing_results)
             all_results = all_results + doc_results
             doc_result_map = {r["query_id"]: r for r in existing_results}
-
-            # ---------------- Ensure chunks and embeddings ----------------
-            chunk_path = ensure_chunks(
-                parsed_path, parser_name, chunker_name, chunk_size, chunk_overlap
-            )
-            vector_store_path = ensure_embedding(
-                chunk_path,
-                parser_name,
-                chunker_name,
-                embedder_name,
-                chunk_size,
-                chunk_overlap,
-            )
-            vector_store = NumpyVectorStore(save_path=str(vector_store_path) + ".npz")
-            vector_store.load()
+            # ---------------- Ensure chunks / embeddings or load full text ----------------
+            vector_store = None
+            full_doc_text = None
+            if mode == "rag":
+                chunk_path = ensure_chunks(
+                    parsed_path, parser_name, chunker_name, chunk_size, chunk_overlap
+                )
+                vector_store_path = ensure_embedding(
+                    chunk_path,
+                    parser_name,
+                    chunker_name,
+                    embedder_name,
+                    chunk_size,
+                    chunk_overlap,
+                )
+                vector_store = NumpyVectorStore(
+                    save_path=str(vector_store_path) + ".npz"
+                )
+                vector_store.load()
+            else:
+                full_doc_text = load_full_document_text(parsed_path)
 
             # ---------------- Per-query evaluation ----------------
             for qid, qdata in QUERIES.items():
@@ -819,136 +982,118 @@ def objective(trial, verbose: bool = False):
                         needs_evaluation = False
 
                 if needs_evaluation:
-                    query_emb_path = ensure_query_embeddings(
-                        embedder_name, parsed_path.stem, qid, query_embedding
-                    )
-                    query_embed = np.load(query_emb_path)
-                    retrieved_chunks = retriever.retrieve(query_embed, vector_store)
-                    # Determine prompt type
-                    if (
-                        qdata["type"] in ["multiple_choice", "single_choice"]
-                        and "binary_prompts" in qdata["prompts"]
-                        and len(qdata.get("choices", []))
-                        > 2  # only if >2 answer options
-                        and use_default_prompt == False
-                    ):
-                        prompt_type = "binary_prompts"
-
-                    else:
-                        prompt_type = default_prompt_type
-                    if (
-                        prompt_type == "true_few_shot_prompt"
-                        and len(qdata["prompts"].get(prompt_type)) == 0
-                    ):
-                        prompt_type = "synthetic_few_shot_prompt"
-                    prompt_text = qdata["prompts"].get(prompt_type)
-                    if not prompt_text:
-                        raise ValueError(
-                            f"No prompt found for query {qid} under '{prompt_type}'"
+                    log("needs evaluation")
+                    if mode == "rag":
+                        query_emb_path = ensure_query_embeddings(
+                            embedder_name, parsed_path.stem, qid, query_embedding
                         )
-                    ans_gen = LLMS[llm_model]
-                    if prompt_type == "binary_prompts" and qdata["type"] in [
-                        "multiple_choice",
-                        "single_choice",
-                    ]:
-                        binary_outputs = {}
-                        combined_logprobs = []
-                        llm_output = {}
-                        llm_output["text"] = ""
-                        # Store the mapping from binary prompts to the multiple choice letters
-                        binary_to_choice = {}
-
-                        for i, subprompt in enumerate(
-                            qdata["prompts"]["binary_prompts"]
-                        ):
-                            llm_output_binary = ans_gen.generate(
-                                query=subprompt,
-                                system_prompt=SYSTEM_PROMPT,
-                                chunks=retrieved_chunks,
-                                return_logprobs=True,
-                            )
-                            text, logprobs = get_cleaned_text_and_logprobs(
-                                llm_output_binary
-                            )
-                            binary_outputs[f"binary_{i}"] = text.strip()
-                            combined_logprobs.append(logprobs)
-                            llm_output["text"] = (
-                                llm_output["text"] + "\n" + llm_output_binary["text"]
-                            )
-                            # Map 'A' -> the letter for this choice, 'B' -> empty
-                            if text.strip().upper() == "A":
-                                letter_for_choice = list(qdata["choices"].keys())[
-                                    i
-                                ]  # assumes ordering matches
-                                binary_to_choice[f"binary_{i}"] = letter_for_choice
-                            else:
-                                binary_to_choice[f"binary_{i}"] = ""
-
-                        # Concatenate all non-empty mapped letters
-                        final_answer = ",".join(
-                            letter for letter in binary_to_choice.values() if letter
-                        )
-                        if final_answer == "":
-                            final_answer = "Z"
-
-                        llm_text = final_answer
-                        llm_logprobs = combined_logprobs
-
+                        query_embed = np.load(query_emb_path)
+                        retrieved_chunks = retriever.retrieve(query_embed, vector_store)
                     else:
-                        log(f"prompt agaain {prompt_text}")
-                        llm_output = ans_gen.generate(
-                            system_prompt=SYSTEM_PROMPT,
-                            query=prompt_text,
+                        if full_doc_text is None:
+                            full_doc_text = load_full_document_text(parsed_path)
+                        retrieved_chunks = [(full_doc_text, 1.0)]
+                # Determine prompt type
+                prompt_type, prompt_text = _select_prompt(
+                    qid, qdata, default_prompt_type, use_default_prompt
+                )
+                ans_gen = LLMS[llm_model]
+                if prompt_type == "binary_prompts" and qdata["type"] in [
+                    "multiple_choice",
+                    "single_choice",
+                ]:
+                    binary_outputs = {}
+                    combined_logprobs = []
+                    llm_output = {}
+                    llm_output["text"] = ""
+                    # Store the mapping from binary prompts to the multiple choice letters
+                    binary_to_choice = {}
+
+                    for i, subprompt in enumerate(qdata["prompts"]["binary_prompts"]):
+                        llm_output_binary = ans_gen.generate(
+                            query=subprompt,
+                            system_prompt=system_prompt,
                             chunks=retrieved_chunks,
                             return_logprobs=True,
                         )
-                        llm_text, llm_logprobs = get_cleaned_text_and_logprobs(
-                            llm_output
+                        text, logprobs = get_cleaned_text_and_logprobs(
+                            llm_output_binary
                         )
+                        binary_outputs[f"binary_{i}"] = text.strip()
+                        combined_logprobs.append(logprobs)
+                        llm_output["text"] = (
+                            llm_output["text"] + "\n" + llm_output_binary["text"]
+                        )
+                        # Map 'A' -> the letter for this choice, 'B' -> empty
+                        if text.strip().upper() == "A":
+                            letter_for_choice = list(qdata["choices"].keys())[
+                                i
+                            ]  # assumes ordering matches
+                            binary_to_choice[f"binary_{i}"] = letter_for_choice
+                        else:
+                            binary_to_choice[f"binary_{i}"] = ""
 
-                    def make_handle_other(qid, QUERIES, ans_gen, retrieved_chunks):
-                        """Factory function that creates a handle_other callback
-                        bound to the current qid, QUERIES, ans_gen, and retrieved_chunks.
-                        """
-
-                        def handle_other(llm_text):
-                            other_prompt = QUERIES[qid]["prompts"]["follow_up_prompt"]
-                            other_response = ans_gen.generate(
-                                query=other_prompt,
-                                chunks=retrieved_chunks,
-                                system_prompt=SYSTEM_PROMPT,
-                                return_logprobs=True,
-                            )
-                            return other_response["text"]
-
-                        return handle_other
-
-                    # Example usage (where you loop through or handle a query)
-                    callback = make_handle_other(
-                        qid, QUERIES, ans_gen, retrieved_chunks
+                    # Concatenate all non-empty mapped letters
+                    final_answer = ",".join(
+                        letter for letter in binary_to_choice.values() if letter
                     )
+                    if final_answer == "":
+                        final_answer = "Z"
 
-                    eval_result = evaluate_answer(
-                        llm_text,
-                        question_type=qdata["type"],
-                        doc_name=doc_name,
-                        query_id=qid,
-                        TRUE_ANSWERS=TRUE_ANSWERS,
-                        QUERIES=QUERIES,
-                        other_callback=callback,
+                    llm_text = final_answer
+                    llm_logprobs = combined_logprobs
+
+                else:
+                    log(f"prompt agaain {prompt_text}")
+                    llm_output = ans_gen.generate(
+                        system_prompt=system_prompt,
+                        query=prompt_text,
+                        chunks=retrieved_chunks,
+                        return_logprobs=True,
                     )
-                    eval_result["context"] = retrieved_chunks
-                    eval_result["logprobs"] = llm_logprobs
+                    llm_text, llm_logprobs = get_cleaned_text_and_logprobs(llm_output)
 
-                    # ---------------- After evaluating a single query ----------------
-                    result = {
-                        "doc_id": doc_id,
-                        "query_id": qid,
-                        "label": QUERIES[qid]["label"],
-                        "type": QUERIES[qid]["type"],
-                        "llm_output": llm_output["text"],
-                        **eval_result,
-                    }
+                def make_handle_other(qid, QUERIES, ans_gen, retrieved_chunks):
+                    """Factory function that creates a handle_other callback
+                    bound to the current qid, QUERIES, ans_gen, and retrieved_chunks.
+                    """
+
+                    def handle_other(llm_text):
+                        other_prompt = QUERIES[qid]["prompts"]["follow_up_prompt"]
+                        other_response = ans_gen.generate(
+                            query=other_prompt,
+                            chunks=retrieved_chunks,
+                            system_prompt=system_prompt,
+                            return_logprobs=True,
+                        )
+                        return other_response["text"]
+
+                    return handle_other
+
+                # Example usage (where you loop through or handle a query)
+                callback = make_handle_other(qid, QUERIES, ans_gen, retrieved_chunks)
+
+                eval_result = evaluate_answer(
+                    llm_text,
+                    question_type=qdata["type"],
+                    doc_name=doc_name,
+                    query_id=qid,
+                    TRUE_ANSWERS=TRUE_ANSWERS,
+                    QUERIES=QUERIES,
+                    other_callback=callback,
+                )
+                eval_result["context"] = retrieved_chunks
+                eval_result["logprobs"] = llm_logprobs
+
+                # ---------------- After evaluating a single query ----------------
+                result = {
+                    "doc_id": doc_id,
+                    "query_id": qid,
+                    "label": QUERIES[qid]["label"],
+                    "type": QUERIES[qid]["type"],
+                    "llm_output": llm_output["text"],
+                    **eval_result,
+                }
 
                 # ✅ Update caches
                 trial_key = _hash_trial_key(trial_choices, doc_id, qid)
@@ -1094,68 +1239,80 @@ if __name__ == "__main__":
         DEPENDENCIES = json.load(f)
 
     QUERIES = dict(list(QUERIES.items()))
-    SYSTEM_PROMPT_FILE = PROJECT_ROOT / "query_creation" / "system_prompt.txt"
-    with open(SYSTEM_PROMPT_FILE, "r", encoding="utf-8") as f:
-        SYSTEM_PROMPT = f.read()
-    ## FIXED TRIAL
-    # fixed_params = {
-    #     "parser": "PyMuPDFParser",
-    #     "mode": "rag",
-    #     "chunk_size": 500,
-    #     "chunk_overlap": 0,
-    #     "chunker": "LengthChunker",
-    #     "embedder": "BGEEmbedder",
-    #     "retriever": "TopKRetriever",
-    #     "k": 5,
-    #     "query_embedding": "raw",
-    #     "llm_model": "gpt-4.1-2025-04-14",
-    #     # "deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free",
-    #     "default_prompt_type": "true_few_shot_prompt",
-    #     "prompt_type": "true_few_shot_prompt",
-    # }
 
-    # # Wrap trial as FixedTrial
-    # trial = optuna.trial.FixedTrial(fixed_params)
-    # score = objective(trial, verbose=True)
+    SYSTEM_PROMPTS = {}
+    with open(
+        PROJECT_ROOT / "query_creation" / "system_prompt_single_outcome.txt",
+        "r",
+        encoding="utf-8",
+    ) as f:
+        SYSTEM_PROMPTS["single_outcome"] = f.read()
+    with open(
+        PROJECT_ROOT / "query_creation" / "system_prompt_multiple_outcomes.txt",
+        "r",
+        encoding="utf-8",
+    ) as f:
+        SYSTEM_PROMPTS["multiple_outcomes"] = f.read()
+    ## FIXED TRIAL
+    fixed_params = {
+        "parser": "PyMuPDFParser",
+        "mode": "rag",
+        "chunk_size": 500,
+        "chunk_overlap": 0,
+        "chunker": "LengthChunker",
+        "embedder": "BGEEmbedder",
+        "retriever": "TopKRetriever",
+        "k": 5,
+        "query_embedding": "raw",
+        "llm_model": "deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free",
+        # "gpt-4.1-2025-04-14",
+        "use_default_prompt": True,
+        "prompt_type": "base_prompt",
+        "default_prompt_type": "base_prompt",
+    }
+
+    # Wrap trial as FixedTrial
+    trial = optuna.trial.FixedTrial(fixed_params)
+    score = objective(trial, verbose=True)
 
     # ACUTAL ONE WITH PRUNING
-    sampler = optuna.samplers.TPESampler(
-        n_startup_trials=10,  # first 10 trials are random
-        n_ei_candidates=24,  # number of candidates for expected improvement
-        multivariate=True,  # allow correlated sampling
-    )
-    # --- Create study with pruner ---
-    pruner = optuna.pruners.MedianPruner(
-        n_startup_trials=5,  # don’t prune before 5 trials complete
-        n_warmup_steps=2,  # don’t prune before 2 steps of report()
-    )
+    # sampler = optuna.samplers.TPESampler(
+    #     n_startup_trials=10,  # first 10 trials are random
+    #     n_ei_candidates=24,  # number of candidates for expected improvement
+    #     multivariate=True,  # allow correlated sampling
+    # )
+    # # --- Create study with pruner ---
+    # pruner = optuna.pruners.MedianPruner(
+    #     n_startup_trials=5,  # don’t prune before 5 trials complete
+    #     n_warmup_steps=2,  # don’t prune before 2 steps of report()
+    # )
 
-    study = optuna.create_study(
-        direction="maximize",
-        sampler=sampler,
-        pruner=pruner,
-        storage="postgresql+psycopg2://einsie0004:optuna@localhost:5432/trials_v1",
-        load_if_exists=True,
-    )
+    # study = optuna.create_study(
+    #     direction="maximize",
+    #     sampler=sampler,
+    #     pruner=pruner,
+    #     storage="postgresql+psycopg2://einsie0004:optuna@localhost:5432/trials_v1",
+    #     load_if_exists=True,
+    # )
 
-    def stop_if_no_improvement(study, trial, threshold=0.01, n_last=10):
-        completed = [
-            t.value for t in study.trials if t.state == optuna.trial.TrialState.COMPLETE
-        ]
-        if len(completed) < n_last:
-            return
-        recent = completed[-n_last:]
-        if max(recent) - min(recent) < threshold:
-            print(
-                f"Stopping study early: improvement {max(recent) - min(recent):.5f} < {threshold}"
-            )
-            study.stop()
+    # def stop_if_no_improvement(study, trial, threshold=0.01, n_last=10):
+    #     completed = [
+    #         t.value for t in study.trials if t.state == optuna.trial.TrialState.COMPLETE
+    #     ]
+    #     if len(completed) < n_last:
+    #         return
+    #     recent = completed[-n_last:]
+    #     if max(recent) - min(recent) < threshold:
+    #         print(
+    #             f"Stopping study early: improvement {max(recent) - min(recent):.5f} < {threshold}"
+    #         )
+    #         study.stop()
 
-    # Launch 40 workers in threads (fine for I/O bound tasks)
-    with ThreadPoolExecutor(max_workers=40) as executor:
-        futures = [executor.submit(run_worker, study) for _ in range(10)]
-        for f in futures:
-            f.result()
+    # # Launch 40 workers in threads (fine for I/O bound tasks)
+    # with ThreadPoolExecutor(max_workers=40) as executor:
+    #     futures = [executor.submit(run_worker, study) for _ in range(10)]
+    #     for f in futures:
+    #         f.result()
 # study.optimize(objective, n_trials=100, callbacks=[stop_if_no_improvement])
 # --- Run trials ---
 

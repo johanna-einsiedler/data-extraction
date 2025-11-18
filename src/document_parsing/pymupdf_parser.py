@@ -1,21 +1,18 @@
-import os
-import re
-import sys
-from pathlib import Path
-from typing import List
-
 import fitz  # PyMuPDF
 
-sys.path.append(os.path.dirname(__file__))
-
-from base_parser import BaseParser
+from .base_parser import BaseParser, ParseResult
 
 
 class PyMuPDFParser(BaseParser):
-    def parse(self, file_path: str) -> str:
-        """Parse a single PDF with PyMuPDF."""
-        text = []
+    """Simple text extractor using PyMuPDF (Markdown output)."""
+
+    def parse(self, file_path: str) -> ParseResult:
+        chunks = []
         with fitz.open(file_path) as doc:
             for page in doc:
-                text.append(page.get_text())
-        return "\n".join(text)
+                chunks.append(page.get_text("markdown"))
+        content = "\n\n".join(chunks)
+        return ParseResult(
+            content=content,
+            metadata={"parser": "pymupdf", "source_format": "markdown"},
+        )

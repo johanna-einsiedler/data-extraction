@@ -1,18 +1,16 @@
 # retrieval/topk_retriever.py
-import os
-import re
-import sys
-from typing import List, Tuple
+from typing import Callable, List, Tuple
 
-sys.path.append(os.path.dirname(__file__))
-
-from base_retriever import BaseRetriever
-
-from vectorstore.numpy_store import NumpyVectorStore
+from .base_retriever import BaseRetriever, VectorStoreProtocol, default_tokenizer
 
 
 class TopKRetriever(BaseRetriever):
-    def __init__(self, k: int = 5, token_limit: int | None = None, tokenizer=None):
+    def __init__(
+        self,
+        k: int = 5,
+        token_limit: int | None = None,
+        tokenizer: Callable[[str], List[str]] | None = None,
+    ):
         """
         Args:
             k (int): Max number of chunks to consider.
@@ -21,9 +19,9 @@ class TopKRetriever(BaseRetriever):
         """
         self.k = k
         self.token_limit = token_limit
-        self.tokenizer = tokenizer or (lambda x: x.split())  # default: naive whitespace
+        self.tokenizer = tokenizer or default_tokenizer
 
-    def retrieve(self, query_vec, store: NumpyVectorStore) -> List[Tuple[str, float]]:
+    def retrieve(self, query_vec, store: VectorStoreProtocol) -> List[Tuple[str, float]]:
         results = store.query(query_vec, top_k=self.k)
 
         # --- Optional token budget filtering ---

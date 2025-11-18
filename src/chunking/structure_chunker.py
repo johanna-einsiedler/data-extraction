@@ -1,116 +1,169 @@
-# chunkers/structure_chunker.py
 import json
-import os
 import re
-import sys
-from typing import List
+from typing import Dict, List, Tuple
 
-sys.path.append(os.path.dirname(__file__))
-from text_chunker import TextStructureChunker
+from .base_chunker import BaseChunker, Chunk
+from .text_chunker import TextStructureChunker
 
 
 class StructureChunker(BaseChunker):
-    """
-    Document-structure-based chunking.
+    """Structure-aware chunker that yields metadata-rich chunks when possible."""
 
-    If the document is in a structured format (Markdown, HTML, XML, or JSON),
-    the structure is exploited to split it by headers or sections.
-    If a resulting chunk exceeds `chunk_size`, recursive text-based splitting
-    (as in TextStructureChunker) is applied, with a fallback to hard cutting.
-    """
+    def chunk(self, text: str) -> List[Chunk]:
+        raw = text.strip()
+        sections: List[Tuple[str, Dict[str, str]]] = []
 
-    def chunk(self, text: str) -> List[str]:
-        text = text.strip()
-        chunks: List[str] = []
-
-        # --- 1️⃣ Detect document type ------------------------------------------
-        if text.startswith("{") or text.startswith("["):
-            # JSON: split roughly by top-level items
+        if raw.startswith("{") or raw.startswith("["):
             try:
-                obj = json.loads(text)
+                obj = json.loads(raw)
                 formatted = json.dumps(obj, indent=2, ensure_ascii=False)
-                sections = formatted.split("\n\n")
+                for block in formatted.split("\n\n"):
+                    if block.strip():
+                        sections.append((block, {"section_type": "json"}))
             except json.JSONDecodeError:
-                sections = [text]
-        elif text.startswith("<"):
-            # HTML/XML
-            section_pattern = re.compile(
-                r"(?:(?:^|\n)(?:"
-                r"(?:<h\d>.*?</h\d>)|"  # HTML headings
-                r"(<(?:section|article|chapter|div|part)[^>]*>.*?</(?:section|article|chapter|div|part)>)"
-                r"))",
-                flags=re.DOTALL | re.IGNORECASE,
-            )
-            sections = re.split(section_pattern, text)
+                sections.append((raw, {"section_type": "json"}))
+        elif raw.startswith("<"):
+            sections.extend(self._split_html_sections(raw))
         else:
-            # Markdown or plain text
-            section_pattern = re.compile(
-                r"(?:(?:^|\n)(#+ .+))",  # Markdown headers
-                flags=re.DOTALL,
-            )
-            sections = re.split(section_pattern, text)
-
-        sections = [s.strip() for s in sections if s and s.strip()]
-
-        # --- 2️⃣ Helper: sentence-aware and hard cut fallback ------------------
-        def split_sentences(text_block: str) -> List[str]:
-            """Split into chunks by sentence boundaries."""
-            sentences = re.split(r"(?<=[.!?])\s+", text_block)
-            result, current = [], ""
-            for sent in sentences:
-                if len(current) + len(sent) + 1 <= self.chunk_size:
-                    current += (" " if current else "") + sent
-                else:
-                    if current:
-                        result.append(current.strip())
-                    current = sent
-            if current:
-                result.append(current.strip())
-            return result
-
-        def force_cut(text_block: str) -> List[str]:
-            """Hard cut text into fixed-size slices (preserving overlap)."""
-            chunks = []
-            step = self.chunk_size - self.chunk_overlap
-            start = 0
-            while start < len(text_block):
-                end = start + self.chunk_size
-                chunks.append(text_block[start:end])
-                start += step
-            return chunks
+            sections.extend(self._split_markdown_sections(raw))
 
         text_chunker = TextStructureChunker(self.chunk_size, self.chunk_overlap)
+        chunks: List[Chunk] = []
 
-        # --- 3️⃣ Recursive partitioning for large sections ---------------------
-        for section in sections:
-            if len(section) <= self.chunk_size:
-                chunks.append(section)
+        for section_text, base_meta in sections:
+            sanitized_section = self._sanitize(section_text, remove_tags=True)
+            if not sanitized_section:
+                continue
+
+            if len(sanitized_section) <= self.chunk_size:
+                chunks.append(Chunk(sanitized_section, dict(base_meta)))
+                continue
+
+            subchunks = text_chunker.chunk(section_text)
+            for sc in subchunks:
+                chunk_meta = {**base_meta, **sc.metadata}
+                chunk_text = sc.text
+
+                if len(chunk_text) > self.chunk_size + self.chunk_overlap:
+                    sentence_chunks = self._split_sentences(chunk_text, chunk_meta)
+                    for sent_chunk in sentence_chunks:
+                        if len(sent_chunk.text) > self.chunk_size + self.chunk_overlap:
+                            forced = self._force_cut(sent_chunk.text)
+                            for piece in forced:
+                                piece.metadata.update(chunk_meta)
+                            chunks.extend(forced)
+                        else:
+                            chunks.append(sent_chunk)
+                else:
+                    chunks.append(Chunk(chunk_text, chunk_meta))
+
+        cleaned = [
+            Chunk(self._sanitize(chunk.text, remove_tags=True), chunk.metadata)
+            for chunk in chunks
+            if chunk.text
+        ]
+        cleaned = [chunk for chunk in cleaned if chunk.text]
+        return self._apply_overlap(cleaned)
+
+    # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
+    def _split_markdown_sections(self, text: str) -> List[Tuple[str, Dict[str, str]]]:
+        """Return markdown sections paired with basic metadata."""
+        pattern = re.compile(r"^(#+ .+)$", flags=re.MULTILINE)
+        matches = list(pattern.finditer(text))
+        sections: List[Tuple[str, Dict[str, str]]] = []
+        cursor = 0
+
+        if not matches:
+            return [(text, {"section_type": "markdown"})]
+
+        for idx, match in enumerate(matches):
+            start = match.start()
+            if start > cursor:
+                leading = text[cursor:start]
+                if leading.strip():
+                    sections.append((leading, {"section_type": "markdown"}))
+
+            next_start = matches[idx + 1].start() if idx + 1 < len(matches) else len(text)
+            section_text = text[start:next_start]
+            heading_line = match.group(0)
+            heading = self._sanitize(re.sub(r"^#+", "", heading_line), remove_tags=True)
+            metadata = {"section_type": "markdown"}
+            if heading:
+                metadata["section_heading"] = heading
+            sections.append((section_text, metadata))
+            cursor = next_start
+
+        if cursor < len(text):
+            trailing = text[cursor:]
+            if trailing.strip():
+                sections.append((trailing, {"section_type": "markdown"}))
+
+        return sections
+
+    def _split_html_sections(self, text: str) -> List[Tuple[str, Dict[str, str]]]:
+        """Return HTML sections paired with metadata about the source element."""
+        pattern = re.compile(
+            r"(<h\d[^>]*>.*?</h\d>|<(?:section|article|chapter|div|part)[^>]*>.*?</(?:section|article|chapter|div|part)>)",
+            flags=re.DOTALL | re.IGNORECASE,
+        )
+        matches = list(pattern.finditer(text))
+        sections: List[Tuple[str, Dict[str, str]]] = []
+        cursor = 0
+
+        if not matches:
+            return [(text, {"section_type": "html"})]
+
+        for idx, match in enumerate(matches):
+            start, end = match.span()
+            if start > cursor:
+                between = text[cursor:start]
+                if between.strip():
+                    sections.append((between, {"section_type": "html"}))
+
+            token = match.group(0)
+            metadata: Dict[str, str] = {"section_type": "html"}
+            lower_token = token.lower()
+            if lower_token.startswith("<h"):
+                heading = self._sanitize(re.sub(r"<[^>]+>", " ", token), remove_tags=True)
+                if heading:
+                    metadata["section_heading"] = heading
+                next_start = matches[idx + 1].start() if idx + 1 < len(matches) else len(text)
+                section_text = text[start:next_start]
+                sections.append((section_text, metadata))
+                cursor = next_start
             else:
-                # Recursive text-based split
-                subchunks = text_chunker.chunk(section)
-                for sc in subchunks:
-                    if len(sc) > self.chunk_size + self.chunk_overlap:
-                        # Try sentence-based split
-                        subsent = split_sentences(sc)
-                        for ss in subsent:
-                            if len(ss) > self.chunk_size + self.chunk_overlap:
-                                chunks.extend(force_cut(ss))
-                            else:
-                                chunks.append(ss)
-                    else:
-                        chunks.append(sc)
+                heading_match = re.search(
+                    r"<h\d[^>]*>(.*?)</h\d>", token, flags=re.DOTALL | re.IGNORECASE
+                )
+                if heading_match:
+                    heading = self._sanitize(heading_match.group(1), remove_tags=True)
+                    if heading:
+                        metadata["section_heading"] = heading
+                sections.append((token, metadata))
+                cursor = end
 
-            # --- 4️⃣ Global overlap (final adjustment) -----------------------------
+        if cursor < len(text):
+            tail = text[cursor:]
+            if tail.strip():
+                sections.append((tail, {"section_type": "html"}))
 
-        # ✅ Apply global overlap across all final chunks
-        if self.chunk_overlap > 0 and len(chunks) > 1:
-            adjusted = []
-            for i, chunk in enumerate(chunks):
-                if i > 0:
-                    overlap_text = chunks[i - 1][-self.chunk_overlap :]
-                    # Ensure overlap_text is prefixed to current chunk
-                    chunk = overlap_text + chunk
-                adjusted.append(chunk)
-            final_chunks = adjusted
+        return sections
 
-        return chunks
+    def _split_sentences(self, text_block: str, metadata: Dict[str, str]) -> List[Chunk]:
+        """Split a large section on sentence boundaries, preserving metadata."""
+        sanitized = self._sanitize(text_block, remove_tags=True)
+        sentences = re.split(r"(?<=[.!?])\s+", sanitized)
+        result: List[Chunk] = []
+        current = ""
+        for sent in sentences:
+            if len(current) + len(sent) + 1 <= self.chunk_size:
+                current += (" " if current else "") + sent
+            else:
+                if current:
+                    result.append(Chunk(current.strip(), dict(metadata)))
+                current = sent
+        if current:
+            result.append(Chunk(current.strip(), dict(metadata)))
+        return result
