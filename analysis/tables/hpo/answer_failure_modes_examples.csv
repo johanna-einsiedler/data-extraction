@@ -1,0 +1,525 @@
+model,type,cat,raw,n
+qwen3-14b,numeric,format_invalid,"Z.
+Z",81
+gemini-3.1-pro-preview,numeric,format_invalid,Answer: Z,48
+DeepSeek-V4-Pro,numeric,format_invalid,Answer: Z,31
+ministral-8b-2512,numeric,format_invalid,"```
+Z
+```",30
+ministral-8b-2512,single_choice,format_invalid,Z;,29
+gemma-4-31B-it,multiple_choice,format_invalid,Y,26
+ministral-8b-2512,numeric,format_invalid,Answer: Z,25
+Qwen3.5-9B,numeric,format_invalid,Answer: Z,23
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not explicitly report the number of predictor variables used in the fi,22
+qwen3-14b,single_choice,format_invalid,"Z.
+Z",22
+qwen3-14b,single_choice,format_invalid,Z; The excerpt does not mention confidence intervals for performance metrics.,21
+qwen3-14b,single_choice,format_invalid,Z; The excerpt does not mention the programming language version used in the study.,21
+ministral-8b-2512,single_choice,format_invalid,Answer: 2,20
+Kimi-K2.7-Code,multiple_choice,format_invalid,Y,17
+qwen3-14b,multiple_choice,format_invalid,1,11
+Kimi-K2.6,numeric,format_invalid,Z; Balanced accuracy is not reported in the article.,11
+gemini-3.1-pro-preview,multiple_choice,format_invalid,Y,11
+DeepSeek-V4-Pro,single_choice,format_invalid,Z; The excerpt does not mention any programming language or its version.,10
+cogito-v2-1-671b,numeric,format_invalid,Z; The excerpt does not explicitly state the number of predictor variables used in the fin,10
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not report the train-test split ratio or any information related to ho,10
+qwen3-14b,single_choice,format_invalid,"Z; The excerpt does not mention any specific version numbers of ML-related packages, libra",10
+qwen3-14b,single_choice,format_invalid,Z; The excerpt does not mention whether the study was preregistered.,9
+qwen3-14b,single_choice,format_invalid,"e.
+1",9
+ministral-8b-2512,single_choice,format_invalid,Z; The excerpt does not explicitly mention whether the study was preregistered.,8
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not report the sample size used for the final analysis.,8
+DeepSeek-V4-Pro,single_choice,format_invalid,Z; The excerpt does not mention confidence intervals for any performance metrics.,8
+ministral-8b-2512,single_choice,format_invalid,Answer: 1,8
+gemini-3.1-pro-preview,multiple_choice,format_invalid,Other,7
+gpt-oss-20b,single_choice,format_invalid,3,7
+MiniMax-M3,single_choice,format_invalid,Z; The excerpt does not contain any information about whether the study was preregistered.,7
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not explicitly report the sample size used for the final analysis or a,7
+qwen3-14b,single_choice,format_invalid,Z; The excerpt does not mention anything about open coding.,7
+gpt-oss-120b,numeric,format_invalid,Z; Balanced accuracy is not reported.,7
+gpt-oss-20b,numeric,format_invalid,Z; r not reported.,7
+qwen3-14b,single_choice,format_invalid,"t.
+1",7
+qwen3-14b,numeric,format_invalid,"e.
+Z",7
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not explicitly report any numeric values for **BACC (Balanced Accuracy,6
+DeepSeek-V4-Pro,multiple_choice,format_invalid,E,6
+DeepSeek-V4-Pro,multiple_choice,format_invalid,O,6
+DeepSeek-V4-Pro,single_choice,format_invalid,Z; The excerpt does not contain any information about whether the study was preregistered.,6
+cogito-v2-1-671b,single_choice,format_invalid,Z; The excerpt does not mention or discuss any nested data structure in the sample used fo,6
+gemini-3.1-pro-preview,multiple_choice,format_invalid,E,6
+qwen3-14b,single_choice,format_invalid,Z; The excerpt does not mention anything about preregistration of the study.,6
+gpt-oss-20b,numeric,format_invalid,Z; AUC not reported.,6
+qwen3-14b,single_choice,format_invalid,"s.
+1",6
+qwen3-14b,single_choice,format_invalid,"d.
+0",6
+Qwen3.5-9B,single_choice,format_invalid,0,5
+ministral-8b-2512,single_choice,format_invalid,"Z; The excerpt does not explicitly report the version numbers of any ML-related packages, ",5
+cogito-v2-1-671b,numeric,format_invalid,Answer: Z,5
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not specify the number of predictor variables used in the final analys,5
+DeepSeek-V4-Pro,single_choice,format_invalid,"Z; The excerpt does not mention any specific ML packages, libraries, or modeling framework",5
+DeepSeek-V4-Pro,single_choice,format_invalid,Z; The excerpt does not provide information about whether the outcome lies in the future r,5
+DeepSeek-V4-Pro,numeric,format_invalid,"Z; The excerpt does not report any performance metrics such as AUC, ACC, BACC, R², or r fo",5
+cogito-v2-1-671b,numeric,format_invalid,Z; The excerpt does not explicitly report the number of cases in the minority group for an,5
+qwen3-14b,single_choice,format_invalid,Z; The excerpt does not mention whether the study was preregistered or not.,5
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not report the sample size used for the final analysis or any data set,5
+gpt-oss-120b,numeric,format_invalid,Z; No correlation coefficient (r) is reported.,5
+gpt-oss-120b,numeric,format_invalid,Z; AUC is not reported.,5
+gpt-oss-120b,numeric,format_invalid,Z; BACC is not reported.,5
+gpt-oss-120b,numeric,format_invalid,Z; No R² is reported.,5
+gpt-oss-120b,numeric,format_invalid,Z;,5
+gpt-oss-20b,numeric,format_invalid,Z; BACC not reported.,5
+gpt-oss-20b,numeric,format_invalid,Z; Balanced accuracy is not reported.,5
+gpt-oss-20b,numeric,format_invalid,Z; R² was not reported.,5
+gpt-oss-20b,numeric,format_invalid,Z; Balanced accuracy was not reported.,5
+qwen3-14b,single_choice,format_invalid,"y.
+1",5
+qwen3-14b,single_choice,format_invalid,"t.
+Z",5
+gpt-oss-20b,numeric,format_invalid,<Z/>,5
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not explicitly report the number of predictor variables used in the fi,4
+DeepSeek-V4-Pro,multiple_choice,format_invalid,Other,4
+DeepSeek-V4-Pro,single_choice,format_invalid,Z; The excerpt does not contain any information about the programming language or its vers,4
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not report the number of predictor variables used in the final analysi,4
+DeepSeek-V4-Pro,single_choice,format_invalid,Z; The excerpt does not provide information about the temporal relationship between predic,4
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not report any classification or regression performance metrics such a,4
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not report any R² values or regression performance metrics.,4
+cogito-v2-1-671b,numeric,format_invalid,Z; The excerpt does not explicitly report the total sample size used for the final analysi,4
+cogito-v2-1-671b,single_choice,format_invalid,Z; The excerpt does not provide any information about the temporal relationship between pr,4
+cogito-v2-1-671b,single_choice,format_invalid,Z; The excerpt does not contain any information about whether the code is open or not.,4
+cogito-v2-1-671b,numeric,format_invalid,Z; The excerpt does not explicitly report the number of cases in the minority group for th,4
+gemini-3.1-pro-preview,multiple_choice,format_invalid,O,4
+gemini-3.1-pro-preview,single_choice,format_invalid,"Answer:
+Z",4
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not report any specific numeric values for performance metrics such as,4
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not report the train-test split ratio or any information about how the,4
+qwen3-14b,numeric,format_invalid,"Z; The excerpt does not report any performance metrics such as ACC, AUC, BACC, R², or r. T",4
+qwen3-14b,numeric,format_invalid,"Z; The excerpt does not report any performance metrics such as AUC, ACC, BACC, R², or r. T",4
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not report the number of cases in the minority group or any specific c,4
+qwen3-14b,single_choice,format_invalid,"Z; The excerpt does not mention anything about ""open code"" or whether the code used in the",4
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not report the number of predictor variables used in the final analysi,4
+gpt-oss-20b,numeric,format_invalid,Z; R² is not reported.,4
+gpt-oss-20b,numeric,format_invalid,Z; r is not reported.,4
+gpt-oss-20b,numeric,format_invalid,Z; r was not reported.,4
+Kimi-K2.6,numeric,format_invalid,"Z; R-squared is not reported, as this is a classification task.",4
+gpt-oss-20b,multiple_choice,format_invalid,Y,4
+gpt-oss-20b,multiple_choice,format_invalid,2,4
+gpt-oss-20b,single_choice,format_invalid,0,4
+gpt-oss-20b,multiple_choice,format_invalid,1,4
+gemma-4-31B-it,multiple_choice,format_invalid,O,4
+gemma-4-31B-it,multiple_choice,format_invalid,Other,3
+qwen3-14b,multiple_choice,format_invalid,4,3
+gpt-4.1-2025-04-14,numeric,format_invalid,"Z
+not specified",3
+ministral-8b-2512,numeric,format_invalid,Z; The train-test split ratio is not explicitly reported in the provided excerpt.,3
+ministral-8b-2512,single_choice,format_invalid,Z; The excerpt does not mention confidence intervals for performance metrics.,3
+ministral-8b-2512,single_choice,format_invalid,"Z; The excerpt does not explicitly report the version numbers of ML-related packages, libr",3
+DeepSeek-V4-Pro,single_choice,format_invalid,Z; The excerpt does not mention whether the study was preregistered.,3
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not report the train-test split ratio or the percentage of data used f,3
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not report the number of cases in the minority group for any classific,3
+DeepSeek-V4-Pro,single_choice,format_invalid,Z; The excerpt does not contain any information about preregistration of the study.,3
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not explicitly state the total number of predictor variables used in t,3
+cogito-v2-1-671b,numeric,format_invalid,Z; The excerpt does not explicitly state the total number of predictor variables used in t,3
+cogito-v2-1-671b,numeric,format_invalid,Z; The excerpt does not contain any information about the train-test split ratio or how th,3
+cogito-v2-1-671b,numeric,format_invalid,Z; The excerpt does not explicitly report the sample size used for the final analysis. Whi,3
+qwen3-14b,single_choice,format_invalid,Z; The excerpt does not mention anything about preregistration of the study or analysis.,3
+qwen3-14b,single_choice,format_invalid,Z; The excerpt does not mention the version of any programming language used in the study.,3
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not report any specific numeric value for ACC (accuracy) or any other ,3
+qwen3-14b,numeric,format_invalid,"Z; The excerpt does not report any specific performance metrics such as AUC, ACC, BACC, R²",3
+qwen3-14b,single_choice,format_invalid,Z; The excerpt does not mention anything about preregistration of the study or analysis pl,3
+qwen3-14b,numeric,format_invalid,"Z; The excerpt does not report any performance metrics such as AUC, ACC, BACC, R², or r.",3
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not explicitly report the train-test split ratio or any specific perce,3
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not report any R² value or related performance metric for a regression,3
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not report an R² value or any regression performance metric. The text ,3
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not report the sample size used for the final analysis or any specific,3
+qwen3-14b,numeric,format_invalid,"Z; The excerpt does not report any performance metrics such as AUC, ACC, BACC, R², or r. I",3
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not report an R² value or any regression performance metric. It only m,3
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not report the train-test split ratio or any information related to da,3
+qwen3-14b,single_choice,format_invalid,Z; The excerpt does not mention whether the study was preregistered or provide any informa,3
+ministral-8b-2512,numeric,refusal_text,"Since no excerpt was provided in your message, I cannot extract a numeric value for **BACC",3
+ministral-8b-2512,single_choice,format_invalid,Answer: Z,3
+gpt-oss-120b,numeric,format_invalid,Z; No R² is reported for this classification task.,3
+gpt-oss-120b,numeric,format_invalid,Z; r is not reported.,3
+gpt-oss-120b,numeric,format_invalid,Z; Not reported.,3
+gpt-oss-120b,single_choice,format_invalid,Z; Not reported.,3
+gpt-oss-120b,numeric,format_invalid,Z; R² not reported.,3
+gpt-oss-120b,single_choice,format_invalid,Z; No programming language version is reported.,3
+gpt-oss-120b,numeric,format_invalid,Z; R² is not applicable.,3
+gpt-oss-20b,numeric,format_invalid,Z; R² not reported.,3
+gpt-oss-20b,numeric,format_invalid,Z; r is not applicable.,3
+gpt-oss-20b,numeric,format_invalid,Z; No ACC reported.,3
+gpt-oss-20b,numeric,format_invalid,Z; No r reported.,3
+gpt-oss-20b,numeric,format_invalid,Z; Accuracy was not reported.,3
+qwen3-14b,single_choice,format_invalid,"o.
+1",3
+qwen3-14b,numeric,format_invalid,"t.
+Z",3
+qwen3-14b,single_choice,format_invalid,"d.
+1",3
+Kimi-K2.6,numeric,format_invalid,Z; AUC is not reported in the article.,3
+Kimi-K2.6,numeric,format_invalid,Z; Balanced accuracy is not reported in the excerpt.,3
+gpt-oss-20b,multiple_choice,format_invalid,Other,2
+Kimi-K2.6,numeric,refusal_text,I need to find the number of cases in the minority group for the outcome being predicted (,2
+Kimi-K2.6,numeric,refusal_text,"I need to find the number of predictor variables used in the final analysis.
+
+Let me analy",2
+ministral-8b-2512,numeric,format_invalid,"Z
+Z
+Z",2
+ministral-8b-2512,numeric,format_invalid,"Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+",2
+Qwen3.5-9B,multiple_choice,format_invalid,H,2
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not explicitly report any numeric values for AUC (Area Under the Curve,2
+ministral-8b-2512,single_choice,format_invalid,Z; The excerpt does not explicitly mention whether confidence intervals for performance me,2
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not report any numeric values for **R²** (coefficient of determination,2
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not explicitly report any numeric values for **r (correlation coeffici,2
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not explicitly report any numeric values for **ACC (accuracy)** in the,2
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not explicitly report the train-test split ratio used in the study. Th,2
+ministral-8b-2512,single_choice,format_invalid,Z; The excerpt does not explicitly mention whether confidence intervals were reported for ,2
+ministral-8b-2512,single_choice,format_invalid,Z; The excerpt does not explicitly mention whether the study was preregistered. While the ,2
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not explicitly report any values for **ACC (accuracy)** in the validat,2
+ministral-8b-2512,single_choice,format_invalid,Z; The excerpt does not explicitly report whether confidence intervals for performance met,2
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not explicitly report any AUC (Area Under the Curve) values for classi,2
+ministral-8b-2512,numeric,format_invalid,"ACC: Z;
+The excerpt does not explicitly report accuracy (ACC) values for the validation sa",2
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not report any **R²** (coefficient of determination) values for regres,2
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not report any R² values or regression performance metrics for the stu,2
+DeepSeek-V4-Pro,single_choice,format_invalid,Z; The excerpt does not mention confidence intervals for any of the reported performance m,2
+DeepSeek-V4-Pro,numeric,format_invalid,"Z; The excerpt does not mention any internal data split into training and test sets, nor d",2
+DeepSeek-V4-Pro,single_choice,format_invalid,"Z; The excerpt does not mention any ML-related packages, libraries, or modeling frameworks",2
+DeepSeek-V4-Pro,single_choice,format_invalid,Z; The excerpt does not report any confidence intervals for performance metrics.,2
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not specify the exact number of predictor variables used in the final ,2
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not explicitly state the number of predictor variables used in the fin,2
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not report Balanced Accuracy (BACC) for any model.,2
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not report any R² values or regression-based performance metrics.,2
+DeepSeek-V4-Pro,numeric,format_invalid,"Z; The excerpt does not report any performance metrics for AUC, ACC, BACC, R², or r.",2
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not specify the total number of predictor variables used in the final ,2
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not mention any train-test split ratio or percentage for the internal ,2
+DeepSeek-V4-Pro,single_choice,format_invalid,Z; The excerpt does not contain any information about whether the study used machine learn,2
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not report the number of cases in the minority group for the classific,2
+DeepSeek-V4-Pro,single_choice,format_invalid,"Z; The excerpt does not mention any version numbers for the packages, libraries, or modeli",2
+DeepSeek-V4-Pro,numeric,format_invalid,"Z; The excerpt does not report any AUC, ACC, BACC, R², or r performance metrics for the va",2
+DeepSeek-V4-Pro,single_choice,format_invalid,"Z; The excerpt does not contain any information about whether the study's data, analysis c",2
+DeepSeek-V4-Pro,single_choice,format_invalid,Z; The excerpt does not contain any information about the version numbers of ML-related pa,2
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not report any machine learning classification or regression performan,2
+DeepSeek-V4-Pro,single_choice,format_invalid,Z; The excerpt does not contain any information about whether the study used an open code ,2
+DeepSeek-V4-Pro,numeric,format_invalid,"Z; The excerpt does not report any AUC, ACC, BACC, R², or r values for a validation sample",2
+ministral-8b-2512,numeric,format_invalid,"**AUC for conviction (Random Forest, validation sample):**
+**Z**",2
+ministral-8b-2512,numeric,format_invalid,**not specified**,2
+MiniMax-M3,single_choice,format_invalid,Z; The excerpt does not mention any programming language or its version.,2
+MiniMax-M3,single_choice,format_invalid,Z; The excerpt does not mention any programming language or its version used in the study.,2
+cogito-v2-1-671b,numeric,format_invalid,Z; The excerpt does not explicitly report the number of predictor variables used in the fi,2
+cogito-v2-1-671b,numeric,format_invalid,Z; The excerpt does not contain any explicit mention of BACC (Balanced Accuracy) or its va,2
+cogito-v2-1-671b,single_choice,format_invalid,Z; The excerpt does not provide information about whether the outcome was measured at the ,2
+cogito-v2-1-671b,single_choice,format_invalid,Z; The excerpt does not contain any information about nested data structures in the sample,2
+cogito-v2-1-671b,single_choice,format_invalid,Z; The excerpt does not explicitly mention or discuss any nested data structure in the sam,2
+cogito-v2-1-671b,numeric,format_invalid,Z; The excerpt does not contain any explicit mention of sample size or number of participa,2
+cogito-v2-1-671b,single_choice,format_invalid,Z; The excerpt does not provide information about the temporal relationship between predic,2
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not explicitly report the number of cases in the minority group for th,2
+qwen3-14b,numeric,refusal_text,"Z; The excerpt does not report any performance metrics such as AUC, ACC, BACC, R², or r. T",2
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not report any R² value or related performance metric for regression t,2
+qwen3-14b,numeric,format_invalid,"Z; The excerpt does not report any specific performance metrics such as BACC, AUC, ACC, R²",2
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not report any specific numeric value for AUC or other performance met,2
+qwen3-14b,numeric,format_invalid,"Z; The excerpt does not report any R² value or other performance metrics such as AUC, ACC,",2
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not report the number of cases in the minority group.,2
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not report any numeric value for AUC or other performance metrics.,2
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not report any R² value or related performance metric for the regressi,2
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not report any numeric value for BACC (balanced accuracy) or any other,2
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not report the train-test split ratio or any specific percentage relat,2
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not report any specific numeric value for ACC (accuracy) in the valida,2
+qwen3-14b,numeric,format_invalid,"Z; The excerpt does not report any AUC values or other performance metrics such as ACC, BA",2
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not report the BACC (Balanced Accuracy) metric or any specific perform,2
+qwen3-14b,numeric,format_invalid,"Z; The excerpt does not report any performance metrics such as BACC, AUC, ACC, R², or r. T",2
+qwen3-14b,numeric,format_invalid,"Z; The excerpt does not report any numeric values for performance metrics such as AUC, ACC",2
+qwen3-14b,numeric,format_invalid,"Z; The excerpt does not report any numeric values for AUC, ACC, BACC, R², or r. The text d",2
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not report any numeric value for R² or any other performance metric. T,2
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not report the BACC (Balanced Accuracy) metric for the validation samp,2
+qwen3-14b,numeric,format_invalid,Z; The excerpt does not report an R² value or any regression performance metric. The perfo,2
+ministral-8b-2512,numeric,format_invalid,**Answer:** Z,2
+ministral-8b-2512,multiple_choice,format_invalid,O,2
+ministral-8b-2512,single_choice,format_invalid,Answer: **Z**,2
+gpt-oss-120b,numeric,format_invalid,Z; The number of predictor variables is not explicitly stated.,2
+gpt-oss-120b,single_choice,format_invalid,Z; No package version is reported.,2
+gpt-oss-120b,numeric,format_invalid,Z; R² is not reported.,2
+gpt-oss-120b,numeric,format_invalid,Z; R² is not applicable or reported.,2
+gpt-oss-120b,numeric,format_invalid,Z; AUC not reported.,2
+gpt-oss-120b,numeric,format_invalid,Z; BACC not reported.,2
+gpt-oss-120b,numeric,format_invalid,Z; r not reported.,2
+gpt-oss-120b,numeric,format_invalid,Z; No single train‑test split ratio is reported.,2
+gpt-oss-120b,numeric,format_invalid,Z; No correlation coefficient is reported.,2
+gpt-oss-120b,numeric,format_invalid,Z; No explicit train‑test split ratio is provided.,2
+gpt-oss-120b,numeric,format_invalid,Z; No explicit train‑test split ratio is reported.,2
+gpt-oss-120b,numeric,format_invalid,Z; Accuracy is not reported.,2
+gpt-oss-120b,numeric,format_invalid,Z; Balanced accuracy not reported.,2
+gpt-oss-120b,numeric,format_invalid,Z; Not applicable for classification.,2
+gpt-oss-120b,numeric,format_invalid,Z; R² not reported,2
+gpt-oss-20b,numeric,format_invalid,Z; Correlation coefficient r was not reported.,2
+gpt-oss-20b,numeric,format_invalid,Z; AUC is not reported.,2
+gpt-oss-20b,numeric,format_invalid,Z; R² is not applicable.,2
+gpt-oss-20b,numeric,format_invalid,Z; No train-test split ratio is reported.,2
+gpt-oss-20b,single_choice,format_invalid,Z; The article does not state whether the code is open.,2
+gpt-oss-20b,single_choice,format_invalid,Z; No version of the programming language is reported.,2
+gpt-oss-20b,numeric,format_invalid,Z; No train‑test split ratio is reported.,2
+gpt-oss-20b,numeric,format_invalid,Z; Accuracy is not reported.,2
+gpt-oss-20b,numeric,format_invalid,Z; No AUC reported.,2
+gpt-oss-20b,numeric,format_invalid,Z; No BACC reported.,2
+gpt-oss-20b,numeric,format_invalid,Z; Balanced accuracy not reported.,2
+gpt-oss-20b,numeric,format_invalid,Z; BACC not reported,2
+gpt-oss-20b,numeric,format_invalid,Z; r not applicable,2
+gpt-oss-20b,numeric,format_invalid,Z; AUC was not reported.,2
+gpt-oss-20b,numeric,format_invalid,Z; Train-test split ratio not reported.,2
+DeepSeek-V4-Pro,multiple_choice,format_invalid,Y,2
+qwen3-14b,single_choice,format_invalid,"s.
+4",2
+qwen3-14b,numeric,format_invalid,"d.
+Z",2
+qwen3-14b,single_choice,format_invalid,"d.
+2",2
+qwen3-14b,single_choice,format_invalid,").
+1",2
+qwen3-14b,single_choice,format_invalid,"e.
+2",2
+qwen3-14b,single_choice,format_invalid,"r.
+1",2
+Kimi-K2.6,numeric,format_invalid,Z; The study is a classification task and does not report R-squared.,2
+Kimi-K2.6,numeric,format_invalid,Z; The article does not report a Pearson correlation coefficient between predicted and obs,2
+Kimi-K2.6,single_choice,format_invalid,Z; The article does not report the version of any programming language used.,2
+Kimi-K2.6,numeric,format_invalid,Z; Pearson correlation coefficient r is not reported.,2
+Kimi-K2.6,numeric,format_invalid,Z; Balanced accuracy (BACC) is not reported in the article.,2
+Kimi-K2.6,numeric,format_invalid,Z; AUC is not reported in the excerpt.,2
+Kimi-K2.6,numeric,format_invalid,"Z; R-squared is not reported, as the task is classification rather than regression.",2
+Kimi-K2.6,numeric,format_invalid,Z; Accuracy is not reported in the article.,2
+Kimi-K2.6,numeric,format_invalid,Z; R-squared is not reported in the article.,2
+Kimi-K2.6,numeric,format_invalid,Z; The Pearson correlation coefficient between predicted and observed outcome is not repor,2
+Kimi-K2.6,numeric,format_invalid,Z; Pearson correlation coefficient between predicted and observed outcome is not reported.,2
+Kimi-K2.6,numeric,format_invalid,Z; Pearson correlation between predicted and observed outcome is not reported.,2
+ministral-8b-2512,single_choice,format_invalid,Z; Confidence intervals for performance metrics are not reported.,2
+Kimi-K2.6,multiple_choice,format_invalid,O,2
+GLM-5.2,multiple_choice,format_invalid,Y,2
+gemma-4-31B-it,numeric,format_invalid,Z; Pearson correlation (r) is not reported.,2
+gpt-oss-120b,multiple_choice,format_invalid,O,1
+gpt-oss-120b,multiple_choice,format_invalid,Other,1
+DeepSeek-V4-Pro,single_choice,format_invalid,"Accuracy is coded as correct (1) or incorrect (0), which is a binary outcome. So the answe",1
+Kimi-K2.7-Code,numeric,refusal_text,401 lane keeping samples and 406 lane changing intent samples. From each of these two grou,1
+ministral-8b-2512,multiple_choice,refusal_text,"A, C
+
+*(A) Hyperparameter values not mentioned*
+*(C) Hyperparameter values not specified, ",1
+ministral-8b-2512,numeric,format_invalid,"Z
+Z
+Z
+Z
+Z
+Z",1
+gpt-5.2,multiple_choice,format_invalid,1,1
+Qwen3.5-9B,multiple_choice,format_invalid,0,1
+Qwen3.5-9B,multiple_choice,format_invalid,1,1
+ministral-8b-2512,numeric,format_invalid,"Z
+
+The excerpt does not explicitly report the number of cases in the minority group for th",1
+ministral-8b-2512,numeric,format_invalid,"Z
+
+The excerpt does not explicitly report the train-test split ratio used for the analysis",1
+ministral-8b-2512,numeric,format_invalid,AUC; Not reported (the article does not explicitly report AUC values for validation sample,1
+ministral-8b-2512,single_choice,format_invalid,Z; The excerpt does not explicitly mention whether the research was preregistered. The clo,1
+ministral-8b-2512,single_choice,format_invalid,"Z; The excerpt does not explicitly report any information about the amount, nature, or han",1
+ministral-8b-2512,numeric,format_invalid,"ACC; **Z**
+*(The excerpt does not explicitly report any classification accuracy (ACC) metr",1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not explicitly report the train-test split ratio used in the study.,1
+ministral-8b-2512,single_choice,format_invalid,Z; The excerpt does not explicitly mention whether the study was preregistered. There is n,1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not explicitly report the **ACC (accuracy)** values for the validation,1
+ministral-8b-2512,numeric,format_invalid,"AUC; **Not reported**
+
+The excerpt does not explicitly report any AUC (Area Under the Curv",1
+ministral-8b-2512,numeric,format_invalid,"AUC; **Z**
+
+The excerpt does not explicitly report any AUC (Area Under the Curve) values f",1
+ministral-8b-2512,single_choice,format_invalid,"Z; The excerpt does not explicitly mention or describe any nested data structure (e.g., hi",1
+ministral-8b-2512,single_choice,format_invalid,Z; The excerpt does not mention whether the study was preregistered or provide any details,1
+ministral-8b-2512,numeric,format_invalid,"AUC; **Z**
+*The excerpt does not report any AUC (Area Under the Curve) values for model pe",1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not report any **R²** values for regression analyses or performance me,1
+ministral-8b-2512,numeric,format_invalid,"ACC; **Z**
+*The excerpt does not explicitly report the validation sample accuracy (ACC) fo",1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not report any R² values for regression models or specify regression o,1
+ministral-8b-2512,numeric,format_invalid,"r; **Z**
+
+*(No explicit value for **r** (correlation) is reported in the text; only AUC, P",1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not explicitly report the train-test split ratio used for the internal,1
+ministral-8b-2512,numeric,format_invalid,"AUC; **Z**
+*(The excerpt does not report any AUC (Area Under the Curve) values for classif",1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not explicitly report a numeric value for **r (correlation coefficient,1
+ministral-8b-2512,single_choice,format_invalid,Z; The excerpt does not explicitly report whether the target variable is open-coded or not,1
+ministral-8b-2512,single_choice,format_invalid,Z; The excerpt does not explicitly report the version of the programming language used in ,1
+ministral-8b-2512,single_choice,format_invalid,"Z; The excerpt does not explicitly report any information about the amount, extent, or han",1
+ministral-8b-2512,numeric,format_invalid,Z; The study does not explicitly report any regression metrics (R² or r) for the specified,1
+ministral-8b-2512,numeric,format_invalid,"Z
+
+*(No explicit numeric value for the number of cases in the minority group for piano-mel",1
+ministral-8b-2512,single_choice,format_invalid,Z; The excerpt does not explicitly state whether the original or preprocessed data are ava,1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not explicitly report any R² values for regression models related to t,1
+ministral-8b-2512,numeric,format_invalid,"Z; The excerpt does not report any numeric values for **AUC, ACC, BACC, R², or r** in rela",1
+ministral-8b-2512,single_choice,format_invalid,Z; The excerpt does not mention whether the study was preregistered.,1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not report any R² values for the regression analysis or any regression,1
+ministral-8b-2512,single_choice,format_invalid,Z; The excerpt does not explicitly mention whether the training sample (mixed dataset of a,1
+ministral-8b-2512,single_choice,format_invalid,Z; The excerpt does not mention longitudinal prediction or any temporal relationship betwe,1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not report any **R²** values for regression tasks or specify regressio,1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not report any numeric values for **r (correlation coefficient)** or r,1
+ministral-8b-2512,numeric,format_invalid,"Z;
+The excerpt does not explicitly state the total number of predictor variables used in t",1
+ministral-8b-2512,single_choice,format_invalid,"Z; The excerpt does not explicitly describe a longitudinal prediction task (e.g., predicti",1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not report any R² values or regression analyses for the specified focu,1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not report any values for **r (correlation coefficient)** or **R² (coe,1
+ministral-8b-2512,numeric,format_invalid,"Z;
+The number of predictor variables used in the final analysis is not explicitly reported",1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not explicitly report the **ACC (accuracy)** value for the validation ,1
+ministral-8b-2512,numeric,format_invalid,"**BACC (Overall follow-up period):** Z;
+*The study reports AUC, sensitivity, specificity, ",1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not report any R² values for the model's performance in the validation,1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not report any values for **R²** or **r** (correlation coefficient) in,1
+ministral-8b-2512,numeric,format_invalid,"Z;
+The excerpt does not explicitly report the number of predictor variables used in the fi",1
+ministral-8b-2512,single_choice,format_invalid,Z; The excerpt does not explicitly mention or discuss the presence of a nested data struct,1
+ministral-8b-2512,numeric,format_invalid,Z; The number of predictor variables used in the final analysis is not explicitly reported,1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not report any R² values for regression tasks or performance metrics r,1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not explicitly report the train-test split ratio or any details about ,1
+ministral-8b-2512,single_choice,format_invalid,"Z; The excerpt does not explicitly report the version of the programming language (e.g., P",1
+ministral-8b-2512,single_choice,format_invalid,Z; The excerpt does not mention longitudinal prediction or any temporal distinction betwee,1
+ministral-8b-2512,single_choice,format_invalid,"Z; The excerpt does not mention confidence intervals for performance metrics (e.g., AUC, s",1
+ministral-8b-2512,numeric,format_invalid,"Z; The excerpt does not report any regression metrics (e.g., R² or **r**) for the study. I",1
+ministral-8b-2512,numeric,format_invalid,"Z;
+The excerpt does not explicitly report the **number of predictor variables** used in th",1
+ministral-8b-2512,numeric,format_invalid,"Z; The excerpt does not report any regression metrics (e.g., **R²** or **r**) for the stud",1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not explicitly report the train-test split ratio used for the machine ,1
+ministral-8b-2512,single_choice,format_invalid,Z; The excerpt does not explicitly report confidence intervals for performance metrics.,1
+ministral-8b-2512,numeric,format_invalid,"Z; The excerpt does not explicitly report any AUC, ACC, or BACC values for classification ",1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not report any R² values or regression analyses related to the specifi,1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not report any regression metrics (R² or r) for the study.,1
+ministral-8b-2512,single_choice,format_invalid,Z; The excerpt does not explicitly mention or discuss a nested data structure in the conte,1
+ministral-8b-2512,single_choice,format_invalid,Z; The excerpt does not mention whether the study was preregistered or not.,1
+ministral-8b-2512,single_choice,format_invalid,"Z; The excerpt does not mention missing data or missingness in any form (e.g., amount, ext",1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not explicitly report any numeric value for **ACC (accuracy)** in the ,1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not report any R² (coefficient of determination) values for model perf,1
+ministral-8b-2512,numeric,format_invalid,"Z;
+The excerpt does not explicitly state the number of predictor variables used in the fin",1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not explicitly report the **ACC (accuracy)** metric for any model in t,1
+ministral-8b-2512,numeric,format_invalid,"BACC: Z;
+
+The excerpt does not explicitly report any values for **balanced accuracy (BACC)",1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not report any values for **R²** or **Pearson’s r (correlation coeffic,1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not report any R² (coefficient of determination) values for regression,1
+ministral-8b-2512,numeric,format_invalid,Z; The article does not report any R² (coefficient of determination) values for regression,1
+ministral-8b-2512,numeric,format_invalid,Z; The study does not report any regression metrics (R² or r) for the machine learning ana,1
+ministral-8b-2512,single_choice,format_invalid,Z; The excerpt does not explicitly report confidence intervals for performance metrics in ,1
+ministral-8b-2512,numeric,format_invalid,"Z
+
+*(No explicit numeric value for the number of cases in the minority group is reported i",1
+ministral-8b-2512,numeric,format_invalid,"AUC; **Z**
+*(The excerpt does not report AUC (Area Under the Curve) values for classificat",1
+ministral-8b-2512,numeric,format_invalid,"ACC; **Z**
+
+The excerpt does not report any **ACC (Accuracy)** metrics for classification ",1
+ministral-8b-2512,numeric,format_invalid,"Z; The excerpt does not report any classification metrics (AUC, ACC, BACC) or regression m",1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not report any R² values or regression performance metrics for the spe,1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not report any values for **r (correlation coefficient)** or regressio,1
+ministral-8b-2512,single_choice,format_invalid,Z; The excerpt does not explicitly report the version of any programming language used in ,1
+ministral-8b-2512,single_choice,format_invalid,Z; The excerpt does not explicitly mention whether the original or preprocessed data (e.g.,1
+ministral-8b-2512,numeric,format_invalid,Z; AUC (Area Under the Curve) is not reported in the provided excerpt. The study reports r,1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not explicitly report any numeric value for **R²** in the validation s,1
+ministral-8b-2512,single_choice,format_invalid,Z; The excerpt does not explicitly report whether confidence intervals (CIs) were provided,1
+ministral-8b-2512,numeric,format_invalid,Z; The excerpt does not mention **R²** (coefficient of determination) or any regression-ba,1
+ministral-8b-2512,numeric,format_invalid,"Z; The excerpt does not report any regression metrics (e.g., **R²** or **r**) or classific",1
+ministral-8b-2512,numeric,format_invalid,"**r**: Z;
+
+The excerpt does not report any regression analysis or correlation coefficient ",1
+cogito-v2-1-671b,numeric,format_invalid,"Z
+
+The excerpt does not explicitly state the exact number of predictor variables used in t",1
+cogito-v2-1-671b,numeric,refusal_text,"Let me analyze this step by step:
+
+1. The target variable is ACC (accuracy) for the specif",1
+cogito-v2-1-671b,numeric,refusal_text,Let me analyze the excerpt step by step to find the number of predictor variables used in ,1
+cogito-v2-1-671b,numeric,refusal_text,"After reviewing the provided research article excerpt, I cannot find any explicit mention ",1
+cogito-v2-1-671b,numeric,refusal_text,"Let me analyze this step by step:
+
+1. The target variable is the number of cases in the mi",1
+cogito-v2-1-671b,numeric,refusal_text,"After reviewing the provided research paper excerpt, I cannot find any explicit mention of",1
+cogito-v2-1-671b,numeric,refusal_text,"Let me analyze this step by step:
+
+1. The study involves a binary classification task (rol",1
+cogito-v2-1-671b,numeric,refusal_text,"Let me analyze the excerpt step by step to find the AUC value:
+
+1. The study is about emot",1
+Kimi-K2.6,numeric,refusal_text,"I need to find the number of cases in the minority group for this classification task.
+
+Fr",1
+cogito-v2-1-671b,numeric,format_invalid,"After carefully reviewing the provided research paper excerpt, I do not find any explicit ",1
+nemotron-3-ultra-550b-a55b,multiple_choice,format_invalid,Coder,1
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not report the number of cases in the minority group for the outcome v,1
+DeepSeek-V4-Pro,single_choice,format_invalid,"Z; The excerpt does not contain information about whether the study's data, code, or mater",1
+DeepSeek-V4-Pro,single_choice,refusal_text,Z; The excerpt does not provide information about whether the outcome (response accuracy) ,1
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not report any AUC values for the validation sample.,1
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not contain any reported values for ACC (accuracy) or any other perfor,1
+DeepSeek-V4-Pro,numeric,format_invalid,"Z; The excerpt does not report any performance metrics such as BACC, AUC, ACC, R², or r. I",1
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not report any R² values. It only discusses model accuracy and provide,1
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not report a classification task with a minority group count. It descr,1
+DeepSeek-V4-Pro,single_choice,format_invalid,Z; The excerpt does not provide information about whether the outcome (openness) was asses,1
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not report Balanced Accuracy (BACC) for any classification task.,1
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not report the number of cases in the minority group for the convictio,1
+DeepSeek-V4-Pro,single_choice,format_invalid,Z; The excerpt does not mention any programming language or its version used in the study.,1
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt provides confusion matrices and error rates for a conviction outcome model ,1
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not report Balanced Accuracy (BACC) for any model. Only confusion matr,1
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not report any R² values. It only provides confusion matrices with err,1
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not report any R² or r values for the conviction outcome. Only confusi,1
+DeepSeek-V4-Pro,single_choice,format_invalid,Z; The excerpt does not contain any information that can be classified according to the pr,1
+DeepSeek-V4-Pro,numeric,format_invalid,"Z; The excerpt does not report accuracy (ACC) for any model. It only provides R², RMSE, an",1
+DeepSeek-V4-Pro,numeric,format_invalid,"Z; The excerpt does not report Balanced Accuracy (BACC) for any model. Only R², RMSE, and ",1
+DeepSeek-V4-Pro,numeric,format_invalid,"Z; The excerpt does not mention any internal data split, training set percentage, or train",1
+DeepSeek-V4-Pro,single_choice,format_invalid,Z; The excerpt does not provide information about whether the predictor data were collecte,1
+DeepSeek-V4-Pro,numeric,format_invalid,Z; The excerpt does not report an AUC value for any model in a validation sample.,1
