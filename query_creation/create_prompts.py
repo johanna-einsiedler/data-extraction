@@ -15,6 +15,7 @@ os.environ["TOGETHER_API_KEY"] = os.getenv("TOGETHER_API_KEY")
 TEMPLATE_SOURCES = {
     "base": BASE_DIR / "base_prompt",
     "base_reasoning": BASE_DIR / "base_prompt_with_reasoning",
+    "base_cot": BASE_DIR / "base_prompt_cot",
     "system_single_outcome": BASE_DIR / "system_prompt_single_outcome.txt",
     "system_multiple_outcomes": BASE_DIR / "system_prompt_multiple_outcomes.txt",
     "follow_up": BASE_DIR / "follow_up_prompt_other.txt",
@@ -191,10 +192,14 @@ def generate_prompts_with_rewrite(
         prompts = create_prompts(record, templates)
         base_prompt = prompts.get("base")
         reasoning_prompt = prompts.get("base_reasoning")
+        cot_prompt = prompts.get("base_cot")
         if only_base:
-            # Skip all further steps and return only the base prompt
+            # Skip all further steps and return only the base + CoT prompts
             record_with_prompts = record.copy()
-            record_with_prompts["prompts"] = {"base_prompt": base_prompt}
+            record_with_prompts["prompts"] = {
+                "base_prompt": base_prompt,
+                "cot_prompt": cot_prompt,
+            }
             results[qid] = record_with_prompts
             continue
         rewritten_prompt = None
@@ -254,9 +259,20 @@ def generate_prompts_with_rewrite(
             if len(record["examples"]) > 0:
                 true_few_shot_prompt = f"{base_prompt_stem}\n\n# Examples:\n"
                 for example in record["examples"]:
+                    # For choice-based questions, map values to letters;
+                    # for numeric / open_ended / list, use the raw answer.
+                    if record.get("type") in (
+                        "multiple_choice",
+                        "single_choice",
+                    ):
+                        answer_display = map_values_to_letters(
+                            example["answer"], record["choices"]
+                        )
+                    else:
+                        answer_display = example["answer"]
                     true_few_shot_prompt = (
                         true_few_shot_prompt
-                        + f"Example: {example['context']}\n True Answer: {map_values_to_letters(example['answer'], record['choices'])}\n"
+                        + f"Example: {example['context']}\n True Answer: {answer_display}\n"
                     )
                     true_few_shot_prompt = (
                         true_few_shot_prompt + " Excerpt: {context} Answer:"
@@ -342,6 +358,7 @@ def generate_prompts_with_rewrite(
         record_with_prompts = record.copy()
         record_with_prompts["prompts"] = {
             "base_prompt": base_prompt,
+            "cot_prompt": cot_prompt,
             "reasoning_prompt": reasoning_prompt,
             "rewritten_prompt": rewritten_prompt,
             "synthetic_few_shot_examples": synthetic_few_shot_examples,

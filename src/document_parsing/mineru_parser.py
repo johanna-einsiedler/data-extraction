@@ -39,31 +39,26 @@ class MinerUParser(BaseParser):
                 logger.error("mineru stderr for %s:\n%s", file_path, result.stderr)
                 raise RuntimeError(f"MinerU failed: {result.stderr}")
 
-            # Find subdir (usually <file_stem>/auto/)
-            subdirs = os.listdir(run_dir)
-            if not subdirs:
-                raise RuntimeError("MinerU produced no output.")
-
-            doc_dir = run_dir / subdirs[0] / "auto"
-            if not doc_dir.is_dir():
-                raise RuntimeError(f"Expected auto/ directory, found: {doc_dir}")
-
-            # Prefer Markdown, fallback to JSON
+            # Locate the produced output. MinerU's on-disk layout has changed
+            # across versions (e.g. <stem>/auto/ in <=2.x, <stem>/<backend>/ in
+            # 3.x), so search recursively for the best available file instead of
+            # assuming a fixed subdirectory.
             preferred = [".md", "_content_list.json", "_middle.json", "_model.json"]
             content = None
             source_ext = None
             for ext in preferred:
-                for f in os.listdir(doc_dir):
-                    if f.endswith(ext):
-                        source_ext = ext.lstrip(".")
-                        with open(doc_dir / f, "r", encoding="utf-8") as fh:
-                            content = fh.read()
-                        break
-                if content is not None:
+                matches = sorted(run_dir.rglob(f"*{ext}"))
+                if matches:
+                    source_ext = ext.lstrip(".")
+                    with open(matches[0], "r", encoding="utf-8") as fh:
+                        content = fh.read()
                     break
 
             if content is None:
-                raise RuntimeError(f"No suitable output found in {doc_dir}")
+                produced = [str(p.relative_to(run_dir)) for p in run_dir.rglob("*") if p.is_file()]
+                raise RuntimeError(
+                    f"MinerU produced no suitable output in {run_dir}; files: {produced[:12]}"
+                )
 
             if source_ext != "md":
                 fenced_lang = "json" if "json" in source_ext else source_ext or ""

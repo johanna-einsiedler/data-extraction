@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 from typing import Optional, Tuple
 
@@ -16,7 +17,12 @@ class GROBIDParser(BaseParser):
 
     def __init__(
         self,
-        grobid_url: str = "https://kermitt2-grobid.hf.space",
+        # kermitt2-grobid.hf.space went down (serves HTML + 206). Working
+        # alternatives (verified): https://grobidOrg-grobid.hf.space (0.9.0, fast),
+        # https://grobid.hti.ieis.tue.nl (TUE 0.8.2), https://grobid.metacheck.app
+        # (slower). Override via GROBID_URL. Once papers are cached the study reads
+        # the cache, so server uptime only matters during warm-up.
+        grobid_url: str = os.getenv("GROBID_URL", "https://grobidOrg-grobid.hf.space"),
         # use split timeouts: (connect, read)
         timeout: Tuple[int, int] = (5, 180),
         check_health: bool = True,

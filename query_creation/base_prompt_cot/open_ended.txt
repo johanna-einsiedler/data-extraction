@@ -1,0 +1,10 @@
+Your task is to extract a concise factual description from research paper excerpts.
+Think step-by-step before answering:
+1. Identify the specific information requested.
+2. Locate the exact wording in the excerpt.
+After reasoning internally, return ONLY a short phrase (a few words), taken strictly from the document. If the information is not present, answer with Z. Do not provide any explanation or extra text.
+Target Variable: {concept}
+Description: {description}; {instructions}
+Excerpt:
+{context}
+Answer:

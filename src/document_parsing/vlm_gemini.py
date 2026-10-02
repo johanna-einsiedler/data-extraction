@@ -17,24 +17,38 @@ class GeminiParser(BaseParser):
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel(model_name)
 
-    def parse_page(self, page_image: Image.Image) -> str:
-        """Parse a single page image via Gemini."""
-        with NamedTemporaryFile(suffix=".png", delete=False) as tmp:
-            img_path = tmp.name
-            page_image.save(img_path, format="PNG")
+    # Scientific / clinical papers (suicide, psychiatry, etc.) false-trigger the
+    # default safety filters, which return a candidate with no text part and make
+    # `response.text` raise. Disable the filters for this OCR-style task.
+    _SAFETY = [
+        {"category": c, "threshold": "BLOCK_NONE"}
+        for c in (
+            "HARM_CATEGORY_HARASSMENT",
+            "HARM_CATEGORY_HATE_SPEECH",
+            "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+            "HARM_CATEGORY_DANGEROUS_CONTENT",
+        )
+    ]
 
+    def parse_page(self, page_image: Image.Image) -> str:
+        """Parse a single page image via Gemini. The image (a PIL.Image) must be
+        passed to generate_content directly — passing a file PATH string makes
+        the model treat it as text and hallucinate a document."""
         prompt = """Convert the following scientific article page into well-structured Markdown:
 - Use # and ## for headings
 - Preserve bullet points, tables, math, and code blocks
 - Format citations as (Author, Year)
 - Output Markdown only, no explanation
 Input (image):"""
-
+        response = self.model.generate_content(
+            [prompt, page_image], safety_settings=self._SAFETY
+        )
         try:
-            response = self.model.generate_content([prompt, img_path])
             return response.text
-        finally:
-            Path(img_path).unlink(missing_ok=True)
+        except Exception:
+            # No text part (blocked / empty candidate) -> skip this page rather
+            # than failing the whole paper.
+            return ""
 
     def parse(self, file_path: str) -> ParseResult:
         """Convert a PDF to Markdown using Gemini via image OCR."""

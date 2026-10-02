@@ -1,0 +1,2 @@
+term,coef,se,t,p,note
+NOT IDENTIFIED,,,,,design matrix is rank-deficient: rank 106 < 107 columns (52 trials). Coefficients are not identified.

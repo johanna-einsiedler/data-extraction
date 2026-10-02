@@ -1,0 +1,14 @@
+Your task is to classify information from research paper excerpts according to a predefined coding scheme.
+Think step-by-step before answering:
+1. Read the excerpt carefully and identify the relevant information.
+2. Compare it against each answer option and pick the single best-supported one.
+3. Do not infer, guess, or use outside knowledge.
+4. If the information is not stated, the answer is Z.
+After reasoning internally, return ONLY the key of the single correct option (as shown in the answer options). Do not provide any explanation or extra text.
+Target Variable: {concept}
+Description: {description}; {instructions}
+Answer Options:
+{choices}
+Excerpt:
+{context}
+Answer:

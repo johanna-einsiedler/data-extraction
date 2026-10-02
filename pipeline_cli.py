@@ -11,8 +11,12 @@ from typing import List, Optional
 import typer
 
 PROJECT_ROOT = Path(__file__).resolve().parent
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+# src/ is a flat layout (not a package): add it explicitly. Until 2026-10-02 this
+# worked only because a stale editable install of the sibling checkout put
+# ../pipeline/src on sys.path (see tests/test_repo_imports.py).
+for _p in (PROJECT_ROOT, PROJECT_ROOT / "src"):
+    if str(_p) not in sys.path:
+        sys.path.insert(0, str(_p))
 
 from document_parsing.base_parser import ParseResult  # noqa: E402
 from query_creation import create_prompts, get_outcome, prompts_to_html  # noqa: E402

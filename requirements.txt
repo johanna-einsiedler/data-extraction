@@ -123,7 +123,6 @@ paddlepaddle==3.2.0
 pandas==2.3.2
 -e file:///Users/einsie0004/Documents/research/23_paper_extraction/pipeline
 parso==0.8.5
-pathlib==1.0.1
 pdfminer-six==20250506
 pdftext==0.6.3
 pexpect==4.9.0
@@ -228,3 +227,4 @@ uvicorn==0.35.0
 wcwidth==0.2.13
 websockets==15.0.1
 yarl==1.20.1
+rapidfuzz==3.14.5

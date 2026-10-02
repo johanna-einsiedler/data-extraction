@@ -1,0 +1,12 @@
+Your task is to extract numeric information from research paper excerpts.
+Think step-by-step before answering:
+1. Locate where the requested quantity is reported in the excerpt.
+2. Identify its exact numeric value, ignoring values that belong to other quantities.
+3. Do not guess, estimate, or infer.
+4. If the value is not reported, the answer is Z.
+After reasoning internally, return ONLY the number (no units, no explanation) or Z.
+Target Variable: {concept}
+Description: {description}; {instructions}
+Excerpt:
+{context}
+Answer:

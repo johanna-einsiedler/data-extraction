@@ -55,6 +55,34 @@ class BaseChunker(ABC):
                 break
         return chunks
 
+    def _force_cut(self, text: str) -> List["Chunk"]:
+        """Hard-split an oversized string into <=chunk_size character windows
+        (with chunk_overlap). Used by the structure chunkers, which size by
+        characters, for paragraphs too long to split on sentence boundaries."""
+        size = max(1, self.chunk_size)
+        step = max(1, size - max(0, self.chunk_overlap))
+        out: List[Chunk] = []
+        for start in range(0, len(text), step):
+            piece = text[start : start + size].strip()
+            if piece:
+                out.append(Chunk(piece))
+            if start + size >= len(text):
+                break
+        return out
+
+    def _apply_overlap(self, chunks: List["Chunk"]) -> List["Chunk"]:
+        """Prepend the trailing chunk_overlap characters of each chunk onto the
+        next one, so adjacent chunks share context. No-op when overlap<=0."""
+        if self.chunk_overlap <= 0 or len(chunks) <= 1:
+            return chunks
+        out: List[Chunk] = [chunks[0]]
+        for i in range(1, len(chunks)):
+            prev = chunks[i - 1].text
+            tail = prev[-self.chunk_overlap :] if len(prev) > self.chunk_overlap else prev
+            merged = (tail + " " + chunks[i].text).strip()
+            out.append(Chunk(merged, dict(chunks[i].metadata)))
+        return out
+
     @abstractmethod
     def chunk(self, text: str) -> List[Chunk]:
         """Split text into chunks according to a specific strategy."""

@@ -29,6 +29,8 @@ load_dotenv(dotenv_path)
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 TOGETHER_API_KEY = os.getenv("TOGETHER_API_KEY")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 
 # Registry now stores classes + default kwargs
@@ -62,10 +64,10 @@ PARSERS = {
 
 CHUNKERS = {
     "LengthChunker": length_chunker.LengthChunker,
-    "BaseChunker": base_chunker.BaseChunker,
     "StructureChunker": structure_chunker.StructureChunker,
     "TextStructureChunker": text_chunker.TextStructureChunker,
 }
+
 
 class LazyEmbedder(base_embedder.BaseEmbedder):
     """Wrap embedder construction so heavy dependencies load only if needed."""
@@ -99,7 +101,6 @@ if OPENAI_API_KEY:
 
 RETRIEVERS = {
     "TopKRetriever": topk_retriever.TopKRetriever,
-    "BaseRetriever": base_retriever.BaseRetriever,
     "CrossEncoderRetriever": cross_encoder_retriever.CrossEncoderRetriever,
     "TokenBudgetRetriever": token_budget_retriever.TokenBudgetRetriever,
     "RCSRetriever": rcs_retriever.RCSRetriever,
@@ -125,11 +126,40 @@ with open(
 
 LLM_META_MAP = {meta["id"]: meta for meta in LLMS_META}
 
+_API_KEYS = {
+    "together": TOGETHER_API_KEY,
+    "openai": OPENAI_API_KEY,
+    "gemini": GOOGLE_API_KEY,
+    "anthropic": ANTHROPIC_API_KEY,
+    "openrouter": OPENROUTER_API_KEY,
+}
+
 LLMS = {
     meta_id: AnswerGenerator(
         api_type=meta["api_type"],
-        model=meta_id,
-        api_key=TOGETHER_API_KEY if meta["api_type"] == "together" else OPENAI_API_KEY,
+        # `api_model` lets the wire id differ from the roster key. Needed because
+        # the roster key IS the Optuna categorical value: changing it would trip
+        # "CategoricalDistribution does not support dynamic value space" against
+        # every trial already recorded under the old name. So a model re-routed
+        # from Together to OpenRouter (which uses a different namespace and case,
+        # e.g. moonshotai/Kimi-K2.6 -> moonshotai/kimi-k2.6) keeps its key and
+        # only changes where the call goes.
+        model=meta.get("api_model", meta_id),
+        api_key=_API_KEYS.get(meta["api_type"], OPENAI_API_KEY),
+        exposes_logprobs=meta.get("exposes_logprobs", True),
+        base_url=meta.get("base_url"),
+        provider_routing=meta.get("provider_routing"),
     )
     for meta_id, meta in LLM_META_MAP.items()
+}
+
+# Models that expose usable answer-token logprobs (per the roster's
+# `exposes_logprobs` flag; defaults to True when the flag is absent so the
+# legacy roster is unaffected). Populated by scripts/build_filtered_models.py
+# and validated by scripts/test_logprobs.py. Use this to restrict the
+# calibration / uncertainty analyses (RQ2) to logprob-capable models.
+LOGPROB_LLMS = {
+    meta_id
+    for meta_id, meta in LLM_META_MAP.items()
+    if meta.get("exposes_logprobs", True)
 }

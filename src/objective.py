@@ -1,13 +1,13 @@
 import hashlib
 import json
+import logging
+import functools
 import os
 import re
 import sys
+import threading
 import time
-import logging
-from concurrent.futures import (
-    ThreadPoolExecutor,  # <-- Add this at the top of your script
-)
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
 from typing import List
@@ -17,9 +17,35 @@ import optuna
 import pandas as pd
 from dotenv import find_dotenv, load_dotenv
 
-from answer_generation.answer_generator import AnswerGenerator
+# Load .env BEFORE importing the scorer: evaluate.py freezes JUDGE_BACKEND /
+# EQUIV_JUDGE_MODEL at import time. Until 2026-10-01 this ran after the imports,
+# so the file's judge setting never reached a worker and every search ran the
+# module default (local Phi-3-mini) -- see the judge-identity audit in the
+# Phase-2 deviations addendum. .env now declares that same judge explicitly.
+load_dotenv(find_dotenv())
+
+from _data_loading import (
+    CURATED_MC_ITEMS,
+    OUTCOMES,
+    QUERIES_JSON_PATH,
+    build_system_prompt,
+    finalized_item_map,
+    load_doc_id_map,
+    load_full_document_text,
+    load_queries,
+    load_true_answers,
+    load_true_answers_final,
+    save_doc_id_map,
+)
+from _llm_utils import _clean_llm_text, get_cleaned_text_and_logprobs, get_llm_text
+from answer_generation.answer_generator import (
+    AnswerGenerator,
+    InsufficientCreditsError,
+)
 from document_parsing.base_parser import ParseResult
 from evaluate import evaluate_answer
+import batched
+import binary_mode
 from registry import (
     CHUNKERS,
     EMBEDDERS,
@@ -37,90 +63,191 @@ dotenv_path = find_dotenv()
 load_dotenv(dotenv_path)
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-_LLM_STRIP_PATTERNS = [
-    (r"<(think|reason|thought)>.*?</\1>", dict(flags=re.DOTALL | re.IGNORECASE)),
-    (
-        r"\((thinking|reasoning|step-by-step reasoning):.*?\)",
-        dict(flags=re.DOTALL | re.IGNORECASE),
-    ),
-    (r"<!--\s*(think|reasoning|steps).*?-->", dict(flags=re.DOTALL | re.IGNORECASE)),
-    (
-        r"^(Thoughts?:|Reasoning:|Step\s*\d*:|Internal monologue:|Chain-of-thought:)\s*",
-        dict(flags=re.IGNORECASE | re.MULTILINE),
-    ),
-]
-
 logger = logging.getLogger(__name__)
 if not logger.handlers:
     logging.basicConfig(level=logging.INFO)
 
+# ---------------------------------------------------------------------
+# Paper-level concurrency configuration
+# ---------------------------------------------------------------------
+# PAPER_CONCURRENCY == 1 -> fully sequential, identical to the original behavior.
+# PAPER_CONCURRENCY  > 1 -> process papers in a ThreadPoolExecutor so the slow
+# per-paper network calls (ans_gen.generate) overlap across papers.
+PAPER_CONCURRENCY = int(os.getenv("PAPER_CONCURRENCY", "4"))
+# _MODEL_LOCK serializes every torch/model + retrieval op (chunking cache,
+# embedding, vector-store load, query embedding, retrieval, and the Phi-3 judge
+# invoked inside evaluate_answer). _CACHE_LOCK guards writes to the shared
+# `cache` dict and save_cache().
+_MODEL_LOCK = threading.Lock()
+_CACHE_LOCK = threading.Lock()
 
-def load_full_document_text(parsed_path: Path) -> str:
-    """Return a string representation of the parsed document."""
-    if parsed_path.suffix == ".json":
-        with open(parsed_path, "r", encoding="utf-8") as fh:
-            data = json.load(fh)
-        if isinstance(data, str):
-            return data
-        if isinstance(data, list):
-            return "\n\n".join(str(item) for item in data)
-        return json.dumps(data, ensure_ascii=False, indent=2)
-
-    # XML or plain-text fallback
-    return parsed_path.read_text(encoding="utf-8")
-
-
-def _clean_llm_text(text):
-    """Remove internal reasoning markers frequently returned by LLM APIs."""
-    if not isinstance(text, str):
-        return text
-    cleaned = text
-    for pattern, kwargs in _LLM_STRIP_PATTERNS:
-        cleaned = re.sub(pattern, "", cleaned, **kwargs)
-    return cleaned.strip()
+# ---------------------------------------------------------------------
+# VLM (image) mode helpers
+# ---------------------------------------------------------------------
+# When vlm=True the model reads the page images, so the text {context} slot only
+# needs a pointer (sending the parsed text too would defeat the purpose and cost
+# a lot of extra tokens).
+_VLM_CTX = "(The full article is attached below as page images; read them to answer.)"
 
 
-def get_llm_text(output):
+def _load_page_images(pdf_path):
+    """Render a PDF's pages to PIL images for VLM mode. VLM_ZOOM (default 2.0 ≈
+    144 DPI) keeps dense tables/numbers legible. Drop to 1.5 for Together/MiniMax,
+    whose long papers timed out at 2.0 on >10 MB image payloads (OpenAI/Gemini
+    tolerate 2.0). VLM_MAX_PAGES caps pages/paper."""
+    import fitz  # PyMuPDF
+    from PIL import Image
+
+    zoom = float(os.getenv("VLM_ZOOM", "2.0"))
+    cap = os.getenv("VLM_MAX_PAGES")
+    cap = int(cap) if cap else None
+    mat = fitz.Matrix(zoom, zoom)
+    imgs = []
+    with fitz.open(str(pdf_path)) as doc:
+        for i, page in enumerate(doc):
+            if cap is not None and i >= cap:
+                break
+            pix = page.get_pixmap(matrix=mat)
+            imgs.append(Image.frombytes("RGB", (pix.width, pix.height), pix.samples))
+    return imgs
+
+
+def _demote_trial(storage_url, study_id, trial_no):
+    """Mark a COMPLETE trial FAIL so a rerun replaces it instead of duplicating it
+    (sqlite storages only). Its on-disk trial_logs/ data is untouched — only the
+    study row changes."""
+    if not storage_url.startswith("sqlite"):
+        logger.warning(
+            "Non-sqlite storage: not auto-demoting #%d; the rerun will add a new "
+            "trial alongside the old one.", trial_no
+        )
+        return
+    import sqlite3
+
+    path = storage_url.replace("sqlite:///", "")
+    con = sqlite3.connect(path)
+    con.execute(
+        "UPDATE trials SET state='FAIL', datetime_complete=datetime('now') "
+        "WHERE number=? AND study_id=? AND state='COMPLETE'",
+        (trial_no, study_id),
+    )
+    con.commit()
+    con.close()
+    logger.info("Old trial #%d demoted to FAIL (its trial_logs/ data is kept).", trial_no)
+
+
+def rerun_specific_trial(study, storage_url, trial_no, keep_old=False,
+                         resume_papers=False):
+    """Re-run an existing trial's EXACT config as a fresh trial. Current env knobs
+    (VLM_ZOOM, REQUEST_TIMEOUT, PAPER_CONCURRENCY, …) apply to the new run — so e.g.
+    `VLM_ZOOM=1.5 ... --rerun=332` reruns #332's config at the new zoom.
+
+    resume_papers=True (--resume-papers) seeds the new trial with the OLD trial's
+    finished doc_*.json, so a failed/partial run (e.g. gemini quota) picks up from
+    the papers it already completed and only computes the missing ones."""
+    global _RESUME_FROM_FOLDER
+    src = next((t for t in study.trials if t.number == trial_no), None)
+    if src is None:
+        raise SystemExit(f"[--rerun] trial #{trial_no} not found in the study.")
+    # A COMPLETE/RUNNING trial exposes its resolved config in .params; a
+    # WAITING/failed-early one keeps it in system_attrs['fixed_params'].
+    cfg = dict(src.params) if src.params else dict(
+        src.system_attrs.get("fixed_params", {})
+    )
+    if not cfg:
+        raise SystemExit(f"[--rerun] trial #{trial_no} has no recorded config to rerun.")
+    logger.info("[--rerun] #%d (%s) config: %s", trial_no, src.state.name, cfg)
+    if resume_papers:
+        cands = list((PROJECT_ROOT / "trial_logs").glob(f"*_trial_{trial_no:04d}"))
+        if cands:
+            _RESUME_FROM_FOLDER = str(cands[0])
+            logger.info("[--rerun] resuming finished papers from %s", _RESUME_FROM_FOLDER)
+        else:
+            logger.warning(
+                "[--rerun] --resume-papers: no trial_logs folder for #%d; running fresh.",
+                trial_no,
+            )
+    if not keep_old and src.state.name == "COMPLETE":
+        _demote_trial(storage_url, study._study_id, trial_no)
+    study.enqueue_trial(cfg, skip_if_exists=False)
+
+    def _obj(t):
+        acc = objective(t, verbose=True)
+        print(
+            f"\n>>> Rerun of #{trial_no} -> new trial #{t.number}  acc={acc:.2%}  "
+            f"model={t.params.get('llm_model', '?')}"
+        )
+        return acc
+
+    study.optimize(_obj, n_trials=1, n_jobs=1, catch=(Exception,))
+    print("\n" + "=" * 60)
+    print(
+        f"[--rerun] complete — new trial replaces #{trial_no}"
+        + ("" if keep_old else f" (old #{trial_no} -> FAIL).")
+    )
+    print("=" * 60)
+
+
+def _build_response_format(
+    question_type: str, is_binary: bool = False, api_type: str = "together"
+) -> dict | None:
+    """Return a response_format dict that constrains model output to the answer only.
+
+    Together supports regex mode; OpenAI supports json_schema with optional pattern
+    constraints. Both paths return None for question types where free-form text is
+    expected (list, open_ended) so those fall back to prompt-only guidance.
+
+    OpenAI responses will be wrapped in {"answer": "..."} JSON — answer_generator
+    automatically unwraps this before returning the text.
     """
-    Normalize assorted LLM responses (string/dict/list) into a cleaned string.
-    Handles direct strings, OpenAI-style choices, Together responses, and
-    nested structures while stripping out internal reasoning markers.
-    """
-    if output is None:
-        return ""
+    if api_type == "together":
+        if is_binary:
+            return {"type": "regex", "pattern": "(A|B)"}
+        if question_type == "single_choice":
+            # SC answers are numeric codes (1, 2, ...) or "Z" (not stated) -- NOT letters
+            return {"type": "regex", "pattern": r"(?:\d+|[Zz])"}
+        if question_type == "multiple_choice":
+            return {"type": "regex", "pattern": "[A-Z](,[A-Z])*"}
+        if question_type == "numeric":
+            # allow "Z" so the model can abstain (not reported); evaluate maps Z->0
+            return {"type": "regex", "pattern": r"(?:-?\d*\.?\d+|[Zz])"}
+        return None
 
-    if isinstance(output, str):
-        return _clean_llm_text(output)
+    elif api_type == "openai":
+        # Map question types to regex patterns for string properties
+        if is_binary:
+            pattern = "(A|B)"
+        elif question_type == "single_choice":
+            # SC answers are numeric codes (1, 2, ...) or "Z" (not stated)
+            pattern = r"^(?:\d+|[Zz])$"
+        elif question_type == "multiple_choice":
+            pattern = "^[A-Z](,[A-Z])*$"
+        elif question_type == "numeric":
+            # allow "Z" so the model can abstain (not reported); evaluate maps Z->0
+            pattern = r"^(?:-?\d*\.?\d+|[Zz])$"
+        else:
+            return None
 
-    if isinstance(output, (list, tuple, set)):
-        parts = [get_llm_text(item) for item in output]
-        return "\n".join([p for p in parts if p])
+        return {
+            "type": "json_schema",
+            "json_schema": {
+                "name": "answer",
+                "strict": True,
+                "schema": {
+                    "type": "object",
+                    "properties": {"answer": {"type": "string", "pattern": pattern}},
+                    "required": ["answer"],
+                    "additionalProperties": False,
+                },
+            },
+        }
 
-    if isinstance(output, dict):
-        if "text" in output:
-            return get_llm_text(output["text"])
-        if "message" in output:
-            return get_llm_text(output["message"])
-        if "content" in output:
-            return get_llm_text(output["content"])
-        if "choices" in output:
-            parts = [get_llm_text(choice) for choice in output.get("choices", [])]
-            return "\n".join([p for p in parts if p])
-
-        parts = []
-        for key, value in output.items():
-            if key in {"logprobs", "usage"}:
-                continue
-            parts.append(get_llm_text(value))
-        return "\n".join([p for p in parts if p])
-
-    if hasattr(output, "content"):
-        return get_llm_text(getattr(output, "content"))
-
-    return _clean_llm_text(str(output))
+    return None
 
 
-def _select_prompt(qid: str, qdata: dict, default_prompt: str, use_default: bool) -> tuple[str, str | None]:
+def _select_prompt(
+    qid: str, qdata: dict, default_prompt: str, use_default: bool
+) -> tuple[str, str | None]:
     """Resolve which prompt variant to use and return (prompt_type, prompt_text)."""
 
     prompts = qdata.get("prompts", {})
@@ -134,7 +261,9 @@ def _select_prompt(qid: str, qdata: dict, default_prompt: str, use_default: bool
     ):
         return "binary_prompts", None
 
-    if prompt_type == "true_few_shot_prompt" and not prompts.get("true_few_shot_prompt"):
+    if prompt_type == "true_few_shot_prompt" and not prompts.get(
+        "true_few_shot_prompt"
+    ):
         prompt_type = "synthetic_few_shot_prompt"
 
     prompt_text = prompts.get(prompt_type)
@@ -152,170 +281,152 @@ def get_parser(name, **overrides):
     return cls(**kwargs)
 
 
-QUERIES_JSON_PATH = Path(
-    "../query_creation/queries_with_prompts.json"
-)  # Path to your JSON file
-OUTCOMES_PATH = PROJECT_ROOT / "data" / "true_labels" / "outcomes.json"
-
-
-def load_queries():
-    with open(QUERIES_JSON_PATH, "r", encoding="utf-8") as f:
-        query_dict = json.load(f)
-
-    queries = {}
-    for qid, q in query_dict.items():
-        queries[qid] = q  # keep original structure
-    return queries
-
-
-try:
-    with open(OUTCOMES_PATH, "r", encoding="utf-8") as f:
-        OUTCOMES = json.load(f)
-except FileNotFoundError:
-    OUTCOMES = {}
-    print(
-        f"[objective] Warning: outcomes file not found at {OUTCOMES_PATH}. "
-        "Proceeding with empty outcomes map."
-    )
-
-
-def load_true_answers(
-    file: str = "codes_2025_10_14.xlsx", QUERIES: dict = None
-) -> dict:
-    """
-    Load true coder answers from Excel and remove prefilled template values (from QUERIES[qid]['prefilled'] if available).
-    Handles special case 4.5 (metrics and R² version).
-    """
-    import re
-    from pathlib import Path
-
-    import numpy as np
-
-    path = PROJECT_ROOT / "data" / "true_labels" / file
-    df = pd.read_excel(path)
-
-    df.columns = [col.strip() for col in df.columns]
-
-    # Fill unnamed headers from second row
-    second_row = df.iloc[1]
-    df.columns = [
-        str(second_row[c]) if str(c).startswith("Unnamed") else c for c in df.columns
-    ]
-
-    # Identify valid item codes
-    items = df["Item"].dropna().astype(str).str.strip()
-    pattern = r"^\d+(\.\d+)*$"
-    items = [x for x in items if re.match(pattern, x)]
-    to_remove = ["0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "99"]
-    items = [x for x in items if x not in to_remove]
-
-    # Identify coding columns (document IDs)
-    coding_columns = [c for c in df.columns if re.match(r"^\d+$", str(c).strip())]
-    if not coding_columns:
-        raise ValueError("No coding columns detected (e.g., '021', '023').")
-
-    true_answers = {}
-
-    for doc_name in coding_columns:
-        item_answers = {}
-
-        for item in items:
-            # Find all rows for this item
-            start_idx_list = df.index[
-                df["Item"].astype(str).str.strip() == item
-            ].tolist()
-            if not start_idx_list:
-                continue
-            start_idx = start_idx_list[0]
-            row_ids = [start_idx]
-            for idx in range(start_idx + 1, len(df)):
-                cell_value = df.at[idx, "Item"]
-                if pd.isna(cell_value) or str(cell_value).strip() == "":
-                    row_ids.append(idx)
-                else:
-                    break
-
-            sub_df = df.loc[row_ids]
-            row_values = sub_df[doc_name].astype(str).tolist()
-
-            # --- 🔸 Special case: 4.5 block ---
-            if item == "4.5":
-                subanswers = {f"4.5.{i}": ["-99"] for i in range(1, 7)}
-                for val in row_values:
-                    val = str(val).strip()
-                    if not val or val.lower() == "nan":
-                        continue
-
-                    if val.startswith("AUC"):
-                        m = re.search(r"[-−]?\d*\.?\d+", val)
-                        if m:
-                            subanswers["4.5.1"] = [m.group(0)]
-                    elif val.startswith("ACC"):
-                        m = re.search(r"[-−]?\d*\.?\d+", val)
-                        if m:
-                            subanswers["4.5.2"] = [m.group(0)]
-                    elif val.startswith("BACC"):
-                        m = re.search(r"[-−]?\d*\.?\d+", val)
-                        if m:
-                            subanswers["4.5.3"] = [m.group(0)]
-                    elif val.startswith("R²") or val.startswith("R2"):
-                        m = re.search(r"[-−]?\d*\.?\d+", val)
-                        if m:
-                            subanswers["4.5.4"] = [m.group(0)]
-                    elif re.match(r"^r[:\s]", val, re.IGNORECASE):
-                        m = re.search(r"[-−]?\d*\.?\d+", val)
-                        if m:
-                            subanswers["4.5.5"] = [m.group(0)]
-                    elif "Specify R" in val or "Character" in val:
-                        # Handle textual R² version (4.5.6)
-                        m = re.search(r"Specify R.?2.*?:\s*(.*)", val)
-                        if m:
-                            subanswers["4.5.6"] = [m.group(1).strip()]
-                        elif ":" not in val and val not in ["Character", ""]:
-                            subanswers["4.5.6"] = [val.strip()]
-                        else:
-                            subanswers["4.5.6"] = ["not specified"]
-
-                item_answers.update(subanswers)
-                continue
-
-            # --- Generic case ---
-            answers = [
-                a.strip() for a in row_values if a.strip() and a.lower() != "nan"
-            ]
-
-            # 🔹 Remove prefilled values if QUERIES is provided
-            if QUERIES and item in QUERIES:
-                prefilled_vals = QUERIES[item].get("prefilled", [])
-                if isinstance(prefilled_vals, str):
-                    prefilled_vals = [prefilled_vals]
-                prefilled_vals = [str(v).strip().lower() for v in prefilled_vals]
-                answers = [
-                    a
-                    for a in answers
-                    if a.strip().lower() not in prefilled_vals
-                    and not any(
-                        a.strip().lower().startswith(pv) for pv in prefilled_vals
-                    )
-                ]
-
-            item_answers[item] = answers or ["-99"]
-
-        true_answers[doc_name] = item_answers
-
-    return true_answers
-
-
 # ---------------------------------------------------------------------
 # helper path builders (change base folders if you like)
 # ---------------------------------------------------------------------
-def parsed_dir(parser_name: str, base: str = "../data/parsed") -> Path:
+def parsed_dir(parser_name: str, base: str = None) -> Path:
+    if base is None:
+        base = str(PROJECT_ROOT / "data" / "parsed")
     return Path(base) / parser_name
 
 
-def chunks_dir(
-    parser_name: str, chunker_name: str, base: str = "../data/chunks"
-) -> Path:
+# ---------------------------------------------------------------------
+# Pre-flight guards for the TPE stage (preregistered cut rules, 2026-09-28).
+# All three are outcome-independent: a pruned trial costs seconds and never
+# enters the surrogate. Retro-validated on the 56 costed warm-up trials:
+# nothing above 0.73 (old basis) would have been refused.
+# ---------------------------------------------------------------------
+COST_CAP_USD_PER_PAPER = float(os.getenv("COST_CAP_USD_PER_PAPER", "0.50"))
+TIME_CAP_S_PER_PAPER = int(os.getenv("TIME_CAP_S_PER_PAPER", "900"))
+# Absolute wall-clock ceiling for one trial. The pace and realised-cost guards
+# are COMPLETION-triggered: consumer #54 sat at 0/35 papers after 60 min, so
+# none of them could ever evaluate. 4 h clears every legitimate trial observed
+# (slowest healthy: GLM-5.2 batched 201 min, DeepSeek RAG 172 min) while
+# catching the provider-degradation crawls (#53 465 min, #90 21 h).
+TRIAL_WALL_BUDGET_S = int(os.getenv("TRIAL_WALL_BUDGET_S", "14400"))
+
+
+@functools.lru_cache(maxsize=None)
+def _model_meta():
+    f = PROJECT_ROOT / "src" / "answer_generation" / "filtered_models.json"
+    with open(f, "r", encoding="utf-8") as fh:
+        return {m["id"]: m for m in json.load(fh)}
+
+
+@functools.lru_cache(maxsize=None)
+def _avg_doc_tokens(parser_name: str) -> float:
+    """Mean parsed-document size for this parser, in ~tokens (bytes/4)."""
+    sizes = [q.stat().st_size for ext in ("*.md", "*.txt", "*.xml")
+             for q in parsed_dir(parser_name).glob(ext)]
+    return (sum(sizes) / len(sizes)) / 4.0 if sizes else 16000.0
+
+
+def model_choice_list() -> list:
+    """The llm_model categorical, honouring restriction envs (order-preserving).
+
+    OPEN_MODELS_ONLY=1  -> drop proprietary (api_type openai/gemini).
+    MODEL_ALLOWLIST=a,b -> keep exactly these roster ids (applied after the
+    open filter). Seeded studies MUST build their trial distributions with
+    the same envs, or add_trial rejects them."""
+    ids = list(LLMS.keys())
+    if os.getenv("OPEN_MODELS_ONLY"):
+        meta = _model_meta()
+        ids = [i for i in ids
+               if (meta.get(i) or {}).get("api_type") not in ("openai", "gemini")]
+    allow = os.getenv("MODEL_ALLOWLIST")
+    if allow:
+        keep = {a.strip() for a in allow.split(",") if a.strip()}
+        unknown = keep - set(ids)
+        assert not unknown, f"MODEL_ALLOWLIST ids not in roster/filter: {unknown}"
+        ids = [i for i in ids if i in keep]
+    return ids
+
+
+def project_cost_per_paper(choices: dict, meta: dict | None = None) -> float:
+    """Deterministic $-per-paper projection from the sampled config alone.
+
+    full/batched: one call carrying the parsed doc + all 43 item prompts.
+    rag: 43 answer calls of min(k*chunk, doc) tokens; RCSRetriever adds one
+    scoring call per item of min(top_m*chunk, doc). Payloads are capped at the
+    parser's mean document size because retrieval cannot return more text than
+    the paper holds (uncapped, chunk_size=5000 configs would be projected at
+    2x their real cost and #122-class trials wrongly cut)."""
+    m = (meta if meta is not None else _model_meta()).get(choices.get("llm_model")) or {}
+    pin = float((m.get("pricing") or {}).get("input", 0)) / 1e6
+    pout = float((m.get("pricing") or {}).get("output", 0)) / 1e6
+    doc = _avg_doc_tokens(choices.get("parser", "PyMuPDFParser"))
+    if choices.get("mode") == "full":
+        return (doc + 43 * 120) * pin + 2500 * pout
+    # Completion side stays OPTIMISTIC (80 tok/call): whether a reasoning model
+    # actually thinks (gemini realised $0.18 AND $1.25/paper on sibling configs)
+    # is unknowable pre-flight; realised spend is guarded in-flight instead, so
+    # a borderline-good config is never refused on a pessimistic guess.
+    comp = 80.0
+    k = int(choices.get("k") or 5)
+    # chunk_size is a CHARACTER budget (LengthChunker slices the raw string),
+    # so ~/4 for tokens. Retro-validated: token-math over-projected #81/#100/
+    # #122 by 2-4x and would have cut a 0.7717 trial.
+    chunk_tok = int(choices.get("chunk_size") or 500) / 4.0
+    tin = 43 * (min(k * chunk_tok, doc) + 600)
+    if choices.get("retriever") == "RCSRetriever":
+        tin += 43 * (min(int(choices.get("top_m") or 10) * chunk_tok, doc) + 600)
+    return tin * pin + 43 * comp * pout
+
+
+def preflight_guards(trial, choices: dict) -> None:
+    """Raise optuna.TrialPruned for configs that must never spend a cent."""
+    m = _model_meta().get(choices.get("llm_model")) or {}
+    if m.get("disabled"):
+        raise optuna.TrialPruned(
+            f"guard: {choices.get('llm_model')} is disabled in the roster")
+    # Per-model budget cap (user, 2026-09-28): once the recorded stage spend on
+    # gemini reaches GEMINI_BUDGET_USD, further gemini draws are pruned for free.
+    # Stage = trials >= GEMINI_BUDGET_FROM_TRIAL (TPE start). Completed spend
+    # only, so the cap can overshoot by at most the trials in flight (~$2.5).
+    _GB = float(os.getenv("GEMINI_BUDGET_USD", "inf"))
+    if choices.get("llm_model") == "gemini-3.1-pro-preview" and _GB != float("inf"):
+        _from = int(os.getenv("GEMINI_BUDGET_FROM_TRIAL", "128"))
+        spent = sum((t.user_attrs.get("cost_usd") or 0.0)
+                    for t in trial.study.trials
+                    if t.number >= _from
+                    and t.state == optuna.trial.TrialState.COMPLETE
+                    and t.params.get("llm_model") == "gemini-3.1-pro-preview")
+        trial.set_user_attr("gemini_stage_spend_usd", round(spent, 2))
+        if spent >= _GB:
+            raise optuna.TrialPruned(
+                f"guard: gemini stage spend ${spent:.2f} has reached the "
+                f"${_GB:.2f} cap")
+    # Qwen3.5-9B: serving degradation at the provider, 2026-09-29/30. The model
+    # answers short prompts in ~2 s but every full-document call returns
+    # APITimeoutError, so all five post-seed draws (#50, #53-#56) failed without a
+    # single completed trial (~13 h wall clock, $0). Failures carry no information
+    # to the sampler, so TPE redraws the same region indefinitely. Excluded on the
+    # infrastructure criterion alone -- "cannot complete a trial" is observable
+    # without reference to any accuracy -- exactly as for the nemotron combination
+    # below. Its 8 seed completions stay in the study and keep informing the
+    # surrogate. Lift QWEN_TIMEOUT_EXCLUSION=0 once the provider recovers.
+    if (choices.get("llm_model") == "Qwen/Qwen3.5-9B"
+            and os.getenv("QWEN_TIMEOUT_EXCLUSION", "1") == "1"):
+        raise optuna.TrialPruned(
+            "guard: Qwen/Qwen3.5-9B times out on full-document calls at the "
+            "provider (5/5 post-seed trials failed to complete)")
+    if (choices.get("llm_model") == "nvidia/nemotron-3-ultra-550b-a55b"
+            and choices.get("mode") == "full"):
+        raise optuna.TrialPruned(
+            "guard: nemotron x full is infeasible (OpenRouter context-length "
+            "filter removes every endpoint; trial #112)")
+    if not choices.get("vlm"):
+        est = project_cost_per_paper(choices)
+        trial.set_user_attr("projected_usd_per_paper", round(est, 4))
+        if est > COST_CAP_USD_PER_PAPER:
+            raise optuna.TrialPruned(
+                f"guard: projected ${est:.2f}/paper exceeds the "
+                f"${COST_CAP_USD_PER_PAPER:.2f} cap")
+
+
+def chunks_dir(parser_name: str, chunker_name: str, base: str = None) -> Path:
+    if base is None:
+        base = str(PROJECT_ROOT / "data" / "chunks")
     return Path(base) / parser_name / chunker_name
 
 
@@ -323,9 +434,27 @@ def embeddings_dir(
     parser_name: str,
     chunker_name: str,
     embedder_name: str,
-    base: str = "../data/embeddings",
+    base: str = None,
 ) -> Path:
+    if base is None:
+        base = str(PROJECT_ROOT / "data" / "embeddings")
     return Path(base) / parser_name / chunker_name / embedder_name
+
+
+def dependency_autoresolve(qid, gold):
+    """Prereg2 metrics rule for dependency-child items (3.2.1/3.4.1/3.5.1/1.2.1...):
+    a cell whose GOLD is the not-applicable code -99 is resolved by the codebook's
+    dependency logic without a model call and counts as correct. Any other gold
+    means the item applies to this study, so the model is ALWAYS asked. The model's
+    own answer to the parent item is never used to skip a child (the pre-2026-09-28
+    behaviour fabricated raw_output="Not applicable"/pred -99 and mis-scored ~24-41
+    MC cells per trial; found by analysis/hpo_analysis/unified_rescore.py). Returns
+    the eval_result dict for an auto-resolved cell, else None (must evaluate).
+    raw_output stays None so offline re-scoring keeps the stored accuracy."""
+    if str(gold[0]) == str(-99):
+        return {"raw_output": None, "pred_value": -99, "true_value": gold,
+                "accuracy": 1}
+    return None
 
 
 def check_dependency(qid, evaluated_results, dependency_rules, doc_id):
@@ -400,9 +529,21 @@ def ensure_parsed(file_path: Path, parser_name: str):
         if cached.exists():
             return cached
 
-    # 2️⃣ Run parser
+    # 2️⃣ Run parser. If a parser cannot handle a specific PDF (e.g. MinerU on a
+    #    malformed file), fall back to PyMuPDF for that paper so one bad file does
+    #    not crash an entire trial. The fallback is written to THIS parser's cache
+    #    dir, so it is consistent across trials and not retried.
     parser = get_parser(parser_name)
-    result = parser.parse(str(file_path))  # make sure your parser uses `out_dir`
+    try:
+        result = parser.parse(str(file_path))  # make sure your parser uses `out_dir`
+    except Exception as e:
+        if parser_name == "PyMuPDFParser":
+            raise
+        logger.warning(
+            "Parser %s failed on %s (%s); falling back to PyMuPDFParser.",
+            parser_name, file_path.name, repr(e)[:140],
+        )
+        result = get_parser("PyMuPDFParser").parse(str(file_path))
     # 3️⃣ Save result depending on type
     if isinstance(result, ParseResult):
         format_hint = result.format or "markdown"
@@ -463,49 +604,6 @@ def make_json_safe(obj):
             return obj
         except Exception:
             return str(obj)
-
-
-def get_cleaned_text_and_logprobs(llm_output):
-    """
-    Returns cleaned text and a dict of token -> logprob.
-    Only includes logprobs for tokens that appear in the cleaned text.
-    Works whether or not thinking tokens are present.
-    Expects llm_output to have:
-        - 'text': string
-        - 'logprobs': LogprobsPart object with 'tokens' and 'token_logprobs'
-    """
-    text = llm_output["text"]
-    logprobs_obj = llm_output["logprobs"]
-
-    tokens = getattr(logprobs_obj, "tokens", []) if logprobs_obj else []
-    token_logprobs = getattr(logprobs_obj, "token_logprobs", []) if logprobs_obj else []
-
-    # Clean text
-    cleaned_text = _clean_llm_text(text)
-
-    # Build logprobs for only tokens in cleaned text
-    logprobs_dict = {}
-    if tokens and token_logprobs:
-        idx = 0  # position in cleaned_text
-        cleaned_len = len(cleaned_text)
-        for tok, lp in zip(tokens, token_logprobs):
-            tok_len = len(tok)
-            if idx >= cleaned_len:
-                break
-
-            # Check if token matches the next part of cleaned_text
-            if cleaned_text[idx : idx + tok_len] == tok:
-                logprobs_dict[tok] = lp
-                idx += tok_len
-            # If token is whitespace or punctuation in cleaned text, still include it
-            elif tok.strip() != "" and tok in cleaned_text[idx:]:
-                # Find next occurrence of token in cleaned_text
-                next_idx = cleaned_text.find(tok, idx)
-                if next_idx != -1:
-                    logprobs_dict[tok] = lp
-                    idx = next_idx + tok_len
-
-    return cleaned_text, logprobs_dict
 
 
 def ensure_chunks(
@@ -595,14 +693,18 @@ def ensure_query_embeddings(
     doc_name: str,
     query_id: str,
     query_mode: str = "raw",  # "raw" or "label_def"
-    base: str = "../data/query_embeddings",
-    queries_base: str = "../query_creation",
+    base: str = None,
+    queries_base: str = None,
 ) -> Path:
     """
     Ensure a single query embedding is cached.
     - Embeddings stored under {base}/{embedder_name}/{doc_name}_{query_id}_{query_mode}.npy
     - Query info and prompts are read directly from query_info.json
     """
+    if base is None:
+        base = str(PROJECT_ROOT / "data" / "query_embeddings")
+    if queries_base is None:
+        queries_base = str(PROJECT_ROOT / "query_creation")
     edir = Path(base) / embedder_name
     edir.mkdir(parents=True, exist_ok=True)
 
@@ -651,8 +753,19 @@ def ensure_query_embeddings(
 # ---------------------------------------------------------------------
 # Optuna objective (stepwise cached pipeline)
 # ---------------------------------------------------------------------
-CACHE_PATH = Path("../trial_cache")
+CACHE_PATH = PROJECT_ROOT / "trial_cache"
 CACHE_PATH.mkdir(exist_ok=True)
+
+# When set (by --rerun … --resume-papers), objective() seeds a fresh trial's
+# folder with the finished doc_*.json files from this source folder, so the
+# per-paper resume (matched on parameters_hash) skips papers already completed by
+# an earlier (e.g. failed/partial) run of the same config.
+_RESUME_FROM_FOLDER = os.getenv("RESUME_FROM_FOLDER") or None
+# Env override exists because --rerun's own lookup globs trial_logs/*_trial_NNNN
+# and takes cands[0]; trial numbers are NOT unique across studies (a fresh DB
+# restarts at 0), so that glob can pick a stale folder from another study. The
+# per-doc parameters_hash check makes that safe but useless — every paper is
+# recomputed. Naming the folder explicitly makes a resume actually resume.
 
 
 def _hash_trial_key(params: dict, doc_idx: int, query_id: str) -> str:
@@ -675,24 +788,34 @@ def load_cache():
 
 
 def save_cache(cache: dict):
+    """Atomic write (tmp + rename): a crash mid-dump must never truncate the
+    only copy of every paid-for LLM call."""
     cache_file = CACHE_PATH / "cache.json"
-    with open(cache_file, "w", encoding="utf-8") as f:
+    tmp = CACHE_PATH / "cache.json.tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
         json.dump(cache, f, indent=2, ensure_ascii=False)
+    os.replace(tmp, cache_file)
 
 
-def load_doc_id_map(path: str = "../data/doc_id_map.json") -> dict:
-    """Load or create a persistent mapping from document name to ID."""
-    path = Path(path)
-    if path.exists():
-        with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {}
+# Mid-trial persistence. The end-of-trial save (see "Persist the cache once
+# after the merge") is skipped whenever a trial FAILs or the worker is killed,
+# which on 2026-09-27 lost ~$20 of gpt-4.1 calls (trial #115: fresh cells were
+# only in memory when the 402 abort raised and the queue gate SIGTERMed the
+# worker). Flushing after each completed paper, throttled, bounds that loss to
+# one throttle window. Guarded by _CACHE_LOCK, same as the per-cell inserts.
+_CACHE_LAST_FLUSH = [0.0]
+CACHE_FLUSH_EVERY_S = int(os.getenv("CACHE_FLUSH_EVERY_S", "300"))
 
 
-def save_doc_id_map(doc_id_map: dict, path: str = "../data/doc_id_map.json"):
-    path = Path(path)
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(doc_id_map, f, indent=2, ensure_ascii=False)
+def flush_cache_throttled(cache: dict, force: bool = False):
+    now = time.time()
+    if not force and now - _CACHE_LAST_FLUSH[0] < CACHE_FLUSH_EVERY_S:
+        return
+    with _CACHE_LOCK:
+        if not force and time.time() - _CACHE_LAST_FLUSH[0] < CACHE_FLUSH_EVERY_S:
+            return
+        save_cache(cache)
+        _CACHE_LAST_FLUSH[0] = time.time()
 
 
 def expand_highest_perf(row_values):
@@ -722,7 +845,12 @@ def expand_highest_perf(row_values):
     return subanswers
 
 
-def objective(trial, verbose: bool = False):
+def objective(
+    trial,
+    verbose: bool = False,
+    query_ids: list[str] | None = None,
+    doc_name_filter: str | None = None,
+):
     import hashlib
     import json
     from pathlib import Path
@@ -731,33 +859,65 @@ def objective(trial, verbose: bool = False):
 
     trial_choices = {}
     all_results = []
+    # Re-ranker (RCS) calls are made by the retriever, outside the per-paper usage
+    # accounting; collected here and written as separate trial attrs.
+    _rcs_usage = {"calls": 0, "prompt_tokens": 0, "completion_tokens": 0}
     llm_choices = []
+
+    # Smoke-test lever: SMOKE_QUERY_IDS restricts to a comma-separated item subset.
+    if query_ids is None:
+        _sq = os.getenv("SMOKE_QUERY_IDS")
+        if _sq:
+            query_ids = [x.strip() for x in _sq.split(",") if x.strip()]
 
     def log(msg: str):
         if verbose:
             logger.info(msg)
 
-    cache = load_cache()
+    # SAMPLE_ONLY draws configs without running anything, and cache.json is 461 MB:
+    # loading it cost ~5 s and ~2.5 GB per draw, which made generating a warm-up set
+    # take hours. Skipped for sampling only -- real trials are unaffected.
+    cache = {} if os.getenv("SAMPLE_ONLY") else load_cache()
 
     try:
         trial_start_time = time.time()
         mode = trial.suggest_categorical("mode", ["rag", "full"])
+        # OPEN_MODELS_ONLY=1 restricts the categorical to open-weight models
+        # (api_type not openai/gemini; gpt-oss stays in — its weights are open).
+        # Order-preserving filter: seeded trials' distributions must be built
+        # with EXACTLY this list, or add_trial rejects them.
+        llm_model = trial.suggest_categorical("llm_model", model_choice_list())
 
         # ---------------- Trial-level hyperparameters ----------------
-        parser_name = trial.suggest_categorical("parser", list(PARSERS.keys()))
+        # PARSERS_SUBSET (comma-separated) restricts which parsers TPE may sample,
+        # so the study can launch with only the fully-warmed parsers and be
+        # expanded later (Optuna resumes from the persistent storage).
+        _parser_choices = list(PARSERS.keys())
+        _ps = os.getenv("PARSERS_SUBSET")
+        if _ps:
+            _wanted = [p.strip() for p in _ps.split(",") if p.strip()]
+            _parser_choices = [p for p in _parser_choices if p in _wanted] or _parser_choices
+        parser_name = trial.suggest_categorical("parser", _parser_choices)
         if mode == "rag":
             chunk_size = trial.suggest_categorical(
-                "chunk_size", [100, 250, 500, 750, 1000, 2500, 5000]
+                "chunk_size", [50, 100, 250, 500, 750, 1000, 2500, 5000]
             )
             chunk_overlap = trial.suggest_categorical("chunk_overlap", [0, 250, 750])
             if chunk_overlap >= chunk_size:
                 raise optuna.TrialPruned()
-            if parser_name in ["PyMuPDFParser", "PyMuPDFTesseractParser"]:
-                allowed_chunkers = [
-                    k for k in CHUNKERS if k not in ["StructureChunker", "TextChunker"]
-                ]
-            else:
-                allowed_chunkers = list(CHUNKERS.keys())
+            # `chunker` MUST use ONE fixed choice list for the whole study. Optuna
+            # forbids a parameter name having different value-spaces across trials
+            # ("CategoricalDistribution does not support dynamic value space"), and
+            # the previous parser-conditional list (all chunkers for non-PyMuPDF
+            # parsers, restricted for PyMuPDF) meant every non-PyMuPDF-parser RAG
+            # trial FAILED at this line once a PyMuPDF trial had recorded the
+            # 2-choice distribution — silently killing ~half the RAG search space.
+            # Use the study's recorded 2-choice list. StructureChunker is dropped:
+            # it only ever applied to the failing parsers and never completed a
+            # single trial, so nothing real is lost.
+            allowed_chunkers = [
+                k for k in CHUNKERS if k not in ["StructureChunker", "TextChunker"]
+            ]
             chunker_name = trial.suggest_categorical("chunker", allowed_chunkers)
             embedder_name = trial.suggest_categorical(
                 "embedder", list(EMBEDDERS.keys())
@@ -766,23 +926,54 @@ def objective(trial, verbose: bool = False):
                 "retriever", list(RETRIEVERS.keys())
             )
             retriever_cls = RETRIEVERS[retriever_name]
-            k = trial.suggest_categorical("k", [1, 3, 5, 10, 20])
-            retriever_params = {"k": k}
-            if hasattr(retriever_cls, "token_budget"):
+            k = trial.suggest_categorical("k", [2, 3, 5, 7, 10])
+            retriever_params = {}
+
+            # TokenBudgetRetriever uses a token budget instead of k
+            if retriever_name == "TokenBudgetRetriever":
                 retriever_params["token_budget"] = trial.suggest_categorical(
                     "token_budget", [200, 500, 1000, 2000]
                 )
+            else:
+                # TopKRetriever, CrossEncoderRetriever, RCSRetriever all accept k
+                retriever_params["k"] = k
+
+            rerank = False
             if getattr(retriever_cls, "supports_rerank", False):
-                retriever_params["rerank"] = trial.suggest_categorical(
-                    "rerank", [True, False]
-                )
-                if retriever_params["rerank"] and getattr(
-                    retriever_cls, "supports_top_m", False
-                ):
-                    retriever_params["top_m"] = trial.suggest_categorical(
-                        "top_m", [5, 10, 20, 50]
-                    )
-            retriever = retriever_cls(**retriever_params)
+                rerank = trial.suggest_categorical("rerank", [True, False])
+                if rerank and getattr(retriever_cls, "supports_top_m", False):
+                    top_m = trial.suggest_categorical("top_m", [5, 10, 20])
+                    if top_m < k:  # prereg: m >= k
+                        raise optuna.TrialPruned()
+                    retriever_params["top_m"] = top_m
+
+            # RCSRetriever requires the LLM model name for its re-ranking step
+            if retriever_name == "RCSRetriever":
+                retriever_params["llm_model"] = llm_model
+                # Route the rerank calls through the same generator as the answer
+                # calls (provider, wire id, pinned host). No max_tokens, matching
+                # the provider-default the Phase-1 RCS trials ran with.
+                _rcs_gen = LLMS[llm_model]
+                _rcs_lock = threading.Lock()
+
+                def _rcs_generate(_prompt, _g=_rcs_gen):
+                    _out = _g.generate(
+                        query=_prompt, chunks=[], system_prompt=None,
+                        return_logprobs=False, reasoning_enabled=None,
+                    ) or {}
+                    _u = _out.get("usage") or {}
+                    with _rcs_lock:   # papers run in threads
+                        _rcs_usage["calls"] += 1
+                        _rcs_usage["prompt_tokens"] += _u.get("prompt_tokens", 0)
+                        _rcs_usage["completion_tokens"] += _u.get("completion_tokens", 0)
+                    return _out.get("text", "")
+                retriever_params["generate_fn"] = _rcs_generate
+
+            # SAMPLE_ONLY only needs the sampled params, not a live retriever
+            # (CrossEncoder/RCS would load models) — skip the heavy instantiation.
+            retriever = (
+                None if os.getenv("SAMPLE_ONLY") else retriever_cls(**retriever_params)
+            )
             query_embedding = trial.suggest_categorical(
                 "query_embedding", ["raw", "label_def"]
             )
@@ -796,9 +987,14 @@ def objective(trial, verbose: bool = False):
             k = None
             query_embedding = "full_document"
 
-        llm_model = trial.suggest_categorical("llm_model", list(LLMS.keys()))
         llm_meta = LLM_META_MAP.get(llm_model, {})
         llm_api_type = llm_meta.get("api_type")
+        # Output budget for the single batched call. Falls back to 16384 (4x the
+        # old hardcoded 4096) for any roster entry without an explicit cap.
+        # Deliberately not the provider maximum: context_length covers input AND
+        # output, and rewritten_prompt over a GROBID parse already needs ~94k of
+        # input, so reserving 32k would leave only ~3% headroom on the 131k models.
+        _batched_max_tokens = int(llm_meta.get("max_output_tokens", 16384))
         langextract_api_key = None
         langextract_model_id = None
         if llm_api_type == "openai":
@@ -824,19 +1020,107 @@ def objective(trial, verbose: bool = False):
                 [k for k in qdata["prompts"].keys() if k != "binary_prompts"]
             )
 
-        default_prompt_type = trial.suggest_categorical(
-            "default_prompt_type",
-            [
-                "base_prompt",
-                "reasoning_prompt",
-                "rewritten_prompt",
-                "synthetic_few_shot_prompt",
-                "true_few_shot_prompt",
-            ],
-        )
-        use_default_prompt = trial.suggest_categorical(
-            "use_default_prompt", [True, False]
-        )
+        # Phase 2: the per-item inference tier was dropped. `mode == "full"` now
+        # always means batched, so `question_mode` is no longer a search dimension
+        # and is NOT suggested -- copied Phase-1 batched trials omit it too, which
+        # keeps the new study free of a param no live trial can vary. Justification
+        # is in the triage: individual - RAG = +1.64pp (n=4 paired, sd 1.01pp,
+        # one-sided 95% UB +2.82pp) for ~6x RAG's cost and ~31x batched's.
+        question_mode = "batched" if mode == "full" else "individual"
+
+        # The prompt lever is now split in two, because the two tiers consume the
+        # stored prompts differently and the batched path has an extra level that
+        # has no meaning outside it.
+        #
+        #   mode == "rag"    -> default_prompt_type (the original 6 variants)
+        #   question_mode == "batched" -> batched_prompt_type (those 6 PLUS
+        #                       "batched_native", the synthesized block that every
+        #                       Phase-1 batched trial actually ran)
+        #
+        # A separate name rather than a 7th level on default_prompt_type: a shared
+        # 7-level lever would let rag trials draw a batched-only value, and the
+        # only way to reject that is TrialPruned -- but PRUNED counts toward
+        # n_startup_trials, so the waste would come straight out of the warm-up
+        # budget. Conditional params are the established pattern here (chunk_size,
+        # k and the other RAG levers are already rag-only).
+        if question_mode == "batched":
+            batched_prompt_type = trial.suggest_categorical(
+                "batched_prompt_type",
+                [
+                    "batched_native",
+                    "base_prompt",
+                    "cot_prompt",
+                    "reasoning_prompt",
+                    "rewritten_prompt",
+                    "synthetic_few_shot_prompt",
+                    "true_few_shot_prompt",
+                ],
+            )
+            default_prompt_type = None
+            use_default_prompt = True
+        else:
+            batched_prompt_type = None
+            default_prompt_type = trial.suggest_categorical(
+                "default_prompt_type",
+                [
+                    "base_prompt",
+                    "cot_prompt",
+                    "reasoning_prompt",
+                    "rewritten_prompt",
+                    "synthetic_few_shot_prompt",
+                    "true_few_shot_prompt",
+                ],
+            )
+            use_default_prompt = trial.suggest_categorical(
+                "use_default_prompt", [True, False]
+            )
+        # VLM lever (CONDITIONAL): for multimodal models in full-document mode,
+        # feed the PDF page images directly to the model (vlm=True) instead of the
+        # parsed text (vlm=False). RAG can't do this (it retrieves text chunks per
+        # question), and text-only models can't accept images, so the toggle is
+        # only added to the search space for full-doc trials on multimodal models
+        # (define-by-run conditional hyperparameter). When vlm=True the parser
+        # choice is moot — pages come straight from the source PDF.
+        if mode == "full" and llm_meta.get("multimodal", False):
+            vlm = trial.suggest_categorical("vlm", [True, False])
+        else:
+            vlm = False
+        # Thinking-mode lever (CONDITIONAL): only offered for reasoning models on
+        # Together / OpenRouter, where disabling chain-of-thought yields clean
+        # answer-token logprobs for RQ2 calibration, at a possible accuracy cost.
+        # (OpenRouter threads the toggle through its own `reasoning` schema in
+        # answer_generator.) For instruct or frontier (openai/gemini) models the
+        # toggle is a no-op, so it is not added to the search space for those
+        # trials (define-by-run conditional hyperparameter).
+        # `reasoning_mandatory` models reject the toggle outright -- every
+        # OpenRouter provider for Kimi-K2.7-Code returns 400 "Reasoning is
+        # mandatory for this endpoint and cannot be disabled", which would fail
+        # every trial TPE sampled with disable_reasoning=True. Excluded from the
+        # lever rather than left to fail.
+        if (
+            llm_meta.get("reasoning", False)
+            and not llm_meta.get("reasoning_mandatory", False)
+            and llm_api_type in ("together", "openrouter")
+        ):
+            disable_reasoning = trial.suggest_categorical(
+                "disable_reasoning", [True, False]
+            )
+        else:
+            disable_reasoning = False
+        reasoning_enabled = False if disable_reasoning else None
+
+        # Record the EFFECTIVE reasoning mode (not the requested flag): a frontier
+        # reasoning model ignores disable_reasoning and always thinks (=on), a
+        # togglable model reflects the flag, and a non-reasoning model has no
+        # thinking (=off). `disable_reasoning=False` otherwise conflates "on" with
+        # "no capability". Stored as a trial attr for a like-for-like comparison.
+        if not llm_meta.get("reasoning", False):
+            effective_reasoning = "off"
+        elif disable_reasoning:
+            effective_reasoning = "off"
+        else:
+            effective_reasoning = "on"
+        trial.set_user_attr("effective_reasoning", effective_reasoning)
 
         trial_choices.update(
             {
@@ -852,23 +1136,61 @@ def objective(trial, verbose: bool = False):
                 "default_prompt_type": default_prompt_type,
                 "query_embedding": query_embedding,
                 "use_default_prompt": use_default_prompt,
+                "question_mode": question_mode,
+                "batched_prompt_type": batched_prompt_type,
+                "vlm": vlm,
+                "disable_reasoning": disable_reasoning,
             }
         )
         log("Trial choices: {trial_choices}")
+
+        # SAMPLE_ONLY: stop here and hand back the fully-sampled config (all params
+        # are now recorded in trial.params). Used by queue_random_trials.py to draw
+        # valid random configs from the REAL search space without running anything.
+        if os.getenv("SAMPLE_ONLY"):
+            return trial_choices
+        preflight_guards(trial, trial_choices)
         # ---------------- Prepare trial folder ----------------
         trial_hash = hashlib.md5(
             json.dumps(trial_choices, sort_keys=True).encode()
         ).hexdigest()[:10]
-        trial_folder = Path("../trial_logs") / f"{trial_hash}_trial_{trial.number:04d}"
+        trial_folder = (
+            PROJECT_ROOT / "trial_logs" / f"{trial_hash}_trial_{trial.number:04d}"
+        )
         trial_folder.mkdir(parents=True, exist_ok=True)
+        # Per-trial provenance ledger (answer_generation/call_ledger.py).
+        os.environ["CALL_LEDGER_PATH"] = str(Path(trial_folder) / "calls.jsonl")
         log(f"Writing trial results to: {trial_folder}")
 
+        # --resume-papers: seed this fresh trial with a prior run's finished papers
+        # so already-completed docs are skipped (they're only reused if their
+        # parameters_hash matches this trial's config — enforced per-paper below).
+        if _RESUME_FROM_FOLDER is not None and Path(_RESUME_FROM_FOLDER) != trial_folder:
+            import shutil
+
+            _copied = 0
+            for _src in Path(_RESUME_FROM_FOLDER).glob("doc_*.json"):
+                _dst = trial_folder / _src.name
+                if not _dst.exists():
+                    shutil.copyfile(_src, _dst)
+                    _copied += 1
+            log(f"  Resume: copied {_copied} finished paper(s) from {_RESUME_FROM_FOLDER}")
+
         # ---------------- Parse all documents ----------------
-        folder = Path("../data/raw/")
+        folder = PROJECT_ROOT / "data" / "tuning"
         all_docs = [f for f in folder.glob("*") if f.suffix.lower() == ".pdf"]
-        all_docs_names = [
-            f.name for f in folder.glob("*") if f.suffix.lower() == ".pdf"
-        ]
+        if doc_name_filter is not None:
+            all_docs = [
+                f
+                for f in all_docs
+                if re.match(r"^(\d+)", f.stem)
+                and re.match(r"^(\d+)", f.stem).group(1) == doc_name_filter
+            ]
+        # Smoke-test lever: SMOKE_MAX_DOCS caps the number of tuning papers.
+        _smoke_max = os.getenv("SMOKE_MAX_DOCS")
+        if _smoke_max:
+            all_docs = sorted(all_docs, key=lambda f: f.name)[: int(_smoke_max)]
+        all_docs_names = [f.name for f in all_docs]
 
         log(f"  Found {len(all_docs_names)} documents")
         parsed_docs = [ensure_parsed(f, parser_name) for f in all_docs]
@@ -878,25 +1200,55 @@ def objective(trial, verbose: bool = False):
         query_aggregates = {}
         doc_id_map = load_doc_id_map()
         next_id = max(doc_id_map.values(), default=-1) + 1
-        for parsed_path in parsed_docs:
-            # ---------------- Document setup ----------------
+
+        # ---------------- Pre-assign doc_ids (must not race across threads) ---
+        # Assign every paper its doc_id up front, in the main thread, so no
+        # worker mutates doc_id_map / next_id. Each task carries immutable ids.
+        paper_tasks = []
+        for pdf_path, parsed_path in zip(all_docs, parsed_docs):
             match = re.match(r"^(\d+)", parsed_path.stem)
             doc_name = match.group(1) if match else parsed_path.stem
-            outcome = OUTCOMES.get(doc_name, "")
-            if outcome == "":
-                system_prompt = SYSTEM_PROMPTS["single_outcome"]
-                print("outcome none")
-            else:
-                system_prompt = SYSTEM_PROMPTS["multiple_outcomes"].format(
-                    OUTCOME=outcome
-                )
-                print("multiple outcomes")
-            print("outcome: ", outcome)
-            print(system_prompt)
             if doc_name not in doc_id_map:
                 doc_id_map[doc_name] = next_id
                 next_id += 1
             doc_id = doc_id_map[doc_name]
+            paper_tasks.append((parsed_path, doc_id, doc_name, pdf_path))
+
+        # ---------------- Per-paper worker ----------------
+        # Each paper is fully independent: dependencies are strictly within-doc
+        # (check_dependency filters by doc_id), and doc_results is LOCAL, so this
+        # function has no cross-paper shared mutable state except the guarded
+        # `cache` dict.
+        def _process_paper(parsed_path, doc_id, doc_name, pdf_path):
+            # Per-paper token accounting (summed into the trial total on merge;
+            # cost is derived later from the roster's per-model $/M prices).
+            _usage = {"prompt_tokens": 0, "completion_tokens": 0, "reasoning_tokens": 0, "calls": 0}
+            # Per-paper batched health counters. Kept local and merged by the
+            # caller for the same reason as _usage: papers run concurrently
+            # (PAPER_CONCURRENCY), so trial-level mutable state would need a lock.
+            _batched_stats = {"split": 0, "parse_failed": 0, "truncated": 0, "other_without_y": 0}
+
+            def _acc(_out):
+                _u = (_out or {}).get("usage") or {}
+                if _u:
+                    _usage["prompt_tokens"] += _u.get("prompt_tokens", 0)
+                    _usage["completion_tokens"] += _u.get("completion_tokens", 0)
+                    _usage["reasoning_tokens"] += _u.get("reasoning_tokens", 0)
+                    _usage["calls"] += 1
+
+            # ---------------- Document setup ----------------
+            system_prompt = build_system_prompt(
+                doc_name,
+                fallback_single_prompt=SYSTEM_PROMPTS.get("single_outcome"),
+                fallback_multi_prompt=SYSTEM_PROMPTS.get("multiple_outcomes"),
+            )
+            # Separate system prompt for open-ended items (prereg Prompt 5).
+            system_prompt_oe = build_system_prompt(
+                doc_name,
+                fallback_single_prompt=SYSTEM_PROMPTS.get("single_outcome"),
+                fallback_multi_prompt=SYSTEM_PROMPTS.get("multiple_outcomes"),
+                oe=True,
+            )
             log(f"--- Document {doc_id}: {parsed_path.name} ---")
             doc_file = trial_folder / f"doc_{doc_id:04d}.json"
 
@@ -921,56 +1273,132 @@ def objective(trial, verbose: bool = False):
             else:
                 log(f"  No cache found for {doc_name}, evaluating all queries.")
 
-            # Start with cached results
+            # Start with cached results (LOCAL to this paper only)
             doc_results = list(existing_results)
-            all_results = all_results + doc_results
             doc_result_map = {r["query_id"]: r for r in existing_results}
             # ---------------- Ensure chunks / embeddings or load full text ----------------
             vector_store = None
             full_doc_text = None
             if mode == "rag":
-                chunk_path = ensure_chunks(
-                    parsed_path, parser_name, chunker_name, chunk_size, chunk_overlap
-                )
-                vector_store_path = ensure_embedding(
-                    chunk_path,
-                    parser_name,
-                    chunker_name,
-                    embedder_name,
-                    chunk_size,
-                    chunk_overlap,
-                )
+                with _MODEL_LOCK:
+                    chunk_path = ensure_chunks(
+                        parsed_path, parser_name, chunker_name, chunk_size, chunk_overlap
+                    )
+                with _MODEL_LOCK:
+                    vector_store_path = ensure_embedding(
+                        chunk_path,
+                        parser_name,
+                        chunker_name,
+                        embedder_name,
+                        chunk_size,
+                        chunk_overlap,
+                    )
                 vector_store = NumpyVectorStore(
                     save_path=str(vector_store_path) + ".npz"
                 )
-                vector_store.load()
+                with _MODEL_LOCK:
+                    vector_store.load()
             else:
                 full_doc_text = load_full_document_text(parsed_path)
 
+            # VLM mode: render the source PDF's pages once per paper and reuse the
+            # images for every item (the parsed text is not sent to the model).
+            page_images = None
+            if vlm:
+                page_images = _load_page_images(pdf_path)
+                log(f"  VLM mode: {len(page_images)} page image(s) for {doc_name}")
+
             # ---------------- Per-query evaluation ----------------
+            # Batched mode: one call over the full document answers every item at
+            # once; parse into per-item answers/others, then score each below as in
+            # individual mode (no per-item generation).
+            batched_answers, batched_others = {}, {}
+            if question_mode == "batched":
+                if full_doc_text is None:
+                    full_doc_text = load_full_document_text(parsed_path)
+                _bctx = _VLM_CTX if vlm else full_doc_text
+
+                def _batched_call(_ids=None):
+                    """One batched generation over `_ids` (all items when None)."""
+                    _p = batched.build_batched_prompt(
+                        QUERIES, batched_prompt_type, item_ids=_ids
+                    )
+                    with _MODEL_LOCK:
+                        return LLMS[llm_model].generate(
+                            query=_p,
+                            system_prompt=system_prompt,
+                            chunks=[(_bctx, 1.0)],
+                            return_logprobs=False,
+                            reasoning_enabled=reasoning_enabled,
+                            # Per-model budget instead of the old hardcoded 4096.
+                            # A reply needs only ~550 tokens, but on a reasoning
+                            # model the thinking tokens come out of the same
+                            # allowance; exhausting it truncates the JSON, and
+                            # parse_batched_response turns a truncated reply into
+                            # 43 silent abstentions. That collapse hit 7 of 28
+                            # Phase-1 batched trials.
+                            max_tokens=_batched_max_tokens,
+                            images=page_images,
+                        )
+
+                _bout = _batched_call()
+                _ok, _n = batched.response_is_usable(_bout.get("text", ""), QUERIES)
+                _truncated = _bout.get("finish_reason") == "length"
+                if not _ok or _truncated:
+                    # Fall back to two calls over half the items each. A model that
+                    # cannot fit 43 answers in one reply usually manages 22, and
+                    # half a paper scored is far better than a silent floor score.
+                    log(
+                        f"  Batched reply unusable for {doc_name} "
+                        f"(parsed {_n}/{len(QUERIES)}, finish_reason="
+                        f"{_bout.get('finish_reason')!r}) -> retrying as two calls"
+                    )
+                    _h1, _h2 = batched.split_item_ids(QUERIES)
+                    _o1, _o2 = _batched_call(_h1), _batched_call(_h2)
+                    _a1, _x1 = batched.parse_batched_response(
+                        _o1.get("text", ""), {k: QUERIES[k] for k in _h1}
+                    )
+                    _a2, _x2 = batched.parse_batched_response(
+                        _o2.get("text", ""), {k: QUERIES[k] for k in _h2}
+                    )
+                    batched_answers = {**_a1, **_a2}
+                    batched_others = {**_x1, **_x2}
+                    _acc(_o1)
+                    _acc(_o2)
+                    _batched_stats["split"] += 1
+                    if not _ok:
+                        _batched_stats["parse_failed"] += 1
+                    if _truncated:
+                        _batched_stats["truncated"] += 1
+                else:
+                    batched_answers, batched_others = batched.parse_batched_response(
+                        _bout.get("text", ""), QUERIES
+                    )
+                    _acc(_bout)
+                # A "<id>__other" text whose answer does not contain Y is discarded by
+                # the scorer (Y is never inferred from it, matching RAG where the
+                # follow-up only runs after Y). Count it so we know how often that
+                # happens; the text itself is kept in the per-doc json below.
+                _batched_stats["other_without_y"] += sum(
+                    1 for _q, _txt in batched_others.items()
+                    if _txt and not re.search(
+                        r"Y|OTHER", re.sub(r"[^A-Za-z]", "", str(batched_answers.get(_q, ""))).upper()
+                    )
+                )
             for qid, qdata in QUERIES.items():
+                if query_ids is not None and qid not in query_ids:
+                    continue
                 if qid in existing_qids:
                     log(f"  Skipping query {qid} (cached for this doc).")
                     continue
                 log(f"  Evaluating NEW query {qid} for {doc_name}")
                 needs_evaluation = True
                 if qid in DEPENDENCIES:
-                    applicable = check_dependency(
-                        qid, all_results, DEPENDENCIES, doc_id=doc_id
-                    )
-                    if not applicable:
-                        log(f"Skipping query {qid} because it is not applicable.")
-                        if TRUE_ANSWERS[doc_name][qid][0] != str(-99):
-                            log(
-                                f"Warning: Unexpected value for item {qid}; expected -99 / not applicable but true value is {TRUE_ANSWERS[doc_name][qid]}"
-                            )
-
-                        eval_result = {
-                            "raw_output": "Not applicable",
-                            "pred_value": -99,
-                            "true_value": TRUE_ANSWERS[doc_name][qid],
-                            "accuracy": 1,
-                        }
+                    gold = TRUE_ANSWERS[doc_name][qid]
+                    _auto = dependency_autoresolve(qid, gold)
+                    if _auto is not None:
+                        log(f"  Query {qid}: gold not-applicable (-99) -> auto-correct, no call.")
+                        eval_result = _auto
                         result = {
                             "doc_id": doc_id,
                             "query_id": qid,
@@ -984,74 +1412,116 @@ def objective(trial, verbose: bool = False):
                 if needs_evaluation:
                     log("needs evaluation")
                     if mode == "rag":
-                        query_emb_path = ensure_query_embeddings(
-                            embedder_name, parsed_path.stem, qid, query_embedding
-                        )
+                        with _MODEL_LOCK:
+                            query_emb_path = ensure_query_embeddings(
+                                embedder_name, parsed_path.stem, qid, query_embedding
+                            )
                         query_embed = np.load(query_emb_path)
-                        retrieved_chunks = retriever.retrieve(query_embed, vector_store)
+
+                        # Build raw query text for retrievers that need it (e.g. CrossEncoder reranking)
+                        if getattr(retriever, "needs_raw_query_text", False):
+                            if query_embedding == "label_def":
+                                _parts = [
+                                    qdata.get("label", ""),
+                                    qdata.get("description", ""),
+                                ]
+                                if qdata.get("choices"):
+                                    _choices_text = ", ".join(
+                                        f"{k}: {v['value']}"
+                                        for k, v in qdata["choices"].items()
+                                    )
+                                    _parts.append("Choices: " + _choices_text)
+                                raw_query_text = " ".join(p for p in _parts if p)
+                            else:
+                                raw_query_text = qdata.get("prompts", {}).get(
+                                    "base_prompt", ""
+                                )
+                            with _MODEL_LOCK:
+                                retrieved_chunks = retriever.retrieve(
+                                    query_embed, vector_store, raw_query_text=raw_query_text
+                                )
+                        else:
+                            with _MODEL_LOCK:
+                                retrieved_chunks = retriever.retrieve(
+                                    query_embed, vector_store
+                                )
                     else:
                         if full_doc_text is None:
                             full_doc_text = load_full_document_text(parsed_path)
-                        retrieved_chunks = [(full_doc_text, 1.0)]
-                # Determine prompt type
-                prompt_type, prompt_text = _select_prompt(
-                    qid, qdata, default_prompt_type, use_default_prompt
-                )
+                        retrieved_chunks = [(_VLM_CTX if vlm else full_doc_text, 1.0)]
+                else:
+                    # Not-applicable: record result and skip LLM evaluation
+                    doc_results.append(result)
+                    existing_qids.add(qid)
+                    doc_result_map[qid] = result
+                    log(
+                        f"    ✅ Query {qid} accuracy: {eval_result.get('accuracy', 0):.3f}"
+                    )
+                    param_hash = hashlib.md5(
+                        json.dumps(trial_choices, sort_keys=True).encode()
+                    ).hexdigest()
+                    doc_data = {
+                        "doc_id": doc_id,
+                        "doc_name": doc_name,
+                        "parameters_hash": param_hash,
+                        "results": doc_results,
+                    }
+                    with open(doc_file, "w", encoding="utf-8") as f:
+                        json.dump(doc_data, f, indent=2, ensure_ascii=False)
+                    continue
+                # Determine prompt type. Batched resolves its prompt once per
+                # paper (build_batched_prompt), not per item, and its
+                # default_prompt_type is None -- _select_prompt would raise on that
+                # lookup, so it is only consulted on the per-item paths.
+                if question_mode == "batched":
+                    prompt_type, prompt_text = batched_prompt_type, None
+                else:
+                    prompt_type, prompt_text = _select_prompt(
+                        qid, qdata, default_prompt_type, use_default_prompt
+                    )
+                # Open-ended items get the concise-description system prompt.
+                sp = system_prompt_oe if qdata.get("type") == "open_ended" else system_prompt
                 ans_gen = LLMS[llm_model]
-                if prompt_type == "binary_prompts" and qdata["type"] in [
+                if question_mode == "batched":
+                    # Answer already produced by the one-shot batched call above.
+                    # Per-item logprobs aren't meaningful for a batched response
+                    # (they cover all items at once), so don't store/duplicate them.
+                    llm_text = batched_answers.get(qid, "Z")
+                    llm_output = {"text": llm_text}
+                    llm_logprobs = {}
+                elif prompt_type == "binary_prompts" and qdata["type"] in [
                     "multiple_choice",
                     "single_choice",
                 ]:
-                    binary_outputs = {}
-                    combined_logprobs = []
-                    llm_output = {}
-                    llm_output["text"] = ""
-                    # Store the mapping from binary prompts to the multiple choice letters
-                    binary_to_choice = {}
-
-                    for i, subprompt in enumerate(qdata["prompts"]["binary_prompts"]):
-                        llm_output_binary = ans_gen.generate(
-                            query=subprompt,
-                            system_prompt=system_prompt,
-                            chunks=retrieved_chunks,
-                            return_logprobs=True,
-                        )
-                        text, logprobs = get_cleaned_text_and_logprobs(
-                            llm_output_binary
-                        )
-                        binary_outputs[f"binary_{i}"] = text.strip()
-                        combined_logprobs.append(logprobs)
-                        llm_output["text"] = (
-                            llm_output["text"] + "\n" + llm_output_binary["text"]
-                        )
-                        # Map 'A' -> the letter for this choice, 'B' -> empty
-                        if text.strip().upper() == "A":
-                            letter_for_choice = list(qdata["choices"].keys())[
-                                i
-                            ]  # assumes ordering matches
-                            binary_to_choice[f"binary_{i}"] = letter_for_choice
-                        else:
-                            binary_to_choice[f"binary_{i}"] = ""
-
-                    # Concatenate all non-empty mapped letters
-                    final_answer = ",".join(
-                        letter for letter in binary_to_choice.values() if letter
+                    # Binary mode, collapsed to ONE call: ask every option as a
+                    # yes/no in a single prompt and parse the JSON back into the
+                    # selected-letter set (was one call PER option — 22 calls for
+                    # item 3.1). Scored identically to any other MC prediction.
+                    _bprompt = binary_mode.build_binary_prompt(qid, qdata)
+                    llm_output = ans_gen.generate(
+                        query=_bprompt,
+                        system_prompt=sp,
+                        chunks=retrieved_chunks,
+                        return_logprobs=True,
+                        reasoning_enabled=reasoning_enabled,
+                        images=page_images,
                     )
-                    if final_answer == "":
-                        final_answer = "Z"
-
-                    llm_text = final_answer
-                    llm_logprobs = combined_logprobs
+                    _btext, llm_logprobs = get_cleaned_text_and_logprobs(llm_output)
+                    llm_text = binary_mode.parse_binary_response(_btext, qdata)
+                    _acc(llm_output)
 
                 else:
                     log(f"prompt agaain {prompt_text}")
                     llm_output = ans_gen.generate(
-                        system_prompt=system_prompt,
+                        system_prompt=sp,
                         query=prompt_text,
                         chunks=retrieved_chunks,
                         return_logprobs=True,
+                        reasoning_enabled=reasoning_enabled,
+                        images=page_images,
                     )
                     llm_text, llm_logprobs = get_cleaned_text_and_logprobs(llm_output)
+                    _acc(llm_output)
 
                 def make_handle_other(qid, QUERIES, ans_gen, retrieved_chunks):
                     """Factory function that creates a handle_other callback
@@ -1065,24 +1535,40 @@ def objective(trial, verbose: bool = False):
                             chunks=retrieved_chunks,
                             system_prompt=system_prompt,
                             return_logprobs=True,
+                            reasoning_enabled=reasoning_enabled,
+                            images=page_images,
                         )
+                        _acc(other_response)
                         return other_response["text"]
 
                     return handle_other
 
                 # Example usage (where you loop through or handle a query)
-                callback = make_handle_other(qid, QUERIES, ans_gen, retrieved_chunks)
+                if question_mode == "batched":
+                    # 'Other' free-text came inline in the batched JSON (if any).
+                    _o = batched_others.get(qid)
+                    callback = (lambda _t, _v=_o: _v) if _o else None
+                else:
+                    callback = make_handle_other(qid, QUERIES, ans_gen, retrieved_chunks)
 
-                eval_result = evaluate_answer(
-                    llm_text,
-                    question_type=qdata["type"],
-                    doc_name=doc_name,
-                    query_id=qid,
-                    TRUE_ANSWERS=TRUE_ANSWERS,
-                    QUERIES=QUERIES,
-                    other_callback=callback,
+                with _MODEL_LOCK:
+                    eval_result = evaluate_answer(
+                        llm_text,
+                        question_type=qdata["type"],
+                        doc_name=doc_name,
+                        query_id=qid,
+                        TRUE_ANSWERS=TRUE_ANSWERS,
+                        QUERIES=QUERIES,
+                        other_callback=callback,
+                        curated_mc_items=CURATED_MC_ITEMS,
+                    )
+                # In full-document mode the whole paper would otherwise be stored
+                # in EVERY cell's context (×items ×papers), bloating trial_summary
+                # and cache.json to GBs (and corrupting the cache on a killed write).
+                # Persist only a marker there; RAG keeps its small retrieved chunks.
+                eval_result["context"] = (
+                    "[full document]" if mode == "full" else retrieved_chunks
                 )
-                eval_result["context"] = retrieved_chunks
                 eval_result["logprobs"] = llm_logprobs
 
                 # ---------------- After evaluating a single query ----------------
@@ -1095,13 +1581,13 @@ def objective(trial, verbose: bool = False):
                     **eval_result,
                 }
 
-                # ✅ Update caches
+                # ✅ Update caches (shared `cache` dict guarded by _CACHE_LOCK)
                 trial_key = _hash_trial_key(trial_choices, doc_id, qid)
-                cache[trial_key] = result
+                with _CACHE_LOCK:
+                    cache[trial_key] = result
 
-                # ✅ Update in-memory lists
+                # ✅ Update in-memory lists (LOCAL to this paper)
                 doc_results.append(result)
-                all_results.append(result)
                 existing_qids.add(qid)
                 doc_result_map[qid] = result
                 log(
@@ -1118,6 +1604,10 @@ def objective(trial, verbose: bool = False):
                     "parameters_hash": param_hash,
                     "results": doc_results,
                 }
+                if question_mode == "batched":
+                    # every "<id>__other" the model returned, whether or not the
+                    # answer carried Y -- recoverable for an Other-aware rescoring
+                    doc_data["batched_other_text"] = dict(batched_others)
                 with open(doc_file, "w", encoding="utf-8") as f:
                     json.dump(doc_data, f, indent=2, ensure_ascii=False)
             num_cached = len(existing_results)
@@ -1126,69 +1616,286 @@ def objective(trial, verbose: bool = False):
             doc_accuracy = (
                 np.mean([r["accuracy"] for r in doc_results]) if doc_results else 0
             )
-            # Report intermediate value to the pruner
-            trial.report(
-                doc_accuracy, step=doc_id
-            )  # step can be any integer, e.g., doc_id
-
-            # Check if the trial should be pruned
-            if trial.should_prune():
-                log(
-                    f"⚠️ Pruning trial {trial.number} at document {doc_id} (doc_accuracy={doc_accuracy:.3f})"
-                )
-                raise optuna.TrialPruned()
             log(
                 f"📄 Document {doc_id} finished: {num_cached} cached, {num_new} new, total {num_total} queries."
             )
             log(f"    Overall accuracy for document {doc_id}: {doc_accuracy:.3f}")
 
-            # ✅ Update doc aggregates unconditionally
-            doc_aggregates[f"doc_{doc_id}"] = {
-                "average_accuracy": doc_accuracy,
+            # Return LOCAL results only; the caller merges into all_results and
+            # builds the aggregates single-threaded after all papers finish.
+            return {
+                "doc_id": doc_id,
                 "doc_name": doc_name,
+                "doc_results": doc_results,
+                "doc_accuracy": doc_accuracy,
+                "token_usage": _usage,
+                "batched_stats": _batched_stats,
             }
 
-            # ✅ Update query aggregates
-            for qid_agg in QUERIES.keys():
-                query_scores = [
-                    r["accuracy"] for r in all_results if r["query_id"] == qid_agg
-                ]
-                query_aggregates[qid_agg] = {"average_accuracy": np.mean(query_scores)}
+        # ---------------- Execute papers (sequential or threaded) ----------------
+        # PAPER_CONCURRENCY <= 1 preserves the exact original sequential order.
+        # PAPER_CONCURRENCY  > 1 runs papers in a thread pool so their network
+        # calls (ans_gen.generate) overlap; _MODEL_LOCK / _CACHE_LOCK serialize
+        # the model, retrieval, judge, and shared-cache operations.
+        # On insufficient funds, tag the trial (so it's easy to find + rerun once
+        # topped up — its config is already saved in the study) and abort the whole
+        # trial immediately instead of failing every remaining paper.
+        def _skip_broke(exc):
+            trial.set_user_attr("skip_reason", "insufficient_credits")
+            trial.set_user_attr("skip_model", llm_model)
+            log(
+                f"⏭️  Skipping trial {trial.number}: {llm_model} out of credits. "
+                f"Config saved — rerun later with: --rerun={trial.number}"
+            )
+            raise exc
 
-            # ✅ Save partial trial summary after each query
-            summary_file = trial_folder / "trial_summary.json"
-            per_query_doc_results = []
-            for r in all_results:
-                doc_info = doc_aggregates.get(f"doc_{r['doc_id']}", {})
-                per_query_doc_results.append(
-                    {
-                        "doc_id": r["doc_id"],
-                        "query_id": r["query_id"],
-                        "doc_name": doc_info.get("doc_name"),
-                        **{
-                            k: v
-                            for k, v in r.items()
-                            if k not in ["doc_id", "query_id"]
-                        },
-                    }
+        paper_outputs = []
+        _papers_t0 = time.time()
+
+        def _time_cap_check(done: int):
+            """Racing-style aborts after >=3 completed papers.
+            Time: a $0.09/paper trial once ran 21 h — dollar caps cannot catch
+            time sinks. Cost: realised $/paper from the papers' own token_usage
+            — reasoning volume is unknowable pre-flight (#63 realised $1.25/paper
+            where its sibling realised $0.18), so the pre-flight projection stays
+            optimistic and the realised guard stops true sinkholes ~paper 3."""
+            if done < 3:
+                return
+            pace = (time.time() - _papers_t0) / done
+            if pace > TIME_CAP_S_PER_PAPER:
+                trial.set_user_attr("time_cap_s_per_paper", round(pace, 1))
+                raise optuna.TrialPruned(
+                    f"guard: {pace:.0f}s/paper exceeds the "
+                    f"{TIME_CAP_S_PER_PAPER}s cap after {done} papers")
+            _pr_ = (_model_meta().get(llm_model) or {}).get("pricing") or {}
+            spent = sum(
+                (o.get("token_usage", {}).get("prompt_tokens", 0) * float(_pr_.get("input", 0))
+                 + o.get("token_usage", {}).get("completion_tokens", 0) * float(_pr_.get("output", 0)))
+                for o in paper_outputs) / 1e6
+            if spent / done > COST_CAP_USD_PER_PAPER:
+                trial.set_user_attr("realized_usd_per_paper", round(spent / done, 4))
+                raise optuna.TrialPruned(
+                    f"guard: realised ${spent/done:.2f}/paper exceeds the "
+                    f"${COST_CAP_USD_PER_PAPER:.2f} cap after {done} papers")
+
+        if PAPER_CONCURRENCY <= 1:
+            for parsed_path, doc_id, doc_name, pdf_path in paper_tasks:
+                try:
+                    paper_outputs.append(
+                        _process_paper(parsed_path, doc_id, doc_name, pdf_path)
+                    )
+                    flush_cache_throttled(cache)
+                    _time_cap_check(len(paper_outputs))
+                except InsufficientCreditsError as _ice:
+                    _skip_broke(_ice)
+        else:
+            # Pre-init the shared AnswerGenerator's HTTP client in the main thread
+            # so worker threads don't race on its lazy `_ensure_client()`. The
+            # underlying openai/together/httpx clients are safe for concurrent use.
+            try:
+                LLMS[llm_model]._ensure_client()
+            except Exception as _exc:
+                log(f"  (client pre-warm skipped: {_exc})")
+            # as_completed raises TimeoutError once TRIAL_WALL_BUDGET_S has elapsed
+            # since the iteration began, even if nothing has completed; that is the
+            # only guard reachable when no paper ever lands.
+            # NOT a `with` block: its __exit__ calls shutdown(wait=True), which
+            # blocks on futures stuck in the provider retry ladder, so a guard
+            # prune could not take effect until the hung calls unwound (hours).
+            # shutdown(wait=False, cancel_futures=True) drops queued work and lets
+            # the prune propagate immediately; still-running threads finish in the
+            # background and are joined at interpreter exit.
+            executor = ThreadPoolExecutor(max_workers=PAPER_CONCURRENCY)
+            try:
+                future_map = {
+                    executor.submit(
+                        _process_paper, parsed_path, doc_id, doc_name, pdf_path
+                    ): (doc_id, doc_name)
+                    for parsed_path, doc_id, doc_name, pdf_path in paper_tasks
+                }
+                # Iterate in COMPLETION order (as_completed), not submission
+                # order. With submission order, result() blocks on future #1, so a
+                # single paper stuck in the provider retry ladder suspends the
+                # in-flight guards indefinitely while other papers finish: consumer
+                # trial #53 reached 465 min at 3/35 papers (9300 s/paper, 10x the
+                # cap) without _time_cap_check ever being reached. Completion order
+                # evaluates the guards whenever ANY paper lands. paper_outputs order
+                # is not used downstream (the merge keys by doc_id and sums usage).
+                _it = as_completed(future_map, timeout=TRIAL_WALL_BUDGET_S)
+                while True:
+                    try:
+                        future = next(_it)
+                    except StopIteration:
+                        break
+                    except TimeoutError:
+                        for _f in future_map:
+                            _f.cancel()
+                        trial.set_user_attr("wall_budget_exceeded_s", TRIAL_WALL_BUDGET_S)
+                        raise optuna.TrialPruned(
+                            f"guard: exceeded the {TRIAL_WALL_BUDGET_S}s trial wall-clock "
+                            f"budget with {len(paper_outputs)}/{len(paper_tasks)} papers done")
+                    fut_doc_id, fut_doc_name = future_map[future]
+                    try:
+                        paper_outputs.append(future.result())
+                        flush_cache_throttled(cache)
+                        try:
+                            _time_cap_check(len(paper_outputs))
+                        except optuna.TrialPruned:
+                            for _f in future_map:
+                                _f.cancel()
+                            raise
+                    except optuna.TrialPruned:
+                        # MUST precede the broad handler below: TrialPruned is an
+                        # Exception, so without this clause every guard prune was
+                        # caught and logged as "paper failed and was skipped" and
+                        # the trial carried on (consumer #56: the pace guard fired
+                        # at 2261 s/paper and was swallowed).
+                        raise
+                    except InsufficientCreditsError as _ice:
+                        # Out of money: cancel not-yet-started papers and abort now.
+                        for _f in future_map:
+                            _f.cancel()
+                        _skip_broke(_ice)
+                    except Exception as exc:
+                        log(
+                            f"⚠️ Paper doc_id={fut_doc_id} ({fut_doc_name}) "
+                            f"failed and was skipped: {exc}"
+                        )
+                        continue
+            finally:
+                executor.shutdown(wait=False, cancel_futures=True)
+
+        # ---------------- Merge per-paper results ----------------
+        trial_usage = {"prompt_tokens": 0, "completion_tokens": 0, "reasoning_tokens": 0, "calls": 0}
+        trial_batched_stats = {"split": 0, "parse_failed": 0, "truncated": 0, "other_without_y": 0}
+        for output in paper_outputs:
+            all_results.extend(output["doc_results"])
+            doc_aggregates[f"doc_{output['doc_id']}"] = {
+                "average_accuracy": output["doc_accuracy"],
+                "doc_name": output["doc_name"],
+            }
+            for _k in trial_usage:
+                trial_usage[_k] += output.get("token_usage", {}).get(_k, 0)
+            for _k in trial_batched_stats:
+                trial_batched_stats[_k] += output.get("batched_stats", {}).get(_k, 0)
+
+        # Fail the whole trial (rather than report a bogus low/0.000 score) when a
+        # large share of papers errored out — e.g. an API credit/rate-limit block
+        # skips most papers, leaving all_results near-empty and accuracy ~0.000.
+        # Raising here records the trial as FAILED (caught by study.optimize's
+        # catch=Exception), so the model is reattempted on the next launch instead
+        # of polluting the TPE surrogate with an artifact. Threshold via
+        # MIN_PAPER_FRAC (default 0.5 = fail if <50% of papers succeeded).
+        _min_frac = float(os.getenv("MIN_PAPER_FRAC", "0.5"))
+        _n_ok, _n_total = len(paper_outputs), len(paper_tasks)
+        if _n_total and _n_ok < _n_total * _min_frac:
+            raise RuntimeError(
+                f"trial aborted: only {_n_ok}/{_n_total} papers succeeded "
+                f"(rest errored — likely API credit/rate-limit); failing for reattempt"
+            )
+
+        # ✅ Build query aggregates once over the merged results
+        for qid_agg in QUERIES.keys():
+            query_scores = [
+                r["accuracy"] for r in all_results if r["query_id"] == qid_agg
+            ]
+            query_aggregates[qid_agg] = {
+                "average_accuracy": (
+                    np.mean(query_scores) if query_scores else float("nan")
                 )
-
-            overall_avg = np.mean([r["accuracy"] for r in all_results])
-
-            summary_data = {
-                "timestamp": datetime.now().isoformat(),
-                "trial_number": trial.number,
-                "parameters": trial_choices,
-                "overall_average_accuracy": overall_avg,
-                "document_aggregates": doc_aggregates,
-                "query_aggregates": query_aggregates,
-                "per_query_doc_results": per_query_doc_results,
             }
 
-            with open(summary_file, "w", encoding="utf-8") as f:
-                json.dump(summary_data, f, indent=2, ensure_ascii=False)
+        # ✅ Write the trial summary once, over the merged results
+        summary_file = trial_folder / "trial_summary.json"
+        per_query_doc_results = []
+        for r in all_results:
+            doc_info = doc_aggregates.get(f"doc_{r['doc_id']}", {})
+            per_query_doc_results.append(
+                {
+                    "doc_id": r["doc_id"],
+                    "query_id": r["query_id"],
+                    "doc_name": doc_info.get("doc_name"),
+                    **{
+                        k: v
+                        for k, v in r.items()
+                        if k not in ["doc_id", "query_id"]
+                    },
+                }
+            )
 
-            # ✅ Persist the cache periodically (avoids loss if run stops)
+        overall_avg = (
+            np.mean([r["accuracy"] for r in all_results]) if all_results else 0.0
+        )
+
+        summary_data = {
+            "timestamp": datetime.now().isoformat(),
+            "trial_number": trial.number,
+            "parameters": trial_choices,
+            "overall_average_accuracy": overall_avg,
+            "token_usage": trial_usage,
+            "document_aggregates": doc_aggregates,
+            "query_aggregates": query_aggregates,
+            "per_query_doc_results": per_query_doc_results,
+        }
+
+        # Token totals on the trial itself (cost = tokens x roster $/M, computed
+        # later). Only trials run after this change carry usage; earlier ones don't.
+        trial.set_user_attr("prompt_tokens", trial_usage["prompt_tokens"])
+        trial.set_user_attr("completion_tokens", trial_usage["completion_tokens"])
+        trial.set_user_attr("llm_calls", trial_usage["calls"])
+        try:
+            from answer_generation import call_ledger as _cl
+            _lp = Path(os.environ.get("CALL_LEDGER_PATH", ""))
+            if _lp.exists():
+                _v = _cl.verify(_lp)
+                trial.set_user_attr("call_ledger_head", _v["head"])
+                trial.set_user_attr("call_ledger_n", _v["n"])
+                trial.set_user_attr("call_ledger_ok", bool(_v["ok"]))
+        except Exception:
+            pass
+        if _rcs_usage["calls"]:
+            _pr = (llm_meta.get("pricing") or {})
+            trial.set_user_attr("rcs_calls", _rcs_usage["calls"])
+            trial.set_user_attr("rcs_prompt_tokens", _rcs_usage["prompt_tokens"])
+            trial.set_user_attr("rcs_completion_tokens", _rcs_usage["completion_tokens"])
+            trial.set_user_attr("rcs_cost_usd", round(
+                (_rcs_usage["prompt_tokens"] * float(_pr.get("input", 0))
+                 + _rcs_usage["completion_tokens"] * float(_pr.get("output", 0))) / 1e6, 4))
+        # Reasoning as OBSERVED from provider usage, not from the toggle we sent:
+        # Together's gpt-oss-120b still emitted ~660 reasoning tokens per call
+        # with reasoning.enabled=false (probe 2026-09-25), so the toggle-derived
+        # `effective_reasoning` attr can say "off" while the model reasoned.
+        _rt = trial_usage.get("reasoning_tokens", 0)
+        trial.set_user_attr("reasoning_tokens", _rt)
+        trial.set_user_attr("effective_reasoning_observed",
+                            "on" if _rt > 0 else ("off" if trial_usage["calls"] else "unknown"))
+        # Dollar cost from the roster's per-million pricing, so cost analyses need
+        # no offline reconstruction. Generation calls only: the judge is local and
+        # embedding usage is not metered here.
+        _pr = (llm_meta.get("pricing") or {})
+        if _pr:
+            trial.set_user_attr(
+                "cost_usd",
+                round(
+                    (trial_usage["prompt_tokens"] * float(_pr.get("input", 0))
+                     + trial_usage["completion_tokens"] * float(_pr.get("output", 0))) / 1e6,
+                    4,
+                ),
+            )
+        # Batched health. Before this, a paper whose JSON failed to parse scored 43
+        # silent abstentions and the trial recorded an ordinary-looking number;
+        # these attrs make that visible in the study itself.
+        if question_mode == "batched":
+            trial.set_user_attr("batched_split_used", trial_batched_stats["split"])
+            trial.set_user_attr("batched_parse_failed", trial_batched_stats["parse_failed"])
+            trial.set_user_attr("batched_truncated", trial_batched_stats["truncated"])
+            trial.set_user_attr("batched_other_without_y", trial_batched_stats["other_without_y"])
+
+        with open(summary_file, "w", encoding="utf-8") as f:
+            json.dump(summary_data, f, indent=2, ensure_ascii=False)
+
+        # ✅ Persist the cache once after the merge (avoids per-paper disk churn)
+        with _CACHE_LOCK:
             save_cache(cache)
 
         if all_results:
@@ -1223,22 +1930,92 @@ def objective(trial, verbose: bool = False):
         raise
 
 
+class PatienceCallback:
+    """Preregistered stopping rule (Phase-1 SS6.2.2): stop when ``patience``
+    consecutive trials fail to improve the best accuracy.
+
+    STATELESS by design — the streak is derived from the shared study on every
+    call, in completion order. The previous per-process counter double-counted
+    under two workers (effective patience ~2x the preregistered 15) and reset
+    to best=-1.0 on every worker restart, wiping the streak. Only COMPLETE
+    trials count: a guard-pruned trial is a refusal to evaluate, not a failed
+    evaluation, and must not run down the clock for free."""
+
+    def __init__(self, patience: int = 15, min_trials: int | None = None,
+                 from_number: int | None = None):
+        self.patience = patience
+        # Don't stop before model-based sampling has begun. The floor is the
+        # sampler's startup budget, NOT a hard 100: a seeded study (open:
+        # TPE_N_STARTUP=88, consumer: 34) models from trial one, so a literal 100
+        # silently disabled the rule there -- the consumer search logged
+        # "No improvement for 18/15" and kept going because it had only 73
+        # completions. Explicit override via PATIENCE_MIN_TRIALS.
+        self.min_trials = (
+            int(os.getenv("PATIENCE_MIN_TRIALS",
+                          os.getenv("TPE_N_STARTUP", "100")))
+            if min_trials is None else min_trials
+        )
+        # streak counts only trials numbered >= from_number (the stage start),
+        # while the bar (best) is taken over the whole study incl. seeds. A
+        # seeded second study otherwise starts with a phantom streak from seeds
+        # that happened to complete after the seeded best.
+        self.from_number = (int(os.getenv("PATIENCE_FROM_NUMBER", "0"))
+                            if from_number is None else from_number)
+
+    @staticmethod
+    def _order(t):
+        return (t.datetime_complete or t.datetime_start, t.number)
+
+    def streak(self, study) -> tuple[int, int, float]:
+        comp = [t for t in study.trials
+                if t.state == optuna.trial.TrialState.COMPLETE
+                and t.value is not None]
+        if not comp:
+            return 0, 0, float("nan")
+        best_val = max(t.value for t in comp)
+        best_first = min((t for t in comp if t.value == best_val), key=self._order)
+        streak = sum(1 for t in comp
+                     if t.number >= self.from_number
+                     and self._order(t) > self._order(best_first))
+        return streak, len(comp), best_val
+
+    def __call__(self, study, trial) -> None:
+        if trial.state != optuna.trial.TrialState.COMPLETE:
+            return
+        streak, n_complete, best_val = self.streak(study)
+        if streak == 0 and trial.value == best_val:
+            logger.info("  ★ New best accuracy: %.2f%% (trial %d)",
+                        best_val * 100, trial.number)
+        else:
+            logger.info(
+                "  No improvement for %d/%d consecutive completed trials "
+                "(study best=%.2f%%)", streak, self.patience, best_val * 100)
+        if n_complete >= self.min_trials and streak >= self.patience:
+            logger.info(
+                "Early stopping (prereg SS6.2.2): %d consecutive completed trials "
+                "without improvement (%d completed total).", streak, n_complete)
+            study.stop()
+
+
 def run_worker(study):
     study.optimize(objective, n_trials=1)  # each worker runs one trial at a time
 
 
 if __name__ == "__main__":
-    folder = Path("../data/raw/")
+    folder = PROJECT_ROOT / "data" / "raw"
     all_docs = list(folder.glob("*"))
     QUERIES = load_queries()
 
-    TRUE_ANSWERS = load_true_answers()
+    # Finalized consensus gold (09_data_final). Restrict QUERIES to items that
+    # actually have a gold column so dropped/absent items (splitprep, perftrain,
+    # interpret, general, bestmodel, 4.5.6) are neither queried nor evaluated.
+    _evaluable = finalized_item_map(QUERIES)
+    QUERIES = {qid: q for qid, q in QUERIES.items() if qid in _evaluable}
+    TRUE_ANSWERS = load_true_answers_final(QUERIES)
 
     DEPENDENCIES_FILE = PROJECT_ROOT / "src" / "dependencies.txt"
     with open(DEPENDENCIES_FILE, "r", encoding="utf-8") as f:
         DEPENDENCIES = json.load(f)
-
-    QUERIES = dict(list(QUERIES.items()))
 
     SYSTEM_PROMPTS = {}
     with open(
@@ -1253,416 +2030,180 @@ if __name__ == "__main__":
         encoding="utf-8",
     ) as f:
         SYSTEM_PROMPTS["multiple_outcomes"] = f.read()
-    ## FIXED TRIAL
-    fixed_params = {
-        "parser": "PyMuPDFParser",
-        "mode": "rag",
-        "chunk_size": 500,
-        "chunk_overlap": 0,
-        "chunker": "LengthChunker",
-        "embedder": "BGEEmbedder",
-        "retriever": "TopKRetriever",
-        "k": 5,
-        "query_embedding": "raw",
-        "llm_model": "deepseek-ai/DeepSeek-R1-Distill-Llama-70B-free",
-        # "gpt-4.1-2025-04-14",
-        "use_default_prompt": True,
-        "prompt_type": "base_prompt",
-        "default_prompt_type": "base_prompt",
-    }
+    _args = sys.argv[1:]
 
-    # Wrap trial as FixedTrial
-    trial = optuna.trial.FixedTrial(fixed_params)
-    score = objective(trial, verbose=True)
+    if "--test" in _args:
+        # -------- single fixed-config smoke of the pipeline --------
+        fixed_params = {
+            "parser": "PyMuPDFParser",
+            "mode": os.getenv("TEST_MODE", "rag"),
+            "chunk_size": 500,
+            "chunk_overlap": 0,
+            "chunker": "LengthChunker",
+            "embedder": "BGEEmbedder",
+            "retriever": "TopKRetriever",
+            "k": 5,
+            "query_embedding": "raw",
+            "llm_model": os.getenv("TEST_MODEL", "Qwen/Qwen3.5-9B"),
+            "use_default_prompt": True,
+            "prompt_type": "base_prompt",
+            "default_prompt_type": "base_prompt",
+            "question_mode": os.getenv("TEST_QUESTION_MODE", "individual"),
+            "vlm": os.getenv("TEST_VLM", "0") == "1",
+            "disable_reasoning": os.getenv("TEST_DISABLE_REASONING", "1") == "1",
+        }
+        trial = optuna.trial.FixedTrial(fixed_params)
+        score = objective(trial, verbose=True)
+        print(f"\n[--test] mean accuracy: {score:.2%}")
+    else:
+        # -------- full TPE study over the tuning set --------
+        # Usage: python objective.py [n_trials] [--models=id1,id2,...]
+        #        python objective.py --rerun=<N> [--keep-old] [--resume-papers]
+        #          --resume-papers: take off from the papers trial N already finished
+        n_trials = next((int(a) for a in _args if a.isdigit()), 300)
+        # Exclude models flagged disabled (e.g. a provider moved one non-serverless
+        # mid-study). They stay in LLMS so the llm_model distribution is unchanged
+        # (removing a choice would break Optuna with "dynamic value space"), but we
+        # never seed them; if TPE samples one post-startup it just fails fast.
+        seed_models = [m for m in LLMS.keys()
+                       if not LLM_META_MAP.get(m, {}).get("disabled")]
+        for a in _args:
+            if a.startswith("--models="):
+                seed_models = [m for m in a.split("=", 1)[1].split(",") if m in LLMS]
 
-    # ACUTAL ONE WITH PRUNING
-    # sampler = optuna.samplers.TPESampler(
-    #     n_startup_trials=10,  # first 10 trials are random
-    #     n_ei_candidates=24,  # number of candidates for expected improvement
-    #     multivariate=True,  # allow correlated sampling
-    # )
-    # # --- Create study with pruner ---
-    # pruner = optuna.pruners.MedianPruner(
-    #     n_startup_trials=5,  # don’t prune before 5 trials complete
-    #     n_warmup_steps=2,  # don’t prune before 2 steps of report()
-    # )
+        optuna.logging.set_verbosity(optuna.logging.INFO)
+        # Persistent storage so a crash / Together 402 does not lose the study;
+        # re-running resumes (load_if_exists). Override path with OPTUNA_DB.
+        storage_url = os.getenv(
+            "OPTUNA_DB", f"sqlite:///{PROJECT_ROOT / 'optuna_study.db'}"
+        )
+        # Two workers share one sqlite file; the default 5 s lock timeout makes
+        # concurrent writes raise "database is locked" and fail otherwise-good
+        # trials. 120 s matches the admin scripts (requeue_on_recovery.py).
+        storage_obj = optuna.storages.RDBStorage(
+            storage_url,
+            engine_kwargs=({"connect_args": {"timeout": 120}}
+                           if storage_url.startswith("sqlite") else {}),
+        )
+        study = optuna.create_study(
+            direction="maximize",
+            study_name="full_item_accuracy_tuning",
+            storage=storage_obj,
+            load_if_exists=True,
+            # multivariate+group: model the conditional space jointly instead of
+            # per-parameter (RAG-only levers are meaningless outside their branch);
+            # constant_liar: two workers sample concurrently without duplicating.
+            # Startup (100) completed 2026-09-28 on the unified scoring basis.
+            sampler=optuna.samplers.TPESampler(
+                n_startup_trials=int(os.getenv("TPE_N_STARTUP", "100")),
+                seed=42,
+                multivariate=True, group=True, constant_liar=True,
+            ),
+            # NopPruner: the prereg (§6.2) evaluates EVERY configuration on the full
+            # 35-paper tuning set. Optuna's default MedianPruner was killing slower
+            # models' trials mid-run (no baseline -> biased model comparison), so
+            # disable per-trial pruning. Study-level early stop is the patience cb.
+            pruner=optuna.pruners.NopPruner(),
+        )
 
-    # study = optuna.create_study(
-    #     direction="maximize",
-    #     sampler=sampler,
-    #     pruner=pruner,
-    #     storage="postgresql+psycopg2://einsie0004:optuna@localhost:5432/trials_v1",
-    #     load_if_exists=True,
-    # )
+        # ---- rerun a single existing trial by number, then exit ----
+        # Enqueues that trial's exact config as a fresh trial (current env knobs
+        # apply, e.g. VLM_ZOOM) and runs only it — no model seeding.
+        _rerun_no = next(
+            (int(a.split("=", 1)[1]) for a in _args if a.startswith("--rerun=")),
+            None,
+        )
+        if _rerun_no is not None:
+            rerun_specific_trial(
+                study,
+                storage_url,
+                _rerun_no,
+                keep_old=("--keep-old" in _args),
+                resume_papers=("--resume-papers" in _args),
+            )
+            sys.exit(0)
 
-    # def stop_if_no_improvement(study, trial, threshold=0.01, n_last=10):
-    #     completed = [
-    #         t.value for t in study.trials if t.state == optuna.trial.TrialState.COMPLETE
-    #     ]
-    #     if len(completed) < n_last:
-    #         return
-    #     recent = completed[-n_last:]
-    #     if max(recent) - min(recent) < threshold:
-    #         print(
-    #             f"Stopping study early: improvement {max(recent) - min(recent):.5f} < {threshold}"
-    #         )
-    #         study.stop()
+        # Seed one trial per model so every model is evaluated at least once.
+        # Fast, deterministic RAG config (k=5, thinking off) keeps seeds cheap;
+        # TPE explores full-document mode / thinking-on / other configs afterwards.
+        # Re-seed only models that lack an active (complete/running/queued) trial —
+        # so a fresh study enqueues all models, and a RESUME re-seeds only models
+        # whose seed failed (e.g. a transient network outage), without duplicating.
+        # An enqueued (WAITING) trial keeps its params in system_attrs['fixed_params'],
+        # NOT in t.params (which is empty until the trial runs) — read both so we
+        # don't double-enqueue models that are already queued.
+        def _seed_model(t):
+            return t.params.get("llm_model") or t.system_attrs.get(
+                "fixed_params", {}
+            ).get("llm_model")
 
-    # # Launch 40 workers in threads (fine for I/O bound tasks)
-    # with ThreadPoolExecutor(max_workers=40) as executor:
-    #     futures = [executor.submit(run_worker, study) for _ in range(10)]
-    #     for f in futures:
-    #         f.result()
-# study.optimize(objective, n_trials=100, callbacks=[stop_if_no_improvement])
-# --- Run trials ---
+        active_models = {
+            _seed_model(t)
+            for t in study.trials
+            if t.state.name in ("COMPLETE", "RUNNING", "WAITING")
+        }
+        seeded = 0
+        for model in seed_models:
+            if model in active_models:
+                continue
+            study.enqueue_trial(
+                {
+                    "mode": "rag",
+                    "llm_model": model,
+                    "parser": "PyMuPDFParser",
+                    "chunk_size": 500,
+                    "chunk_overlap": 0,
+                    "chunker": "LengthChunker",
+                    "embedder": "BGEEmbedder",
+                    "retriever": "TopKRetriever",
+                    "k": 5,
+                    "query_embedding": "raw",
+                    "default_prompt_type": "base_prompt",
+                    "use_default_prompt": True,
+                    "disable_reasoning": True,
+                }
+            )
+            seeded += 1
+        logger.info(
+            "Enqueued %d seed trial(s); study has %d existing trials",
+            seeded, len(study.trials),
+        )
 
-######################## OLD OBJECTIVE
+        patience = PatienceCallback(patience=15)
 
-# def objective(trial, verbose: bool = False):
-#     import hashlib
-#     import json
-#     from pathlib import Path
+        def _obj(t):
+            acc = objective(t, verbose=True)
+            p = t.params
+            print(
+                f"\n>>> Trial {t.number}  acc={acc:.2%}  "
+                f"model={p.get('llm_model', '?')}  mode={p.get('mode', '?')}  "
+                f"parser={p.get('parser', '?')}  prompt={p.get('default_prompt_type', '?')}  "
+                f"think_off={p.get('disable_reasoning', 'n/a')}"
+            )
+            return acc
 
-#     import numpy as np
+        # catch=(Exception,): a trial that crashes (transient API 402/timeout,
+        # a parser/model hiccup) is recorded as FAILED and the study continues,
+        # instead of one bad trial killing the whole multi-hour run. Failed trials
+        # are persisted and simply not used by the TPE surrogate.
+        #
+        # N_JOBS>1 runs that many TRIALS concurrently (Optuna thread pool). Best for
+        # the random startup phase (first n_startup_trials=100, which are
+        # independent); parallel TPE trials afterwards are slightly less
+        # sample-efficient (they sample from a not-yet-updated surrogate). Total
+        # concurrent API calls ~= N_JOBS * PAPER_CONCURRENCY, so keep the product
+        # within provider rate limits: e.g. startup with N_JOBS=10 PAPER_CONCURRENCY=1
+        # (=10-way), TPE with N_JOBS=1 PAPER_CONCURRENCY=4 (=4-way).
+        study.optimize(
+            _obj,
+            n_trials=n_trials,
+            n_jobs=int(os.getenv("N_JOBS", "1")),
+            callbacks=[patience],
+            catch=(Exception,),
+        )
 
-#     trial_choices = {}
-#     all_results = []
-#     llm_choices = []
-
-#     # Helper logging function
-#     def log(msg: str):
-#         if verbose:
-#             print(msg, file=sys.stderr, flush=True)
-
-#     # Load cache globally
-#     cache = load_cache()
-
-#     try:
-#         # ---------------- Parameter suggestions ----------------
-#         parser_name = trial.suggest_categorical("parser", list(PARSERS.keys()))
-#         mode = "rag"
-#         trial_choices["parser"] = parser_name
-#         trial_choices["mode"] = mode
-
-#         # Compute hash from parameter choices so far (will be updated as more are added)
-#         trial_hash = hashlib.md5(
-#             json.dumps(trial_choices, sort_keys=True).encode()
-#         ).hexdigest()[:10]
-#         trial_folder = Path("../trial_logs") / f"{trial_hash}_trial_{trial.number:04d}"
-#         trial_folder.mkdir(parents=True, exist_ok=True)
-#         log(f"Writing trial results to: {trial_folder}")
-
-#         log(f"[Trial {trial.number}] Starting with parser={parser_name}, mode={mode}")
-
-#         folder = Path("../data/raw/")
-#         all_docs = [f for f in folder.glob("*") if f.suffix.lower() == ".pdf"]
-#         log(f"  Found {len(all_docs)} documents")
-
-#         parsed_docs = [ensure_parsed(f, parser_name) for f in all_docs]
-#         log("  Parsing complete")
-
-#         doc_aggregates = {}
-#         query_aggregates = {}
-
-#         doc_id_map = load_doc_id_map()
-#         next_id = max(doc_id_map.values(), default=-1) + 1
-
-#         # ---------------- Per-document loop ----------------
-#         for parsed_path in parsed_docs:
-#             doc_name = parsed_path.stem
-#             if doc_name not in doc_id_map:
-#                 doc_id_map[doc_name] = next_id
-#                 next_id += 1
-#             doc_id = doc_id_map[doc_name]
-#             doc_results = []
-
-#             log(f"--- Document {doc_id}: {parsed_path.name} ---")
-
-#             # Compute the full parameter hash *after* all trial parameters are decided later
-#             # so we’ll temporarily just set up doc file here
-#             doc_file = trial_folder / f"doc_{doc_id:04d}.json"
-
-#             # Load cached file if it exists and matches this parameter hash
-#             if doc_file.exists():
-#                 with open(doc_file, "r", encoding="utf-8") as f:
-#                     existing_data = json.load(f)
-#                 cached_hash = existing_data.get("parameters_hash")
-#                 current_hash = hashlib.md5(
-#                     json.dumps(trial_choices, sort_keys=True).encode()
-#                 ).hexdigest()
-
-#                 if cached_hash == current_hash:
-#                     log(f"  Using existing document results from {doc_file.name}")
-#                     for r in existing_data["results"]:
-#                         all_results.append(r)
-#                     doc_aggregates[f"doc_{doc_id}"] = {
-#                         "average_accuracy": np.mean(
-#                             [r["accuracy"] for r in existing_data["results"]]
-#                         ),
-#                         "doc_name": doc_name,
-#                         "cached": True,
-#                     }
-#                     continue
-#                 else:
-#                     log(
-#                         f"  Parameter mismatch (old={cached_hash[:6]}, new={current_hash[:6]}), recalculating."
-#                     )
-
-#             # ---------------- Per-query loop ----------------
-#             for qid, qdata in QUERIES.items():
-#                 log(f"  > Query {qid}")
-#                 start_stage = time.time()
-
-#                 # ---------------- Retrieval stage ----------------
-#                 if mode == "rag":
-#                     chunk_size = trial.suggest_categorical(
-#                         "chunk_size", [100, 250, 500, 750, 1000, 2500, 5000]
-#                     )
-#                     overlap = trial.suggest_categorical(
-#                         "chunk_overlap",
-#                         [o for o in [0, 250, 750] if o < chunk_size] or [0],
-#                     )
-#                     if parser_name in ["PyMuPDFParser", "PyMuPDFTesseractParser"]:
-#                         allowed_chunkers = [
-#                             k
-#                             for k in CHUNKERS
-#                             if k not in ["StructureChunker", "TextChunker"]
-#                         ]
-#                     else:
-#                         allowed_chunkers = list(CHUNKERS.keys())
-
-#                     chunker_name = trial.suggest_categorical(
-#                         "chunker", allowed_chunkers
-#                     )
-#                     embedder_name = trial.suggest_categorical(
-#                         "embedder", list(EMBEDDERS.keys())
-#                     )
-
-#                     trial_choices.update(
-#                         {
-#                             "chunk_size": chunk_size,
-#                             "chunk_overlap": overlap,
-#                             "chunker": chunker_name,
-#                             "embedder": embedder_name,
-#                         }
-#                     )
-
-#                     chunk_path = ensure_chunks(
-#                         parsed_path, parser_name, chunker_name, chunk_size, overlap
-#                     )
-#                     vector_store_path = ensure_embedding(
-#                         chunk_path,
-#                         parser_name,
-#                         chunker_name,
-#                         embedder_name,
-#                         chunk_size,
-#                         overlap,
-#                     )
-#                     vector_store = NumpyVectorStore(
-#                         save_path=str(vector_store_path) + ".npz"
-#                     )
-#                     vector_store.load()
-
-#                     retriever_name = trial.suggest_categorical(
-#                         "retriever", list(RETRIEVERS.keys())
-#                     )
-#                     retriever_cls = RETRIEVERS[retriever_name]
-#                     k = trial.suggest_categorical("k", [1, 3, 5, 10, 20])
-#                     params = {"k": k}
-#                     if hasattr(retriever_cls, "token_budget"):
-#                         params["token_budget"] = trial.suggest_categorical(
-#                             "token_budget", [200, 500, 1000, 2000]
-#                         )
-#                     if getattr(retriever_cls, "supports_rerank", False):
-#                         params["rerank"] = trial.suggest_categorical(
-#                             "rerank", [True, False]
-#                         )
-#                         if params["rerank"] and getattr(
-#                             retriever_cls, "supports_top_m", False
-#                         ):
-#                             params["top_m"] = trial.suggest_categorical(
-#                                 "top_m", [5, 10, 20, 50]
-#                             )
-
-#                     retriever = retriever_cls(**params)
-#                     query_embedding_mode = trial.suggest_categorical(
-#                         "query_embedding", ["raw", "label_def"]
-#                     )
-#                     query_emb_path = ensure_query_embeddings(
-#                         embedder_name, parsed_path.stem, qid, query_embedding_mode
-#                     )
-#                     query_embed = np.load(query_emb_path)
-#                     retrieved_chunks = retriever.retrieve(query_embed, vector_store)
-
-#                 log(f"    Retrieval done in {time.time() - start_stage:.2f}s")
-
-#                 # ---------------- Caching check ----------------
-#                 trial_key = _hash_trial_key(trial_choices, doc_id, qid)
-#                 if trial_key in cache:
-#                     result = cache[trial_key]
-#                     log("    Using cached result")
-#                 else:
-#                     # ---------------- LLM stage ----------------
-#                     llm_model = trial.suggest_categorical(
-#                         "llm_model", list(LLMS.keys())
-#                     )
-#                     non_binary_prompts = [
-#                         key
-#                         for key in qdata["prompts"].keys()
-#                         if key != "binary_prompts"
-#                     ]
-#                     prompt_type_general = trial.suggest_categorical(
-#                         "prompt_type_general", non_binary_prompts
-#                     )
-
-#                     # Step 2: choose prompt type for the current question
-#                     if qdata["type"] in ["multiple_choice", "single_choice"]:
-#                         # options: either the base prompt or binary
-#                         prompt_type = trial.suggest_categorical(
-#                             "prompt_type_choice",
-#                             [prompt_type_general, "binary_prompts"],
-#                         )
-#                     else:  # open-ended, list, numeric
-#                         prompt_type = prompt_type_general
-
-#                     prompt_text = qdata["prompts"].get(prompt_type)
-#                     if not prompt_text:
-#                         raise ValueError(
-#                             f"No prompt found for query {qid} under '{prompt_type}'"
-#                         )
-
-#                     trial_choices.update(
-#                         {"llm_model": llm_model, "prompt_type": prompt_type}
-#                     )
-#                     ans_gen = LLMS[llm_model]
-
-#                     if prompt_type == "binary_prompts":
-#                         if (
-#                             qdata["type"] == "single_choice"
-#                             or qdata["type"] == "multiple_choice"
-#                         ):
-#                             # Run all binary subprompts and collect outputs
-#                             binary_outputs = {}
-#                             for i, subprompt in enumerate(
-#                                 qdata["prompts"]["binary_prompts"]
-#                             ):
-#                                 llm_output_binary = ans_gen.generate(
-#                                     query=subprompt,
-#                                     chunks=retrieved_chunks,
-#                                     return_logprobs=True,
-#                                 )
-#                                 # Store each subresult under a key like "binary_0"
-#                                 binary_outputs[f"binary_{i}"] = get_llm_text(
-#                                     llm_output_binary
-#                                 )
-
-#                             # Combine according to your get_llm_text logic
-#                             combined_texts = get_llm_text(binary_outputs)
-
-#                             # Concatenate them into one string for evaluation
-#                             if isinstance(combined_texts, list):
-#                                 llm_output = ",".join(combined_texts)
-#                             else:
-#                                 llm_output = str(combined_texts)
-
-#                         else:
-#                             prompt_text = qdata["prompts"]["base_prompt"]
-#                             llm_output = ans_gen.generate(
-#                                 query=prompt_text,
-#                                 chunks=retrieved_chunks,
-#                                 return_logprobs=True,
-#                             )
-
-#                     else:
-#                         # Non-binary case (unchanged)
-#                         llm_output = ans_gen.generate(
-#                             query=prompt_text,
-#                             chunks=retrieved_chunks,
-#                             return_logprobs=True,
-#                         )
-
-#                     def handle_other(llm_text):
-#                         """Called when 'Other' (Z) is selected in multiple choice. Uses qdata to generate a follow-up LLM query."""
-
-#                         other_prompt = QUERIES[qid]["follow_up_prompt"]
-
-#                         other_response = ans_gen.generate(
-#                             query=other_prompt,
-#                             chunks=retrieved_chunks,  # same as original
-#                             return_logprobs=True,
-#                            # system_prompt=qdata["system_prompt"],
-#                         )
-#                         return other_response["text"]
-
-#                     eval_result = evaluate_answer(
-#                         get_llm_text(llm_output["text"]),
-#                         question_type="multiple_choice",
-#                         doc_name=doc_name,
-#                         query_id=qid,
-#                         #answer_file="human_codes_test.xlsx",
-#                         TRUE_ANSWERS,
-#                         QUERIES,
-#                         #choices_file="query_choice_mapping.json",
-#                         other_callback=handle_other,
-#                     )
-
-#                     result = {"doc_id": doc_id, "query_id": qid, **eval_result}
-#                     cache[trial_key] = result
-
-#                 llm_choices.append(result)
-#                 doc_results.append(result)
-#                 all_results.append(result)
-
-#             # ---------------- Save per-document file ----------------
-#             param_hash = hashlib.md5(
-#                 json.dumps(trial_choices, sort_keys=True).encode()
-#             ).hexdigest()
-#             doc_data = {
-#                 "doc_id": doc_id,
-#                 "doc_name": doc_name,
-#                 "parameters_hash": param_hash,
-#                 "results": doc_results,
-#             }
-#             with open(doc_file, "w", encoding="utf-8") as f:
-#                 json.dump(doc_data, f, indent=2, ensure_ascii=False)
-#             log(f"  Saved {len(doc_results)} results to {doc_file.name}")
-
-#             doc_avg = np.mean([r["accuracy"] for r in doc_results])
-#             doc_aggregates[f"doc_{doc_id}"] = {
-#                 "average_accuracy": doc_avg,
-#                 "doc_name": doc_name,
-#             }
-
-#         # ---------------- Aggregate all results ----------------
-#         for qid in QUERIES.keys():
-#             query_scores = [r["accuracy"] for r in all_results if r["query_id"] == qid]
-#             query_aggregates[qid] = {"average_accuracy": np.mean(query_scores)}
-
-#         overall_avg = np.mean([r["accuracy"] for r in all_results])
-#         log(f"[Trial {trial.number}] Finished. Overall acc={overall_avg:.3f}")
-
-#         # ---------------- Trial summary ----------------
-#         summary_file = trial_folder / "trial_summary.json"
-#         with open(summary_file, "w", encoding="utf-8") as f:
-#             json.dump(
-#                 {
-#                     "timestamp": datetime.now().isoformat(),
-#                     "trial_number": trial.number,
-#                     "parameters": trial_choices,
-#                     "overall_average_accuracy": overall_avg,
-#                     "document_aggregates": doc_aggregates,
-#                     "query_aggregates": query_aggregates,
-#                 },
-#                 f,
-#                 indent=2,
-#                 ensure_ascii=False,
-#             )
-#         log(f"Wrote trial summary: {summary_file.name}")
-
-#         save_cache(cache)
-#         return float(overall_avg)
-
-#     except Exception as e:
-#         log(f"Trial failed with choices: {trial_choices}")
-#         log(f"Error: {e}")
-#         raise
+        print("\n" + "=" * 60)
+        print(f"Best trial #{study.best_trial.number}  acc={study.best_value:.2%}")
+        print(f"Params: {study.best_trial.params}")
+        print(f"Completed {len(study.trials)} trials")
+        print("=" * 60)

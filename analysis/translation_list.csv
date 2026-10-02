@@ -1,0 +1,343 @@
+item,variable,gold_value,maps_to,option_text
+0.7.1,codelang,AnswerTree,Y,Other
+0.7.1,codelang,BayesiaLab,Y,Other
+0.7.1,codelang,C++,Y,Other
+0.7.1,codelang,Google AutoML,Y,Other
+0.7.1,codelang,JAD Bio,Y,Other
+0.7.1,codelang,JASP,Y,Other
+0.7.1,codelang,JMP,Y,Other
+0.7.1,codelang,Knime,Y,Other
+0.7.1,codelang,Matlab,D,Matlab
+0.7.1,codelang,Orange,Y,Other
+0.7.1,codelang,Python,B,Python
+0.7.1,codelang,R,A,R
+0.7.1,codelang,RapidMiner,Y,Other
+0.7.1,codelang,SAS,G,SAS
+0.7.1,codelang,SPSS,F,SPSS
+0.7.1,codelang,Stata,E,Stata
+0.7.1,codelang,Statistica,Y,Other
+0.7.1,codelang,WEKA,Y,Other
+1.4,country,Argentina,Y,Other
+1.4,country,Australia,E,Australia
+1.4,country,Austria,Y,Other
+1.4,country,Bangladesh,Y,Other
+1.4,country,Belgium,Y,Other
+1.4,country,Brazil,K,Brazil
+1.4,country,Burundi,Y,Other
+1.4,country,Canada,F,Canada
+1.4,country,Chile,Y,Other
+1.4,country,China,G,China
+1.4,country,Colombia,Y,Other
+1.4,country,Cross-cultural (specific countries not listed),A,Cross-cultural (specific countries not listed)
+1.4,country,Cuba,Y,Other
+1.4,country,Czech Republic,Y,Other
+1.4,country,Denmark,Y,Other
+1.4,country,Finland,Y,Other
+1.4,country,France,I,France
+1.4,country,Germany,D,Germany
+1.4,country,Greece,Y,Other
+1.4,country,Hungary,Y,Other
+1.4,country,India,Y,Other
+1.4,country,Indonesia,Y,Other
+1.4,country,Iran,Y,Other
+1.4,country,Ireland,Y,Other
+1.4,country,Israel,R,Israel
+1.4,country,Italy,J,Italy
+1.4,country,Japan,M,Japan
+1.4,country,Mexico,Y,Other
+1.4,country,Netherlands,H,Netherlands
+1.4,country,New Zealand,Y,Other
+1.4,country,Norway,S,Norway
+1.4,country,Pakistan,Y,Other
+1.4,country,Philippines,Y,Other
+1.4,country,Poland,Y,Other
+1.4,country,Portugal,Y,Other
+1.4,country,Saudi Arabia,Y,Other
+1.4,country,Singapore,Y,Other
+1.4,country,Slovenia,Y,Other
+1.4,country,South Korea,O,South Korea
+1.4,country,Spain,L,Spain
+1.4,country,Sweden,P,Sweden
+1.4,country,Switzerland,Q,Switzerland
+1.4,country,Taiwan,Y,Other
+1.4,country,Thailand,Y,Other
+1.4,country,Turkey,N,Turkey
+1.4,country,UK,C,UK
+1.4,country,USA,B,USA
+1.4,country,Uganda,Y,Other
+1.5,predtype,Behavioral observation data,A,Behavioral observation data
+1.5,predtype,Biophysical measures,E,Biophysical measures
+1.5,predtype,Contextual / aggregate data,H,Contextual / aggregate data
+1.5,predtype,Demographic / biographical data,G,Demographic / biographical data
+1.5,predtype,Digital trace data,C,Digital trace data
+1.5,predtype,Higher-dimensional data from text / image / audio,D,Higher-dimensional data from text / image / audio
+1.5,predtype,Performance data,B,Performance data
+1.5,predtype,Rating / judgement data,F,Rating / judgement data
+1.6,outtype,Behavioral observation data,A,Behavioral observation data
+1.6,outtype,Biophysical measures,E,Biophysical measures
+1.6,outtype,Contextual / aggregate data,H,Contextual / aggregate data
+1.6,outtype,Demographic / biographical data,G,Demographic / biographical data
+1.6,outtype,Digital trace data,C,Digital trace data
+1.6,outtype,Higher-dimensional data from text / image / audio,D,Higher-dimensional data from text / image / audio
+1.6,outtype,Performance data,B,Performance data
+1.6,outtype,Rating / judgement data,F,Rating / judgement data
+2.3,enrich,Aggregating items to scales,A,Aggregating items to scales
+2.3,enrich,Calculation of indices,C,Calculation of indices
+2.3,enrich,Calculations of indices,C,Calculation of indices
+2.3,enrich,Clustering,B,Clustering (grouping raw data to features)
+2.3,enrich,Computing latent trait scores,E,Computing latent trait scores
+2.3,enrich,Enrichment via external data sources,F,Enrichment via external data sources
+2.3,enrich,Extracting features from other high-dimensional data,G,Extracting features from text / image / audio data
+2.3,enrich,Extracting features from text / image / audio data,G,Extracting features from text / image / audio data
+2.3,enrich,Model-based feature creation,Y,Other
+2.3,enrich,Pre-specifying relations between predictors,D,Pre-specifying relations between predictors
+2.3,enrich,Sliding-window feature extraction,Y,Other
+2.4,engineer,Categorization,F,Categorization
+2.4,engineer,Centering,B,Centering
+2.4,engineer,Dichotomization,Y,Other
+2.4,engineer,Dimensionality reduction,E,"Dimensionality reduction (if reported, note specific method in a comment)"
+2.4,engineer,Fourier transformation,Y,Other
+2.4,engineer,L2 normalization,Y,Other
+2.4,engineer,Logarithmic transformation,D,Logarithmic transformation
+2.4,engineer,Manually removing implausible values,Y,Other
+2.4,engineer,Min-max scaling,C,Min-max scaling
+2.4,engineer,Outlier masking + imputation,H,Outlier masking + imputation
+2.4,engineer,Percentile normalization,Y,Other
+2.4,engineer,Quantile transformation,Y,Other
+2.4,engineer,Square-root transformation,Y,Other
+2.4,engineer,Standardization (z-scores),A,Standardization (z-scores)
+2.4,engineer,T-score transformation,Y,Other
+2.4,engineer,Translating text data,Y,Other
+2.4,engineer,Winsorization of outliers,G,Winsorization of outliers
+2.4,engineer,Winzorization of outliers,Y,Other
+2.4,engineer,Yeo-Johnson transformation,Y,Other
+2.4,engineer,domain-specific preprocessing on other high-dimensional data,Y,Other
+2.4,engineer,preprocessing text / image / audio data,Y,Other
+2.4,engineer,residualization,Y,Other
+2.4,engineer,temporal aggregation,Y,Other
+2.4,engineer,unspecified normalization,Y,Other
+2.5,select,Empirically; filter methods,B,"Empirically, filter methods"
+2.5,select,Empirically; wrapper methods,C,"Empirically, wrapper methods"
+2.5,select,Theoretically derived,A,Theoretically derived
+3.1,algo,AdaBoost,Y,Other
+3.1,algo,BART,K,Bayesian Additive Regression Trees (BART)
+3.1,algo,BERT,Y,Other
+3.1,algo,Bayesian Linear Regression,D,Bayesian Linear Regression
+3.1,algo,Bayesian Network,Y,Other
+3.1,algo,CART,E,Classification and Regression Trees (CART)
+3.1,algo,CatBoost,J,CatBoost
+3.1,algo,Causal Machine Learning,Y,Other
+3.1,algo,Competetive Neural Networks (NNs),Y,Other
+3.1,algo,Composite Gaussian Process,Y,Other
+3.1,algo,Convolutional Neural Network (CNN),Y,Other
+3.1,algo,Customized model ensembles,U,Customized model ensembles
+3.1,algo,Elastic Net Regression,C,Elastic Net Regression
+3.1,algo,Feedforward Neural Network (FNN),Y,Other
+3.1,algo,GAM,Q,Generalized Additive Models (GAM)
+3.1,algo,GBM,G,Gradient Boosting Machine (GBM)
+3.1,algo,LASSO Regression,B,LASSO Regression
+3.1,algo,Learning Vector Quantisation (LVQ),Y,Other
+3.1,algo,LightGBM,I,LightGBM
+3.1,algo,Linear SVM,L,Linear SVM
+3.1,algo,MARS,R,Multivariate Adaptive Regression Splines (MARS)
+3.1,algo,Naive Bayes,S,Naive Bayes
+3.1,algo,Partial Least Squares,Y,Other
+3.1,algo,Polynomial SVM,N,Polynomial SVM
+3.1,algo,Radial basis function SVM,M,Radial basis function SVM
+3.1,algo,Random Forest,F,Random Forest
+3.1,algo,Recurrent Neural Network (RNN),Y,Other
+3.1,algo,Regression with an unspecified penalty,Y,Other
+3.1,algo,Regression with other type of penalty,Y,Other
+3.1,algo,Relevance Vector Machine (RVM),Y,Other
+3.1,algo,Ridge Regression,A,Ridge Regression
+3.1,algo,Rule-Based Models,T,"Rule-Based Models (e.g., RuleFit)"
+3.1,algo,SVM with kernel type as tuning parameter,Y,Other
+3.1,algo,Sigmoid SVM,O,Sigmoid SVM
+3.1,algo,Stochastic Gradient Descent (not further specified),Y,Other
+3.1,algo,Transformer / attention-based Neural Network,Y,Other
+3.1,algo,XGBoost,H,XGBoost
+3.1,algo,cosine SVM,Y,Other
+3.1,algo,kNN,P,K nearest neighbors (kNN)
+3.1,algo,regression with other type of penalty,Y,Other
+3.1,algo,regularized Linear Discriminant Analysis (LDA),Y,Other
+3.1,algo,unspecified Neural Network (NN),Y,Other
+3.1,algo,unspecified SVM,Y,Other
+3.1,algo,unspecified boosting algorithm,Y,Other
+3.2,tunevalues,Fixed set of hyperparameter values,B,Fixed set of hyperparameter values
+3.2,tunevalues,Hyperparameter values not mentioned,A,Hyperparameter values not mentioned
+3.2,tunevalues,Hyperparameter values not specified; stated that default values were used,C,"Hyperparameter values not specified, stated that default values were used"
+3.2,tunevalues,Specific set of hyperparameters values,D,Specific set of hyperparameters values (details in a comment)
+3.2.1,tunemethod,Grid search,C,Grid search
+3.2.1,tunemethod,Model-based optimization,D,Model-based optimization
+3.2.1,tunemethod,Optimization heuristics,E,Optimization heuristics
+3.2.1,tunemethod,Random search,B,Random search
+3.2.1,tunemethod,Randomized grid search,Y,Other
+3.2.1,tunemethod,Tuning method not specified; stated that default method was used,A,"Tuning method not specified, stated that default method was used"
+3.3,resampling,Blocked CV,J,Blocked CV
+3.3,resampling,Bootstrap,F,Bootstrap
+3.3,resampling,LGOCV,E,Leave-group-out-cross-validation (LGOCV)
+3.3,resampling,LOOCV,D,Leave-one-out-cross-validation (LOOCV)
+3.3,resampling,Monte Carlo CV,Y,Other
+3.3,resampling,Optimism correction,G,Optimism-corrected bootstrap
+3.3,resampling,Optimism-corrected bootstrap,G,Optimism-corrected bootstrap
+3.3,resampling,Repeated k fold CV,C,Repeated k fold CV
+3.3,resampling,Resampling method not specified; stated that default  method was used,A,"Resampling method not specified, stated that default method was used"
+3.3,resampling,Rolling window CV,H,Rolling window CV
+3.3,resampling,Single k fold,B,Single k fold CV
+3.3,resampling,Single k fold CV,B,Single k fold CV
+3.3,resampling,repeated holdout,Y,Other
+3.3,resampling,simple holdout,Y,Other
+3.3,resampling,unspecified CV,Y,Other
+3.4.1,nesthand,Cluster-effect check / between-cluster heterogeneity assessment,Y,Other
+3.4.1,nesthand,Cluster-specific modeling (by level-2 units),Y,Other
+3.4.1,nesthand,Grouped / nested CV,B,Grouped / nested CV
+3.4.1,nesthand,Inclusion of level-2 unit as a predictor variable,Y,Other
+3.4.1,nesthand,Mixed-effects ML algorithms,D,Mixed-effects ML algorithms
+3.4.1,nesthand,Model selection accounting for nested data,Y,Other
+3.4.1,nesthand,Rationale why not necessary,A,Rationale why not necessary
+3.4.1,nesthand,Sensitivity analysis addressing nested data structure,Y,Other
+3.4.1,nesthand,Time series CV,C,Time series CV
+3.5,imbalhand,Adapting decision rules,C,Adapting decision rules
+3.5,imbalhand,Up / down / SMOTE / otherwise sampling after split,B,Up / down / SMOTE / otherwise sampling after split
+3.5,imbalhand,Up / down / SMOTE / otherwise sampling on full data,A,Up / down / SMOTE / otherwise sampling on full data
+3.5,imbalhand,balanced class weights,(none),
+3.5.1,sampling,Class weight adjustment during training,Y,Other
+3.5.1,sampling,Class-prior normalization of predicted probabilities,Y,Other
+3.5.1,sampling,Cost-sensitive learning,Y,Other
+3.5.1,sampling,Down,B,Down
+3.5.1,sampling,Prevalnce-based weighted sampling,Y,Other
+3.5.1,sampling,ROSE,Y,Other
+3.5.1,sampling,SMOGN,Y,Other
+3.5.1,sampling,SMOTE,C,SMOTE
+3.5.1,sampling,SMOTE-Tomek,Y,Other
+3.5.1,sampling,Up,A,Up
+4.1,compare,Between a naïve guessing model and any ML model,A,Between a naïve guessing model and any ML model
+4.1,compare,Between a simple regularized linear / logistic and a complex ML model,D,Between a simple regularized linear / logistic and a complex ML model
+4.1,compare,Between an unregularized linear / logistic regression model and simple regularized linear / logistic or complex ML models,B,Between an unregularized linear / logistic regression model and simple regularized linear / logistic or complex ML models
+4.1,compare,Between different complex ML models,E,Between different complex ML models
+4.1,compare,Between different simple regularized linear / logistic ML models,C,Between different simple regularized linear / logistic ML models
+4.2,valid,External; independent unseen holdout data; different population,F,"External, independent unseen holdout data, different population"
+4.2,valid,External; independent unseen holdout data; same population,E,"External, independent unseen holdout data, same population"
+4.2,valid,Internal; no split,B,"Internal, no split"
+4.2,valid,Internal; repeated splits,D,"Internal, repeated splits (i.e., some form of nested resampling)"
+4.2,valid,Internal; single split,C,"Internal, single split"
+4.2,valid,No validation,A,No validation
+4.3,perfmetric,ACC,I,Accuracy (ACC)
+4.3,perfmetric,AIC,Y,Other
+4.3,perfmetric,AUC,K,Area Under the ROC Curve (AUC)
+4.3,perfmetric,AUPRC,L,Area Under the Precision-Recall Curve (AUPRC)
+4.3,perfmetric,BACC,J,Balanced Accuracy (BACC)
+4.3,perfmetric,Brier Score,X,Brier Score
+4.3,perfmetric,C-Index,Y,Other
+4.3,perfmetric,Calibration intercept,Y,Other
+4.3,perfmetric,Calibration slope,Y,Other
+4.3,perfmetric,Causal model performance metrics,Y,Other
+4.3,perfmetric,Cohen's Kappa,Y,Other
+4.3,perfmetric,Concentration of risk (CR),Y,Other
+4.3,perfmetric,Customized performance metric,Y,Other
+4.3,perfmetric,Diagnostic odds ratio (DOR),Y,Other
+4.3,perfmetric,Discrimination slope,Y,Other
+4.3,perfmetric,Emax,Y,Other
+4.3,perfmetric,Expected / Observed ratio,Y,Other
+4.3,perfmetric,F-beta,Y,Other
+4.3,perfmetric,F1,V,F1 Score
+4.3,perfmetric,F2,Y,Other
+4.3,perfmetric,FDR,T,False Discovery Rate (FDR)
+4.3,perfmetric,FNR,P,False Negative Rate (FNR)
+4.3,perfmetric,FPR,O,False Positive Rate (FPR)
+4.3,perfmetric,G-Mean,Y,Other
+4.3,perfmetric,Individualized treatment rule (ITR) evaluation metrics,Y,Other
+4.3,perfmetric,Integrated Calibration Index,Y,Other
+4.3,perfmetric,LR+,Y,Other
+4.3,perfmetric,LR-,Y,Other
+4.3,perfmetric,Lift,Y,Other
+4.3,perfmetric,Likelihood to be misdiagnosed (LMD),Y,Other
+4.3,perfmetric,Log Loss,W,Log Loss / Cross-Entropy
+4.3,perfmetric,MAE,C,Mean Absolute Error (MAE)
+4.3,perfmetric,MAPE,F,Mean Absolute Percentage Error (MAPE)
+4.3,perfmetric,MCC,U,Matthews Correlation Coefficient (MCC)
+4.3,perfmetric,MSE,A,Mean Squared Error (MSE)
+4.3,perfmetric,Median Absolute Calibration Error,Y,Other
+4.3,perfmetric,NPV,R,Negative Predictive Value (NPV)
+4.3,perfmetric,Net benefit,Y,Other
+4.3,perfmetric,No information rate (NIR),Y,Other
+4.3,perfmetric,Number needed to diagnose (NND),Y,Other
+4.3,perfmetric,Number needed to misdiagnose (NNM),Y,Other
+4.3,perfmetric,Number needed to predict (NNP),Y,Other
+4.3,perfmetric,OOB,Y,Other
+4.3,perfmetric,PPV,Q,Positive Predictive Value (PPV) / Precision
+4.3,perfmetric,Prediction error rate (1-ACC),Y,Other
+4.3,perfmetric,Predictive summary index (PSI),Y,Other
+4.3,perfmetric,RMSE,B,Root Mean Squared Error (RMSE)
+4.3,perfmetric,Risk concentration sensitivity,Y,Other
+4.3,perfmetric,R²,D,R-squared
+4.3,perfmetric,SEN,M,Sensitivity (SEN) / Recall
+4.3,perfmetric,SPE,N,Specificity (SPE)
+4.3,perfmetric,Youden's index,Y,Other
+4.3,perfmetric,deviance,Y,Other
+4.3,perfmetric,r,E,Pearson correlation coefficient (r) between predicted and observed outcome
+4.7,sig,Comparing model & human rating agreement,Y,For other reported results
+4.7,sig,For model comparisons,A,For model comparisons
+4.7,sig,For other reported results:,Y,For other reported results
+4.7,sig,For variable importance measures,B,For variable importance measures
+4.7,sig,correlation coefficients,Y,For other reported results
+4.7,sig,distribution assumptions,Y,For other reported results
+4.7,sig,for ML related model splits,Y,For other reported results
+4.7,sig,group comparisons,Y,For other reported results
+4.7,sig,model calibration,Y,For other reported results
+5.1,iml,(Standardized) Model Coefficients,A,(Standardized) Model Coefficients
+5.1,iml,ALE,K,Accumulated Local Effects (ALE)
+5.1,iml,CancelOut relative importance,Y,Other
+5.1,iml,Counterfactual Explanations,G,Counterfactual Explanations
+5.1,iml,Embedding-based association with model-predicted outcome,Y,Other
+5.1,iml,Ensemble/stacked variable importance,Y,Other
+5.1,iml,Gini Importance,C,Gini Importance (Mean Decrease in Impurity for tree models)
+5.1,iml,H-Statistic,D,H-Statistic (for interaction strength)
+5.1,iml,ICE,J,Individual Conditional Expectation (ICE)
+5.1,iml,LIME,F,LIME (Local Interpretable Model-agnostic Explanations)
+5.1,iml,Mutual Information / Information-Theoretic Importance,Y,Other
+5.1,iml,Nomogram,Y,Other
+5.1,iml,PDP,I,Partial Dependence Plots (PDP)
+5.1,iml,Permutation Importance,B,Permutation Importance (Mean Decrease in Accuracy)
+5.1,iml,SHAP Values,E,SHAP Values
+5.1,iml,Selection-frequency / inclusion proportion importance,Y,Other
+5.1,iml,Stochastic gate,Y,Other
+5.1,iml,Surrogate decision tree,Y,Other
+5.1,iml,Unspecified variable importance measures,L,Unspecified variable importance measures
+5.1,iml,class-contrastive heatmap,Y,Other
+5.1,iml,parameter's absolute t test statistic values,Y,Other
+5.1,iml,prototype-based distance metric,Y,Other
+5.1,iml,visualization of a decision tree,Y,Other
+5.2,limit,Caution in interpretation of IML techniques,H,Caution in interpretation of interpretable ML techniques
+5.2,limit,Class imbalance,Y,Other
+5.2,limit,High computational demands of ML,I,High computational demands of ML
+5.2,limit,Incomplete data,D,Incomplete data
+5.2,limit,Lack of algorithm comparisons,Y,Other
+5.2,limit,Lack of calibration analysis,Y,Other
+5.2,limit,Lack of external validation data,Y,Other
+5.2,limit,Lack of longitudinal data,Y,Other
+5.2,limit,Lack of model interpretability,Y,Other
+5.2,limit,Lack of representativeness of the data,A,Lack of representativeness of the data
+5.2,limit,Limitations regarding algorithm choice,Y,Other
+5.2,limit,Limited algorithm comparison,Y,Other
+5.2,limit,Limited model interpretability,Y,Other
+5.2,limit,Limited outcome validity,Y,Other
+5.2,limit,Limited predictor set,Y,Other
+5.2,limit,Limited predictor validity,Y,Other
+5.2,limit,Limited study design,Y,Other
+5.2,limit,Low variance in predictor data,Y,Other
+5.2,limit,Model fairness / alignment,J,Model fairness / alignment
+5.2,limit,Mono-method data types,G,Mono-method data types (e.g. exclusively relying on rating / judgement data)
+5.2,limit,Multicollinearity concerns,Y,Other
+5.2,limit,Nested data structure,Y,Other
+5.2,limit,Overfitting concerns,Y,Other
+5.2,limit,Overlap between outcome and features,Y,Other
+5.2,limit,Poor model performance,Y,Other
+5.2,limit,Questionable methodological step along ML pipeline,Y,Other
+5.2,limit,Questionable practical applicability,Y,Other
+5.2,limit,Sample size,E,Sample size
+5.2,limit,Software dependency,Y,Other
+5.2,limit,Uncontrolled confounding,Y,Other
+5.2,limit,Unfavorable n/p ratio,F,Unfavorable n/p ratio
+5.2,limit,Unreliably measured indicators,B,Unreliably measured indicators
+5.2,limit,Unreliably measured outcome,C,Unreliably measured outcome

@@ -14,7 +14,10 @@ class PyMuPDFTesseractParser(BaseParser):
         text = []
         with fitz.open(file_path) as doc:
             for page in doc:
-                extracted = page.get_text("markdown")
+                try:
+                    extracted = page.get_text("markdown")
+                except (AssertionError, ValueError):
+                    extracted = page.get_text("text")
                 if len(extracted.strip()) < 50:  # fallback to OCR
                     pix = page.get_pixmap()
                     img = Image.open(io.BytesIO(pix.tobytes("png")))

@@ -1,0 +1,9 @@
+[
+  {
+    "mode": "full",
+    "llm_model": "gemini-3.1-pro-preview",
+    "parser": "PyMuPDFTesseractParser",
+    "batched_prompt_type": "base_prompt",
+    "vlm": false
+  }
+]

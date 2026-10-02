@@ -27,6 +27,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from registry import PARSERS as REGISTERED_PARSERS  # noqa: E402
+from text_utils import normalize_text  # noqa: E402
 
 
 def _build_parser(registry_name: str):
@@ -57,9 +58,6 @@ TEI_NS = {"tei": "http://www.tei-c.org/ns/1.0"}  # TEI XML namespace
 
 # ------------- Helper Functions -----------------
 
-
-def normalize_text(text: str) -> str:
-    return re.sub(r"\s+", " ", text.strip().lower())
 
 
 def load_expected_structure_json(json_path: str | Path) -> dict:

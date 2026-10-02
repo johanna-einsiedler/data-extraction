@@ -13,7 +13,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 				<availability status="unknown"><licence/></availability>
 			</publicationStmt>
 			<sourceDesc>
-				<biblStruct>
+				<biblStruct status="extracted">
 					<analytic>
 						<author role="corresp">
 							<persName><forename type="first">Alice</forename><surname>Smith</surname></persName>
@@ -62,8 +62,10 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 		</fileDesc>
 		<encodingDesc>
 			<appInfo>
-				<application version="0.8.2-SNAPSHOT" ident="GROBID" when="2025-10-28T22:29+0000">
+				<application version="0.9.1" ident="GROBID" when="2026-09-23T02:43+0000">
 					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<label type="revision">0.9.1</label>
+					<label type="parameters">startPage=-1, endPage=-1, consolidateCitations=0, consolidateHeader=0, consolidateFunders=0, includeRawAffiliations=false, includeRawCitations=false, includeRawCopyrights=false, generateTeiIds=false, generateTeiCoordinates=[], flavor=null, debugLabelingCollector=disabled</label>
 					<ref target="https://github.com/kermitt2/grobid"/>
 				</application>
 			</appInfo>
@@ -80,8 +82,7 @@ xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.co
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Related Work</head><p>We discuss related approaches and existing literature.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Methodology</head><p>We explain our synthetic paper generation method step by step.</p></div>
 <div xmlns="http://www.tei-c.org/ns/1.0"><head>Results</head><p>We evaluate the outputs and compare formats.</p></div>
-<div xmlns="http://www.tei-c.org/ns/1.0"><head>Conclusion</head><p>We summarize our contributions and future directions. </p></div><figure xmlns="http://www.tei-c.org/ns/1.0" type="table" xml:id="tab_0"><head>Table : Example results table</head><label>:</label><figDesc></figDesc><table><row><cell>Method</cell><cell cols="2">Accuracy F1 Score</cell></row><row><cell>Baseline</cell><cell>85%</cell><cell>0.82</cell></row><row><cell>Our Method</cell><cell>92%</cell><cell>0.91</cell></row></table></figure>
-		</body>
+<div xmlns="http://www.tei-c.org/ns/1.0"><head>Conclusion</head><p>We summarize our contributions and future directions.</p><p>Table: Example results table Method Accuracy F1 Score Baseline 85% 0.82 Our Method 92% 0.91</p></div>		</body>
 		<back>
 			<div type="references">
 

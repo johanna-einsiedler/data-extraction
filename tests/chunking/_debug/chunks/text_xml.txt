@@ -2,23 +2,23 @@
 Section 1 text.
 
 --- CHUNK 2 ---
-text.Section 2 text longer than chu
+text. Section 2 text longer than chu
 
 --- CHUNK 3 ---
-n chun chunk size, so it should be
+n chu n chunk size, so it should be
 
 --- CHUNK 4 ---
-ld bed be split accordingly.
+ld be d be split accordingly.
 
 --- CHUNK 5 ---
-ngly.Section 1 text.
+ngly. Section 1 text.
 
 --- CHUNK 6 ---
-text.Section 2 text longer than chu
+text. Section 2 text longer than chu
 
 --- CHUNK 7 ---
-n chun chunk size, so it should be
+n chu n chunk size, so it should be
 
 --- CHUNK 8 ---
-ld bed be split accordingly.
+ld be d be split accordingly.
 

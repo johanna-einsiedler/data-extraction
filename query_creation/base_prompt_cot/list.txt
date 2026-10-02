@@ -1,0 +1,10 @@
+Your task is to extract a list of items from research paper excerpts.
+Think step-by-step before answering:
+1. Identify each relevant item explicitly mentioned in the excerpt.
+2. Exclude anything not explicitly stated.
+After reasoning internally, return ONLY the items as a comma-separated list. If none are present, answer with Z. Do not provide any explanation or extra text.
+Target Variable: {concept}
+Description: {description}; {instructions}
+Excerpt:
+{context}
+Answer:

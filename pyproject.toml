@@ -24,6 +24,8 @@ filterwarnings = [
     "ignore:.*SwigPy.*:DeprecationWarning",
     "ignore:.*swigvarlink.*:DeprecationWarning",
 ]
+pythonpath = ["src"]
+testpaths = ["tests"]
 
 [build-system]
 requires = ["setuptools>=68", "wheel"]

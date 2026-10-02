@@ -10,6 +10,8 @@ from .base_retriever import BaseRetriever, VectorStoreProtocol
 class CrossEncoderRetriever(BaseRetriever):
     supports_rerank = True
     supports_top_m = True
+    needs_raw_query_text = True
+
     def __init__(
         self,
         model_name: str = "cross-encoder/ms-marco-MiniLM-L-6-v2",
@@ -68,4 +70,4 @@ class CrossEncoderRetriever(BaseRetriever):
         sorted_chunks = sorted(
             zip(chunk_texts, scores), key=lambda x: x[1], reverse=True
         )
-        return sorted_chunks[: self.k]
+        return [(text, float(score)) for text, score in sorted_chunks[: self.k]]

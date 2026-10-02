@@ -1,5 +1,6 @@
 import base64
 import io
+import os
 from typing import Optional
 
 from together import Together
@@ -22,7 +23,12 @@ class QwenParser(BaseParser):
     def __init__(
         self,
         api_key: str,
-        model_name: str = "Qwen/Qwen2.5-VL-72B-Instruct",
+        # Prereg specified Qwen2.5-VL-72B-Instruct, but Together retired ALL Qwen-VL
+        # models from the serverless tier (400: "non-serverless model" — they need
+        # paid dedicated endpoints). MiniMax-M3 is a serverless multimodal model
+        # (in our roster, passed the VLM entry test) that parses pages correctly.
+        # Override via QWEN_VL_MODEL.
+        model_name: str = os.getenv("QWEN_VL_MODEL", "MiniMaxAI/MiniMax-M3"),
         max_output_tokens: Optional[int] = 2048,
     ):
         if not api_key:
@@ -52,7 +58,7 @@ class QwenParser(BaseParser):
                     ],
                 }
             ],
-            max_output_tokens=self.max_output_tokens,
+            max_tokens=self.max_output_tokens,
         )
         message = response.choices[0].message
         return message.content if isinstance(message.content, str) else str(message.content)
