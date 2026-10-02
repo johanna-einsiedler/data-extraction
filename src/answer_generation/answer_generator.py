@@ -289,13 +289,19 @@ class AnswerGenerator:
                     model=self.model,
                     messages=messages,
                 )
-                # Deterministic decoding for reproducibility. temperature=0 is
-                # sent to every model. Until 2026-10-02 the OpenAI reasoning
-                # family (gpt-5.x / o-series) was skipped on the assumption that
-                # it rejects a non-default temperature; a live probe showed
-                # gpt-5.2 accepts it (and repeats exactly with it, not without),
-                # so the Phase-1/2 gpt-5.2 search trials ran at the provider
-                # default -- declared in the Phase-2 deviations addendum.
+                # Deterministic decoding for reproducibility: temperature=0 for
+                # every model. OpenAI reasoning family (gpt-5.x): the API accepts
+                # a non-default temperature ONLY when reasoning is disabled
+                # (reasoning_effort="none", which is gpt-5.2's default); with an
+                # active effort (low/medium/high) temperature=0 is rejected
+                # ("Only the default (1) value is supported") -- probed
+                # 2026-10-03. This client never sends reasoning_effort, so
+                # gpt-5.2 runs WITHOUT reasoning and temperature=0 is valid.
+                # If reasoning_effort is ever added for this family, temperature
+                # must be omitted for non-"none" efforts. Until 2026-10-02 the
+                # family was skipped here, so the Phase-1 gpt-5.2 trials ran
+                # without reasoning at the default temperature (declared in the
+                # Phase-2 deviations addendum).
                 oai_kwargs["temperature"] = 0
                 if max_tokens is not None:
                     oai_kwargs["max_tokens"] = int(max_tokens)
