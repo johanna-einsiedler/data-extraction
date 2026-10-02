@@ -1,0 +1,405 @@
+{
+  "_comment": "Preregistered expectations for scripts/check_study_coherence.py (2026-10-02). Partial lists for natives only; seed copies inherit from their source.",
+  "study_name": "full_item_accuracy_tuning",
+  "tuning_papers": 35,
+  "judge": "microsoft/Phi-3-mini-4k-instruct",
+  "judge_before_aug_write": "openai/gpt-oss-120b",
+  "unified_rescore_spec": "prereg2-metrics-2026-09-28",
+  "phase1_db": {
+    "path": "optuna_study.db",
+    "md5": "03b5ee49f9b7395e0271a71549124b16",
+    "states": {
+      "COMPLETE": 96,
+      "FAIL": 405,
+      "PRUNED": 5,
+      "WAITING": 3
+    },
+    "known_folder_mismatch": {
+      "389": [
+        0.6837209302325581,
+        0.6850498338870432
+      ],
+      "398": [
+        0.6385382059800665,
+        0.64
+      ]
+    }
+  },
+  "aug_batch": {
+    "p1_trials": [
+      382,
+      383,
+      384,
+      385,
+      386,
+      387,
+      388,
+      389,
+      390,
+      391,
+      392,
+      393,
+      394,
+      395,
+      396,
+      397,
+      398
+    ],
+    "parquet_dir": "analysis/cache/mode_by_type/aug_phi3/resc",
+    "sidecar": "analysis/tables/hpo/aug_batch_phi3_rescore.csv",
+    "copies": {
+      "phase2": {
+        "24": 382,
+        "25": 383,
+        "26": 384,
+        "27": 385,
+        "28": 386,
+        "29": 387,
+        "30": 388
+      },
+      "open_tpe": {
+        "20": 382,
+        "21": 383,
+        "22": 384,
+        "23": 385,
+        "24": 386,
+        "25": 387,
+        "26": 388
+      },
+      "consumer_tpe": {
+        "8": 383,
+        "9": 384
+      }
+    }
+  },
+  "dbs": {
+    "phase2": {
+      "path": "stage2_analyses/phase2_study/phase2.db",
+      "n_trials": 150,
+      "n_complete": 119,
+      "seed_attr": "phase1_trial",
+      "n_seeds": 61,
+      "best": {
+        "number": 131,
+        "value": 0.8199335548172757,
+        "hash10": "5f762d817b",
+        "md5": "5f762d817b2d1acc07b13dfcd4cc684d"
+      },
+      "patience": {
+        "patience": 15,
+        "from_number": 0,
+        "expected_streak": 16,
+        "overshoot": [
+          149
+        ]
+      },
+      "partial": {
+        "63": [
+          "376"
+        ],
+        "87": [
+          "079",
+          "276",
+          "447",
+          "476",
+          "482"
+        ],
+        "97": [
+          "460"
+        ],
+        "103": [
+          "385"
+        ],
+        "108": [
+          "111"
+        ],
+        "109": [
+          "346",
+          "376",
+          "449"
+        ],
+        "122": [
+          "150",
+          "182",
+          "191",
+          "266",
+          "274",
+          "293",
+          "338",
+          "376",
+          "423",
+          "449",
+          "450",
+          "451",
+          "460"
+        ],
+        "123": [
+          "190",
+          "371",
+          "385",
+          "460"
+        ]
+      },
+      "aggregated": {
+        "123": "0b4c900e2c"
+      },
+      "repeat_draws": [
+        [
+          15,
+          42,
+          50,
+          60
+        ],
+        [
+          25,
+          26
+        ],
+        [
+          43,
+          51
+        ],
+        [
+          54,
+          56
+        ],
+        [
+          128,
+          131
+        ],
+        [
+          130,
+          137,
+          139,
+          141,
+          142,
+          143
+        ],
+        [
+          132,
+          134
+        ],
+        [
+          133,
+          138
+        ],
+        [
+          145,
+          147,
+          148
+        ],
+        [
+          146,
+          149
+        ]
+      ],
+      "identical_outputs": [
+        [
+          25,
+          26
+        ]
+      ],
+      "reasoning_toggle_ignored": [
+        101,
+        109,
+        113
+      ],
+      "top_set_common_papers": {
+        "reference": 109,
+        "candidates": [
+          131,
+          128,
+          148,
+          124
+        ]
+      }
+    },
+    "open_tpe": {
+      "path": "stage2_analyses/phase2_study/open_tpe.db",
+      "n_trials": 115,
+      "n_complete": 104,
+      "seed_attr": "seeded_from_trial",
+      "n_seeds": 88,
+      "best": {
+        "number": 81,
+        "value": 0.8117732558139535,
+        "hash10": "f2609ec809",
+        "md5": "f2609ec809a3f2ef70d40dbf1226ff3f",
+        "seeded_from_trial": 109
+      },
+      "patience": {
+        "patience": 15,
+        "from_number": 88,
+        "expected_streak": 16,
+        "overshoot": [
+          114
+        ]
+      },
+      "partial": {
+        "89": [
+          "318"
+        ],
+        "90": [
+          "276"
+        ]
+      },
+      "aggregated": {},
+      "repeat_draws": [
+        [
+          12,
+          38,
+          46,
+          52
+        ],
+        [
+          21,
+          22
+        ],
+        [
+          39,
+          47
+        ],
+        [
+          85,
+          86
+        ],
+        [
+          88,
+          90,
+          91,
+          93,
+          94,
+          95,
+          97
+        ],
+        [
+          89,
+          92
+        ],
+        [
+          107,
+          109,
+          113
+        ]
+      ],
+      "identical_outputs": [
+        [
+          21,
+          22
+        ]
+      ],
+      "reasoning_toggle_ignored": [
+        77,
+        81,
+        82
+      ],
+      "top_set_common_papers": {
+        "reference": 81,
+        "candidates": [
+          107,
+          109,
+          94,
+          56,
+          93,
+          91,
+          92,
+          88
+        ]
+      }
+    },
+    "consumer_tpe": {
+      "path": "stage2_analyses/phase2_study/consumer_tpe.db",
+      "n_trials": 91,
+      "n_complete": 73,
+      "seed_attr": "seeded_from_trial",
+      "n_seeds": 34,
+      "best": {
+        "number": 62,
+        "value": 0.7800664451827243,
+        "hash10": "4db0f5c971",
+        "md5": "4db0f5c971b00dd042eb80793f70fb3d"
+      },
+      "patience": {
+        "patience": 15,
+        "from_number": 34,
+        "expected_streak": 18,
+        "overshoot": [
+          85,
+          87,
+          88
+        ],
+        "gate_bug_attr_trial": 90
+      },
+      "partial": {
+        "37": [
+          "385"
+        ],
+        "67": [
+          "258"
+        ],
+        "77": [
+          "006",
+          "169",
+          "451"
+        ],
+        "78": [
+          "449"
+        ]
+      },
+      "aggregated": {},
+      "repeat_draws": [
+        [
+          8,
+          9
+        ],
+        [
+          13,
+          15
+        ],
+        [
+          34,
+          35,
+          36
+        ],
+        [
+          38,
+          85
+        ],
+        [
+          39,
+          40,
+          42,
+          43
+        ],
+        [
+          41,
+          44,
+          45,
+          48,
+          52
+        ],
+        [
+          60,
+          69,
+          87,
+          88
+        ],
+        [
+          62,
+          65,
+          66,
+          71,
+          72,
+          80
+        ]
+      ],
+      "identical_outputs": [
+        [
+          8,
+          9
+        ]
+      ],
+      "reasoning_toggle_ignored": [],
+      "top_set_common_papers": null
+    }
+  }
+}

@@ -1,0 +1,217 @@
+{
+ "results": [
+  {
+   "inv": "I1 states",
+   "ok": true,
+   "detail": "phase2: trials=150 complete=119 running/waiting=[]"
+  },
+  {
+   "inv": "I1 states",
+   "ok": true,
+   "detail": "open_tpe: trials=115 complete=104 running/waiting=[]"
+  },
+  {
+   "inv": "I1 states",
+   "ok": true,
+   "detail": "consumer_tpe: trials=91 complete=73 running/waiting=[]"
+  },
+  {
+   "inv": "I1 states",
+   "ok": true,
+   "detail": "phase1: {'FAIL': 405, 'COMPLETE': 96, 'PRUNED': 5, 'WAITING': 3} md5=03b5ee49f9b7395e0271a71549124b16"
+  },
+  {
+   "inv": "I2 seed_copies_equal_sources",
+   "ok": true,
+   "detail": "phase2: seeds=61/61 bad=[]"
+  },
+  {
+   "inv": "I2 seed_copies_equal_sources",
+   "ok": true,
+   "detail": "open_tpe: seeds=88/88 bad=[]"
+  },
+  {
+   "inv": "I2 seed_copies_equal_sources",
+   "ok": true,
+   "detail": "consumer_tpe: seeds=34/34 bad=[]"
+  },
+  {
+   "inv": "I3 unique_folder_and_hash_attrs",
+   "ok": true,
+   "detail": "phase2: bad=[] (0)"
+  },
+  {
+   "inv": "I3 unique_folder_and_hash_attrs",
+   "ok": true,
+   "detail": "open_tpe: bad=[] (0)"
+  },
+  {
+   "inv": "I3 unique_folder_and_hash_attrs",
+   "ok": true,
+   "detail": "consumer_tpe: bad=[] (0)"
+  },
+  {
+   "inv": "I4 value_vs_folder",
+   "ok": true,
+   "detail": "phase2: bad=[] (0)"
+  },
+  {
+   "inv": "I4 value_vs_folder",
+   "ok": true,
+   "detail": "open_tpe: bad=[] (0)"
+  },
+  {
+   "inv": "I4 value_vs_folder",
+   "ok": true,
+   "detail": "consumer_tpe: bad=[] (0)"
+  },
+  {
+   "inv": "I5 completeness_attrs",
+   "ok": true,
+   "detail": "phase2: bad=[] (0)"
+  },
+  {
+   "inv": "I5 completeness_attrs",
+   "ok": true,
+   "detail": "open_tpe: bad=[] (0)"
+  },
+  {
+   "inv": "I5 completeness_attrs",
+   "ok": true,
+   "detail": "consumer_tpe: bad=[] (0)"
+  },
+  {
+   "inv": "I6 unified_rescore_cells_positive",
+   "ok": true,
+   "detail": "phase2: bad=[]"
+  },
+  {
+   "inv": "I6 unified_rescore_cells_positive",
+   "ok": true,
+   "detail": "open_tpe: bad=[]"
+  },
+  {
+   "inv": "I6 unified_rescore_cells_positive",
+   "ok": true,
+   "detail": "consumer_tpe: bad=[]"
+  },
+  {
+   "inv": "I7 judge_attr",
+   "ok": true,
+   "detail": "phase2: bad=[] (0)"
+  },
+  {
+   "inv": "I7 judge_attr",
+   "ok": true,
+   "detail": "open_tpe: bad=[] (0)"
+  },
+  {
+   "inv": "I7 judge_attr",
+   "ok": true,
+   "detail": "consumer_tpe: bad=[] (0)"
+  },
+  {
+   "inv": "I8 stopping_rule",
+   "ok": true,
+   "detail": "phase2: streak=16 (exp 16) overshoot=[149] (exp [149]) best=0.8199"
+  },
+  {
+   "inv": "I8 stopping_rule",
+   "ok": true,
+   "detail": "open_tpe: streak=16 (exp 16) overshoot=[114] (exp [114]) best=0.8118"
+  },
+  {
+   "inv": "I8 stopping_rule",
+   "ok": true,
+   "detail": "consumer_tpe: streak=18 (exp 18) overshoot=[85, 87, 88] (exp [85, 87, 88]) best=0.7801"
+  },
+  {
+   "inv": "I9 champions_and_hashes",
+   "ok": true,
+   "detail": "phase2: best #131=0.819934 folder=5f762d817b_trial_0131"
+  },
+  {
+   "inv": "I9 champions_and_hashes",
+   "ok": true,
+   "detail": "open_tpe: best #81=0.811773 folder=f2609ec809_trial_0109"
+  },
+  {
+   "inv": "I9 champions_and_hashes",
+   "ok": true,
+   "detail": "consumer_tpe: best #62=0.780066 folder=4db0f5c971_trial_0062"
+  },
+  {
+   "inv": "I10 repeat_draws",
+   "ok": true,
+   "detail": "phase2: groups=as expected bad=[]"
+  },
+  {
+   "inv": "I10 repeat_draws",
+   "ok": true,
+   "detail": "open_tpe: groups=as expected bad=[]"
+  },
+  {
+   "inv": "I10 repeat_draws",
+   "ok": true,
+   "detail": "consumer_tpe: groups=as expected bad=[]"
+  },
+  {
+   "inv": "I11 aug_sidecar",
+   "ok": true,
+   "detail": "bad=[] (0)"
+  },
+  {
+   "inv": "I12 reasoning_toggle",
+   "ok": true,
+   "detail": "phase2: found=[101, 109, 113] expected=[101, 109, 113] bad_attrs=[]"
+  },
+  {
+   "inv": "I12 reasoning_toggle",
+   "ok": true,
+   "detail": "open_tpe: found=[77, 81, 82] expected=[77, 81, 82] bad_attrs=[]"
+  },
+  {
+   "inv": "I12 reasoning_toggle",
+   "ok": true,
+   "detail": "consumer_tpe: found=[] expected=[] bad_attrs=[]"
+  },
+  {
+   "inv": "I13 batch_api_replicate_pair",
+   "ok": true,
+   "detail": "cfg1/cfg2 (P1 #383/#384) paper pairs=35 identical-content & distinct-id=35"
+  },
+  {
+   "inv": "I14 top_set_common_papers",
+   "ok": true,
+   "detail": "phase2: ref #109=0.8118 on 32 papers; #131=0.8212; #128=0.8212; #148=0.8198; #124=0.8176"
+  },
+  {
+   "inv": "I14 top_set_common_papers",
+   "ok": true,
+   "detail": "open_tpe: ref #81=0.8118 on 32 papers; #107=0.8060; #109=0.8052; #94=0.8031; #56=0.8023; #93=0.8001; #91=0.7994; #92=0.7958; #88=0.7965"
+  },
+  {
+   "inv": "I15 phase1_untouched",
+   "ok": true,
+   "detail": "md5=03b5ee49f9b7395e0271a71549124b16"
+  },
+  {
+   "inv": "I0 self_read_only",
+   "ok": true,
+   "detail": "DB hashes unchanged by this run"
+  }
+ ],
+ "md5_start": {
+  "phase1": "03b5ee49f9b7395e0271a71549124b16",
+  "phase2": "24d6f537e296a0beed47ebbf79eb2e61",
+  "open_tpe": "18ab0d5254ab836cdd6ac870aedc2026",
+  "consumer_tpe": "64335a8e3b8fd381a7d88dd5acabee0d"
+ },
+ "md5_end": {
+  "phase1": "03b5ee49f9b7395e0271a71549124b16",
+  "phase2": "24d6f537e296a0beed47ebbf79eb2e61",
+  "open_tpe": "18ab0d5254ab836cdd6ac870aedc2026",
+  "consumer_tpe": "64335a8e3b8fd381a7d88dd5acabee0d"
+ },
+ "pre_aug_write": false
+}

@@ -139,7 +139,7 @@ def main() -> None:
         for t in p2.trials:
             if t.state.name != "COMPLETE" or "phase1_trial" in t.user_attrs:
                 continue
-            if "partial_completion" in t.user_attrs:
+            if "value_imputation" in t.user_attrs:
                 continue
             f = match_source_folder(t.number, dict(t.params))
             if f is not None:
@@ -209,7 +209,7 @@ def main() -> None:
     if args.all:
         # ---- trial #123 (partial: 31/35 papers, value imputed) on the unified basis
         import glob as _glob, os as _os, re as _re
-        t123 = next((x for x in p2.trials if "partial_completion" in x.user_attrs), None)
+        t123 = next((x for x in p2.trials if "value_imputation" in x.user_attrs), None)
         if t123 is not None:
             best = {}
             for d in _glob.glob(str(TRIAL_LOGS / "0b4c900e2c_trial_*")):

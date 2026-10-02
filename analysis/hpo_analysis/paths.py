@@ -25,6 +25,10 @@ CELLS_PQ = CACHE / "cells.parquet"
 # Trials 382-398 stored NO model outputs (raw_output and llm_output both None on
 # every cell). Any re-score from raw_output rewrites them as wrong, so they are
 # excluded from the consistent-comparison sample. Established by check_integrity.py.
+# 2026-10: their outputs were recovered from archive/batch_api (recover.py ->
+# cache/recovered_cells.parquet) and re-scored with the executed judge (Phi-3);
+# the Phi-3 values live in tables/hpo/aug_batch_phi3_rescore.csv and on the seed
+# copies in the Phase-2 DBs. The Phase-1 DB itself is never rewritten.
 OUTPUT_BLACKOUT = tuple(range(382, 399))
 
 TYPE_ORDER = ["single_choice", "multiple_choice", "numeric", "list", "open_ended"]

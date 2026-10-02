@@ -2074,9 +2074,15 @@ if __name__ == "__main__":
         optuna.logging.set_verbosity(optuna.logging.INFO)
         # Persistent storage so a crash / Together 402 does not lose the study;
         # re-running resumes (load_if_exists). Override path with OPTUNA_DB.
-        storage_url = os.getenv(
-            "OPTUNA_DB", f"sqlite:///{PROJECT_ROOT / 'optuna_study.db'}"
-        )
+        storage_url = os.getenv("OPTUNA_DB")
+        if not storage_url:
+            # Until 2026-10-02 this defaulted to the root optuna_study.db -- the frozen
+            # Phase-1 artefact, which still holds 3 WAITING trials that would execute.
+            raise SystemExit(
+                "OPTUNA_DB is required, e.g. OPTUNA_DB=sqlite:///$PWD/stage2_analyses/phase2_study/phase2.db"
+                " -- the root optuna_study.db is the frozen Phase-1 study and is never a default target."
+            )
+        logger.warning("Optuna storage: %s", storage_url)
         # Two workers share one sqlite file; the default 5 s lock timeout makes
         # concurrent writes raise "database is locked" and fail otherwise-good
         # trials. 120 s matches the admin scripts (requeue_on_recovery.py).
