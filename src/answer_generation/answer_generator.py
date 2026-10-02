@@ -295,7 +295,7 @@ class AnswerGenerator:
                 # (reasoning_effort="none", which is gpt-5.2's default); with an
                 # active effort (low/medium/high) temperature=0 is rejected
                 # ("Only the default (1) value is supported") -- probed
-                # 2026-10-03. This client never sends reasoning_effort, so
+                # 2026-10-02. This client never sends reasoning_effort, so
                 # gpt-5.2 runs WITHOUT reasoning and temperature=0 is valid.
                 # If reasoning_effort is ever added for this family, temperature
                 # must be omitted for non-"none" efforts. Until 2026-10-02 the

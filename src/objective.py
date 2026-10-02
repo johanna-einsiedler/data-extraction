@@ -1231,6 +1231,11 @@ def objective(
             disable_reasoning = False
         reasoning_enabled = False if disable_reasoning else None
 
+        # CAVEAT (2026-10-02): this label follows the roster capability flag. It is
+        # WRONG for gpt-5.2: the client sends no reasoning_effort and the API default
+        # is "none", so gpt-5.2 runs WITHOUT reasoning yet is labelled "on" here
+        # (see analysis/tables/hpo/temperature_probe.md). Logic left unchanged so
+        # labels stay comparable with the finished studies.
         # Record the EFFECTIVE reasoning mode (not the requested flag): a frontier
         # reasoning model ignores disable_reasoning and always thinks (=on), a
         # togglable model reflects the flag, and a non-reasoning model has no
