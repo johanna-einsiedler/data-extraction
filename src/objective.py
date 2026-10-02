@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import List
 
 import numpy as np
+from datetime import datetime, timezone
 import optuna
 import pandas as pd
 from dotenv import find_dotenv, load_dotenv
@@ -510,8 +511,14 @@ def check_dependency(qid, evaluated_results, dependency_rules, doc_id):
 # ---------------------------------------------------------------------
 # Ensure functions: run component only if output missing
 # ---------------------------------------------------------------------
-def ensure_parsed(file_path: Path, parser_name: str):
-    """Ensure a file is parsed. Return path to cached or newly parsed output."""
+def ensure_parsed(file_path: Path, parser_name: str, strict: bool = False):
+    """Ensure a file is parsed. Return path to cached or newly parsed output.
+
+    strict=True (frozen runs): a cached parse whose meta tag is not the requested
+    parser's, or that records a fallback, raises ParserProvenanceError; a parser
+    failure raises instead of silently falling back to PyMuPDF. Every NEW parse
+    writes enriched meta (parser, version, time, pdf sha256, git commit); existing
+    meta files are never rewritten."""
     pdir = parsed_dir(parser_name)
     pdir.mkdir(parents=True, exist_ok=True)
 
@@ -527,6 +534,17 @@ def ensure_parsed(file_path: Path, parser_name: str):
     # 1️⃣ Use cached version if it exists
     for cached in (json_path, txt_path, md_path, xml_path):
         if cached.exists():
+            if strict and meta_path.exists():
+                try:
+                    _m = json.load(open(meta_path, encoding="utf-8"))
+                except Exception:
+                    _m = {}
+                _tag = PARSER_META_TAG.get(parser_name)
+                if _m.get("fallback_from") or (_tag and _m.get("parser") and _m.get("parser") != _tag):
+                    raise ParserProvenanceError(
+                        f"{file_path.name}: cached parse is '{_m.get('parser')}'"
+                        f"{' (fallback from ' + str(_m.get('fallback_from')) + ')' if _m.get('fallback_from') else ''}"
+                        f", requested {parser_name}")
             return cached
 
     # 2️⃣ Run parser. If a parser cannot handle a specific PDF (e.g. MinerU on a
@@ -534,16 +552,23 @@ def ensure_parsed(file_path: Path, parser_name: str):
     #    not crash an entire trial. The fallback is written to THIS parser's cache
     #    dir, so it is consistent across trials and not retried.
     parser = get_parser(parser_name)
+    _fallback_from = None
     try:
         result = parser.parse(str(file_path))  # make sure your parser uses `out_dir`
     except Exception as e:
-        if parser_name == "PyMuPDFParser":
-            raise
+        if parser_name == "PyMuPDFParser" or strict:
+            raise RuntimeError(f"{parser_name} failed on {file_path.name}: {e!r}") from e
         logger.warning(
             "Parser %s failed on %s (%s); falling back to PyMuPDFParser.",
             parser_name, file_path.name, repr(e)[:140],
         )
+        _fallback_from = parser_name
         result = get_parser("PyMuPDFParser").parse(str(file_path))
+    _prov = {"parser_registry_name": parser_name, "parser_version": _parser_version(parser_name),
+             "parsed_at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+             "pdf_sha256": _sha256_file(file_path), "pipeline_git_commit": _pipeline_git_commit()}
+    if _fallback_from:
+        _prov["fallback_from"] = _fallback_from
     # 3️⃣ Save result depending on type
     if isinstance(result, ParseResult):
         format_hint = result.format or "markdown"
@@ -553,9 +578,10 @@ def ensure_parsed(file_path: Path, parser_name: str):
         }.get(format_hint, md_path)
         with open(target_path, "w", encoding="utf-8") as fh:
             fh.write(result.content)
-        if result.metadata:
-            with open(meta_path, "w", encoding="utf-8") as fh:
-                json.dump(result.metadata, fh, ensure_ascii=False, indent=2)
+        _meta = dict(result.metadata or {})
+        _meta.update(_prov)
+        with open(meta_path, "w", encoding="utf-8") as fh:
+            json.dump(_meta, fh, ensure_ascii=False, indent=2)
         return target_path
 
     if isinstance(result, (dict, list)):
@@ -753,8 +779,91 @@ def ensure_query_embeddings(
 # ---------------------------------------------------------------------
 # Optuna objective (stepwise cached pipeline)
 # ---------------------------------------------------------------------
-CACHE_PATH = PROJECT_ROOT / "trial_cache"
-CACHE_PATH.mkdir(exist_ok=True)
+def _cache_dir_default() -> Path:
+    """trial_cache/ by default; TRIAL_CACHE_DIR redirects it (frozen runs keep their
+    own cache next to their outputs so they never overwrite tuning cells)."""
+    return Path(os.getenv("TRIAL_CACHE_DIR") or (PROJECT_ROOT / "trial_cache"))
+
+
+CACHE_PATH = _cache_dir_default()
+CACHE_PATH.mkdir(parents=True, exist_ok=True)
+
+# ---------------- Frozen-config runs (2026-10-02) ----------------
+# FROZEN_RUN=1 (or objective(frozen=True)) runs one fixed configuration on an
+# explicit paper set with every search guard disabled, stable doc ids, a
+# per-run cache and ledger, and per-paper failures recorded instead of raised.
+# All defaults reproduce the Optuna path byte-for-byte.
+FROZEN_RUN = os.getenv("FROZEN_RUN", "0") == "1"
+
+
+def _paper_id(path: Path) -> str:
+    """'006_Ahnert_2023.pdf' -> '006' (the doc_name convention used everywhere)."""
+    m = re.match(r"^(\d+)", path.stem)
+    return m.group(1) if m else path.stem
+
+
+def resolve_run_paths(trial_choices: dict, trial_number: int, *, paper_dir=None,
+                      out_dir=None, frozen: bool = False):
+    """(paper_folder, trial_folder, cache_dir, trial_hash10). Pure. With the
+    defaults this reproduces the historical layout exactly:
+    data/tuning, trial_logs/<md5(params)[:10]>_trial_<n:04d>, trial_cache/."""
+    import hashlib as _hl
+    trial_hash = _hl.md5(json.dumps(trial_choices, sort_keys=True).encode()).hexdigest()[:10]
+    paper_folder = Path(paper_dir) if paper_dir else PROJECT_ROOT / "data" / "tuning"
+    if frozen and out_dir:
+        trial_folder = Path(out_dir)
+        cache_dir = Path(out_dir)
+    else:
+        trial_folder = PROJECT_ROOT / "trial_logs" / f"{trial_hash}_trial_{trial_number:04d}"
+        cache_dir = CACHE_PATH
+    return paper_folder, trial_folder, cache_dir, trial_hash
+
+
+# Parser provenance: what each registry parser writes into <stem>.meta.json["parser"].
+PARSER_META_TAG = {"MinerUParser": "mineru", "PyMuPDFParser": "pymupdf",
+                   "PyMuPDFTesseractParser": "pymupdf_tesseract"}
+
+
+class ParserProvenanceError(RuntimeError):
+    """A cached parse does not come from the requested parser (frozen runs only)."""
+
+
+def _parser_version(parser_name: str) -> str | None:
+    try:
+        if parser_name == "MinerUParser":
+            import importlib.metadata as _im
+            return _im.version("mineru")
+        if parser_name in ("PyMuPDFParser", "PyMuPDFTesseractParser"):
+            import fitz
+            v = f"pymupdf {fitz.version[0]}"
+            if parser_name == "PyMuPDFTesseractParser":
+                try:
+                    import pytesseract
+                    v += f"; tesseract {pytesseract.get_tesseract_version()}"
+                except Exception:
+                    v += "; tesseract ?"
+            return v
+    except Exception:
+        return None
+    return None
+
+
+def _pipeline_git_commit() -> str | None:
+    try:
+        import subprocess
+        return subprocess.run(["git", "rev-parse", "HEAD"], cwd=PROJECT_ROOT, capture_output=True,
+                              text=True, timeout=10).stdout.strip() or None
+    except Exception:
+        return None
+
+
+def _sha256_file(path: Path) -> str:
+    import hashlib as _hl
+    h = _hl.sha256()
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
 
 # When set (by --rerun … --resume-papers), objective() seeds a fresh trial's
 # folder with the finished doc_*.json files from this source folder, so the
@@ -779,19 +888,21 @@ def _hash_trial_key(params: dict, doc_idx: int, query_id: str) -> str:
     return hashlib.md5(key_data.encode("utf-8")).hexdigest()
 
 
-def load_cache():
-    cache_file = CACHE_PATH / "cache.json"
+def load_cache(cache_dir: Path | None = None):
+    cache_file = (cache_dir or CACHE_PATH) / "cache.json"
     if cache_file.exists():
         with open(cache_file, "r", encoding="utf-8") as f:
             return json.load(f)
     return {}
 
 
-def save_cache(cache: dict):
+def save_cache(cache: dict, cache_dir: Path | None = None):
     """Atomic write (tmp + rename): a crash mid-dump must never truncate the
     only copy of every paid-for LLM call."""
-    cache_file = CACHE_PATH / "cache.json"
-    tmp = CACHE_PATH / "cache.json.tmp"
+    cdir = cache_dir or CACHE_PATH
+    cdir.mkdir(parents=True, exist_ok=True)
+    cache_file = cdir / "cache.json"
+    tmp = cdir / "cache.json.tmp"
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(cache, f, indent=2, ensure_ascii=False)
     os.replace(tmp, cache_file)
@@ -807,14 +918,14 @@ _CACHE_LAST_FLUSH = [0.0]
 CACHE_FLUSH_EVERY_S = int(os.getenv("CACHE_FLUSH_EVERY_S", "300"))
 
 
-def flush_cache_throttled(cache: dict, force: bool = False):
+def flush_cache_throttled(cache: dict, force: bool = False, cache_dir: Path | None = None):
     now = time.time()
     if not force and now - _CACHE_LAST_FLUSH[0] < CACHE_FLUSH_EVERY_S:
         return
     with _CACHE_LOCK:
         if not force and time.time() - _CACHE_LAST_FLUSH[0] < CACHE_FLUSH_EVERY_S:
             return
-        save_cache(cache)
+        save_cache(cache, cache_dir)
         _CACHE_LAST_FLUSH[0] = time.time()
 
 
@@ -850,8 +961,17 @@ def objective(
     verbose: bool = False,
     query_ids: list[str] | None = None,
     doc_name_filter: str | None = None,
+    *,
+    paper_dir=None,
+    paper_ids: list[str] | None = None,
+    out_dir=None,
+    frozen: bool | None = None,
 ):
     import hashlib
+    frozen = FROZEN_RUN if frozen is None else bool(frozen)
+    paper_dir = paper_dir or os.getenv("PAPER_DIR") or None
+    out_dir = out_dir or os.getenv("OUT_DIR") or None
+    paper_failures: dict[str, str] = {}
     import json
     from pathlib import Path
 
@@ -877,7 +997,8 @@ def objective(
     # SAMPLE_ONLY draws configs without running anything, and cache.json is 461 MB:
     # loading it cost ~5 s and ~2.5 GB per draw, which made generating a warm-up set
     # take hours. Skipped for sampling only -- real trials are unaffected.
-    cache = {} if os.getenv("SAMPLE_ONLY") else load_cache()
+    _cache_dir = Path(out_dir) if (frozen and out_dir) else CACHE_PATH
+    cache = {} if os.getenv("SAMPLE_ONLY") else load_cache(_cache_dir)
 
     try:
         trial_start_time = time.time()
@@ -960,6 +1081,7 @@ def objective(
                     _out = _g.generate(
                         query=_prompt, chunks=[], system_prompt=None,
                         return_logprobs=False, reasoning_enabled=None,
+                        ledger_path=_ledger_path, ledger_extra={"query_id": "rcs", "run_id": _run_id},
                     ) or {}
                     _u = _out.get("usage") or {}
                     with _rcs_lock:   # papers run in threads
@@ -1149,17 +1271,23 @@ def objective(
         # valid random configs from the REAL search space without running anything.
         if os.getenv("SAMPLE_ONLY"):
             return trial_choices
-        preflight_guards(trial, trial_choices)
+        if frozen:
+            try:
+                trial.set_user_attr("projected_usd_per_paper", round(project_cost_per_paper(trial_choices), 4))
+            except Exception:
+                pass
+        else:
+            preflight_guards(trial, trial_choices)
         # ---------------- Prepare trial folder ----------------
-        trial_hash = hashlib.md5(
-            json.dumps(trial_choices, sort_keys=True).encode()
-        ).hexdigest()[:10]
-        trial_folder = (
-            PROJECT_ROOT / "trial_logs" / f"{trial_hash}_trial_{trial.number:04d}"
-        )
+        folder, trial_folder, _cache_dir, trial_hash = resolve_run_paths(
+            trial_choices, trial.number, paper_dir=paper_dir, out_dir=out_dir, frozen=frozen)
         trial_folder.mkdir(parents=True, exist_ok=True)
-        # Per-trial provenance ledger (answer_generation/call_ledger.py).
-        os.environ["CALL_LEDGER_PATH"] = str(Path(trial_folder) / "calls.jsonl")
+        # Per-trial provenance ledger (answer_generation/call_ledger.py): passed
+        # explicitly to every generate() call; the env var is kept for callers
+        # outside this function.
+        _ledger_path = Path(trial_folder) / "calls.jsonl"
+        _run_id = os.getenv("RUN_ID")
+        os.environ["CALL_LEDGER_PATH"] = str(_ledger_path)
         log(f"Writing trial results to: {trial_folder}")
 
         # --resume-papers: seed this fresh trial with a prior run's finished papers
@@ -1177,7 +1305,6 @@ def objective(
             log(f"  Resume: copied {_copied} finished paper(s) from {_RESUME_FROM_FOLDER}")
 
         # ---------------- Parse all documents ----------------
-        folder = PROJECT_ROOT / "data" / "tuning"
         all_docs = [f for f in folder.glob("*") if f.suffix.lower() == ".pdf"]
         if doc_name_filter is not None:
             all_docs = [
@@ -1190,10 +1317,29 @@ def objective(
         _smoke_max = os.getenv("SMOKE_MAX_DOCS")
         if _smoke_max:
             all_docs = sorted(all_docs, key=lambda f: f.name)[: int(_smoke_max)]
+        if paper_ids is not None:
+            _want = set(str(x) for x in paper_ids)
+            _have = {_paper_id(f): f for f in all_docs}
+            for _pid in sorted(_want - set(_have)):
+                paper_failures[_pid] = "pdf_missing"
+            all_docs = [f for f in all_docs if _paper_id(f) in _want]
+        if frozen:
+            all_docs = sorted(all_docs, key=lambda f: f.name)
         all_docs_names = [f.name for f in all_docs]
 
         log(f"  Found {len(all_docs_names)} documents")
-        parsed_docs = [ensure_parsed(f, parser_name) for f in all_docs]
+        parsed_docs = []
+        _parsed_ok = []
+        for _f in all_docs:
+            try:
+                parsed_docs.append(ensure_parsed(_f, parser_name, strict=frozen))
+                _parsed_ok.append(_f)
+            except Exception as _pe:
+                if not frozen:
+                    raise
+                paper_failures[_paper_id(_f)] = f"parse_failed: {_pe!r}"[:300]
+                log(f"  ⚠️ parse failed for {_f.name}: {_pe!r}"[:200])
+        all_docs = _parsed_ok
         log("  Parsing complete")
 
         doc_aggregates = {}
@@ -1209,10 +1355,15 @@ def objective(
             match = re.match(r"^(\d+)", parsed_path.stem)
             doc_name = match.group(1) if match else parsed_path.stem
             if doc_name not in doc_id_map:
-                doc_id_map[doc_name] = next_id
-                next_id += 1
+                if frozen and doc_name.isdigit():
+                    doc_id_map[doc_name] = int(doc_name)   # stable: the paper id itself
+                else:
+                    doc_id_map[doc_name] = next_id
+                    next_id += 1
             doc_id = doc_id_map[doc_name]
             paper_tasks.append((parsed_path, doc_id, doc_name, pdf_path))
+        if frozen:
+            save_doc_id_map(doc_id_map, str(trial_folder / "doc_id_map.json"))
 
         # ---------------- Per-paper worker ----------------
         # Each paper is fully independent: dependencies are strictly within-doc
@@ -1264,12 +1415,15 @@ def objective(
                 current_hash = hashlib.md5(
                     json.dumps(trial_choices, sort_keys=True).encode()
                 ).hexdigest()
-                if cached_hash == current_hash:
+                # Resume only when BOTH the config hash and the paper match: a stale
+                # doc_NNNN.json belonging to another paper (glob-order shift, or a
+                # different paper set) must never be reused (2026-10-02).
+                if cached_hash == current_hash and str(existing_data.get("doc_name", doc_name)) == str(doc_name):
                     existing_results = existing_data.get("results", [])
                     existing_qids = {r["query_id"] for r in existing_results}
                     log(f"  Found {len(existing_qids)} cached query results.")
                 else:
-                    log("  Parameter mismatch → recomputing all queries.")
+                    log("  Parameter/paper mismatch → recomputing all queries.")
             else:
                 log(f"  No cache found for {doc_name}, evaluating all queries.")
 
@@ -1313,7 +1467,10 @@ def objective(
             # once; parse into per-item answers/others, then score each below as in
             # individual mode (no per-item generation).
             batched_answers, batched_others = {}, {}
-            if question_mode == "batched":
+            _wanted_qids = [q for q in QUERIES if (query_ids is None or q in query_ids)]
+            # Skip the (paid) batched call when every requested item is already cached
+            # for this paper -- on resume it was a no-op that still cost a call.
+            if question_mode == "batched" and not all(q in existing_qids for q in _wanted_qids):
                 if full_doc_text is None:
                     full_doc_text = load_full_document_text(parsed_path)
                 _bctx = _VLM_CTX if vlm else full_doc_text
@@ -1330,6 +1487,8 @@ def objective(
                             chunks=[(_bctx, 1.0)],
                             return_logprobs=False,
                             reasoning_enabled=reasoning_enabled,
+                            ledger_path=_ledger_path,
+                            ledger_extra={"doc_name": doc_name, "query_id": "batched", "run_id": _run_id},
                             # Per-model budget instead of the old hardcoded 4096.
                             # A reply needs only ~550 tokens, but on a reasoning
                             # model the thinking tokens come out of the same
@@ -1505,6 +1664,8 @@ def objective(
                         return_logprobs=True,
                         reasoning_enabled=reasoning_enabled,
                         images=page_images,
+                        ledger_path=_ledger_path,
+                        ledger_extra={"doc_name": doc_name, "query_id": qid, "run_id": _run_id},
                     )
                     _btext, llm_logprobs = get_cleaned_text_and_logprobs(llm_output)
                     llm_text = binary_mode.parse_binary_response(_btext, qdata)
@@ -1519,6 +1680,8 @@ def objective(
                         return_logprobs=True,
                         reasoning_enabled=reasoning_enabled,
                         images=page_images,
+                        ledger_path=_ledger_path,
+                        ledger_extra={"doc_name": doc_name, "query_id": qid, "run_id": _run_id},
                     )
                     llm_text, llm_logprobs = get_cleaned_text_and_logprobs(llm_output)
                     _acc(llm_output)
@@ -1537,6 +1700,8 @@ def objective(
                             return_logprobs=True,
                             reasoning_enabled=reasoning_enabled,
                             images=page_images,
+                            ledger_path=_ledger_path,
+                            ledger_extra={"doc_name": doc_name, "query_id": f"{qid}__other", "run_id": _run_id},
                         )
                         _acc(other_response)
                         return other_response["text"]
@@ -1653,6 +1818,10 @@ def objective(
         _papers_t0 = time.time()
 
         def _time_cap_check(done: int):
+
+            if frozen:
+
+                return
             """Racing-style aborts after >=3 completed papers.
             Time: a $0.09/paper trial once ran 21 h — dollar caps cannot catch
             time sinks. Cost: realised $/paper from the papers' own token_usage
@@ -1684,10 +1853,17 @@ def objective(
                     paper_outputs.append(
                         _process_paper(parsed_path, doc_id, doc_name, pdf_path)
                     )
-                    flush_cache_throttled(cache)
+                    flush_cache_throttled(cache, cache_dir=_cache_dir)
                     _time_cap_check(len(paper_outputs))
                 except InsufficientCreditsError as _ice:
                     _skip_broke(_ice)
+                except optuna.TrialPruned:
+                    raise
+                except Exception as _exc:
+                    if not frozen:
+                        raise
+                    paper_failures[str(doc_name)] = f"{type(_exc).__name__}: {_exc}"[:300]
+                    log(f"⚠️ Paper {doc_name} failed and was skipped: {_exc!r}"[:200])
         else:
             # Pre-init the shared AnswerGenerator's HTTP client in the main thread
             # so worker threads don't race on its lazy `_ensure_client()`. The
@@ -1721,7 +1897,7 @@ def objective(
                 # cap) without _time_cap_check ever being reached. Completion order
                 # evaluates the guards whenever ANY paper lands. paper_outputs order
                 # is not used downstream (the merge keys by doc_id and sums usage).
-                _it = as_completed(future_map, timeout=TRIAL_WALL_BUDGET_S)
+                _it = as_completed(future_map, timeout=None if frozen else TRIAL_WALL_BUDGET_S)
                 while True:
                     try:
                         future = next(_it)
@@ -1737,7 +1913,7 @@ def objective(
                     fut_doc_id, fut_doc_name = future_map[future]
                     try:
                         paper_outputs.append(future.result())
-                        flush_cache_throttled(cache)
+                        flush_cache_throttled(cache, cache_dir=_cache_dir)
                         try:
                             _time_cap_check(len(paper_outputs))
                         except optuna.TrialPruned:
@@ -1757,6 +1933,7 @@ def objective(
                             _f.cancel()
                         _skip_broke(_ice)
                     except Exception as exc:
+                        paper_failures[str(fut_doc_name)] = f"{type(exc).__name__}: {exc}"[:300]
                         log(
                             f"⚠️ Paper doc_id={fut_doc_id} ({fut_doc_name}) "
                             f"failed and was skipped: {exc}"
@@ -1786,8 +1963,12 @@ def objective(
         # catch=Exception), so the model is reattempted on the next launch instead
         # of polluting the TPE surrogate with an artifact. Threshold via
         # MIN_PAPER_FRAC (default 0.5 = fail if <50% of papers succeeded).
-        _min_frac = float(os.getenv("MIN_PAPER_FRAC", "0.5"))
+        _min_frac = 0.0 if frozen else float(os.getenv("MIN_PAPER_FRAC", "0.5"))
         _n_ok, _n_total = len(paper_outputs), len(paper_tasks)
+        if paper_failures:
+            trial.set_user_attr("paper_failures", dict(paper_failures))
+        trial.set_user_attr("n_papers_ok", _n_ok)
+        trial.set_user_attr("n_papers_requested", _n_total + sum(1 for v in paper_failures.values() if v == "pdf_missing" or v.startswith("parse_failed")))
         if _n_total and _n_ok < _n_total * _min_frac:
             raise RuntimeError(
                 f"trial aborted: only {_n_ok}/{_n_total} papers succeeded "
@@ -1845,7 +2026,7 @@ def objective(
         trial.set_user_attr("llm_calls", trial_usage["calls"])
         try:
             from answer_generation import call_ledger as _cl
-            _lp = Path(os.environ.get("CALL_LEDGER_PATH", ""))
+            _lp = Path(_ledger_path)
             if _lp.exists():
                 _v = _cl.verify(_lp)
                 trial.set_user_attr("call_ledger_head", _v["head"])
@@ -1896,7 +2077,7 @@ def objective(
 
         # ✅ Persist the cache once after the merge (avoids per-paper disk churn)
         with _CACHE_LOCK:
-            save_cache(cache)
+            save_cache(cache, _cache_dir)
 
         if all_results:
             overall_avg = np.mean([r["accuracy"] for r in all_results])
@@ -2001,35 +2182,35 @@ def run_worker(study):
     study.optimize(objective, n_trials=1)  # each worker runs one trial at a time
 
 
-if __name__ == "__main__":
-    folder = PROJECT_ROOT / "data" / "raw"
-    all_docs = list(folder.glob("*"))
+def init_globals() -> dict:
+    """Populate QUERIES / TRUE_ANSWERS / DEPENDENCIES / SYSTEM_PROMPTS exactly as
+    __main__ always did, so that objective() can be called from a runner that
+    imports this module (scripts/run_frozen.py). Returns sha256 of each input file."""
+    global QUERIES, TRUE_ANSWERS, DEPENDENCIES, SYSTEM_PROMPTS
     QUERIES = load_queries()
-
-    # Finalized consensus gold (09_data_final). Restrict QUERIES to items that
-    # actually have a gold column so dropped/absent items (splitprep, perftrain,
-    # interpret, general, bestmodel, 4.5.6) are neither queried nor evaluated.
     _evaluable = finalized_item_map(QUERIES)
     QUERIES = {qid: q for qid, q in QUERIES.items() if qid in _evaluable}
     TRUE_ANSWERS = load_true_answers_final(QUERIES)
-
     DEPENDENCIES_FILE = PROJECT_ROOT / "src" / "dependencies.txt"
     with open(DEPENDENCIES_FILE, "r", encoding="utf-8") as f:
         DEPENDENCIES = json.load(f)
-
     SYSTEM_PROMPTS = {}
-    with open(
-        PROJECT_ROOT / "query_creation" / "system_prompt_single_outcome.txt",
-        "r",
-        encoding="utf-8",
-    ) as f:
+    _sp1 = PROJECT_ROOT / "query_creation" / "system_prompt_single_outcome.txt"
+    _sp2 = PROJECT_ROOT / "query_creation" / "system_prompt_multiple_outcomes.txt"
+    with open(_sp1, "r", encoding="utf-8") as f:
         SYSTEM_PROMPTS["single_outcome"] = f.read()
-    with open(
-        PROJECT_ROOT / "query_creation" / "system_prompt_multiple_outcomes.txt",
-        "r",
-        encoding="utf-8",
-    ) as f:
+    with open(_sp2, "r", encoding="utf-8") as f:
         SYSTEM_PROMPTS["multiple_outcomes"] = f.read()
+    inputs = {"queries_with_prompts.json": PROJECT_ROOT / "query_creation" / "queries_with_prompts.json",
+              "09_data_final.csv": PROJECT_ROOT / "data" / "true_labels" / "09_data_final.csv",
+              "dependencies.txt": DEPENDENCIES_FILE, "system_prompt_single_outcome.txt": _sp1,
+              "system_prompt_multiple_outcomes.txt": _sp2,
+              "filtered_models.json": PROJECT_ROOT / "src" / "answer_generation" / "filtered_models.json"}
+    return {k: (_sha256_file(v) if v.exists() else None) for k, v in inputs.items()}
+
+
+if __name__ == "__main__":
+    init_globals()
     _args = sys.argv[1:]
 
     if "--test" in _args:

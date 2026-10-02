@@ -217,9 +217,18 @@ class AnswerGenerator:
         response_format: Optional[Dict[str, Any]] = None,
         reasoning_enabled: Optional[bool] = None,
         images: Optional[List[Any]] = None,
+        ledger_path: Optional[Any] = None,
+        ledger_extra: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         Generate answer using retrieved chunks and a prompt.
+
+        ledger_path / ledger_extra: explicit provenance-ledger target and extra
+        fields (doc_name, query_id, run_id) for this call; when ledger_path is
+        None the CALL_LEDGER_PATH environment variable is used. Passed
+        explicitly by objective.py so that concurrent trials / runs in one
+        process never interleave ledgers (a thread-local would not be visible
+        in the ThreadPoolExecutor workers).
         Returns a dict with:
             - 'text': generated answer
             - 'logprobs': optional dict with 'tokens' and 'token_logprobs'
@@ -474,13 +483,16 @@ class AnswerGenerator:
         try:
             from answer_generation import call_ledger as _cl
             result["provenance"] = _cl.provenance(response, self.api_type)
+            _extra = {"reasoning_enabled": reasoning_enabled, "n_images": len(images) if images else 0}
+            if ledger_extra:
+                _extra.update(ledger_extra)
             _cl.record(_cl.entry_for_call(
                 api_type=self.api_type, model_requested=self.model, response=response,
                 usage=result["usage"], finish_reason=result.get("finish_reason"),
                 prompt_material="\x00".join([system_prompt or "", query or "", context_text or ""]),
                 output_text=result.get("text"),
-                extra={"reasoning_enabled": reasoning_enabled, "n_images": len(images) if images else 0},
-            ))
+                extra=_extra,
+            ), path=ledger_path)
         except Exception:
             pass
         return result

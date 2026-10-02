@@ -67,3 +67,40 @@ def test_record_never_raises(tmp_path, monkeypatch):
     bad = tmp_path / "nodir" / "x" / "calls.jsonl"
     monkeypatch.setattr(cl.Path, "mkdir", lambda *a, **k: (_ for _ in ()).throw(OSError("ro")))
     assert cl.record(_entry(1), bad) is None
+
+
+def test_two_ledgers_in_one_process_chain_independently(tmp_path):
+    """Two targets written concurrently (as two runs in one process would) must each
+    verify and must not receive each other's lines."""
+    import threading
+    pa, pb = tmp_path / "a.jsonl", tmp_path / "b.jsonl"
+    def writer(p, tag):
+        for i in range(200):
+            cl.record({"ts_utc": "t", "api_type": tag, "response_id": f"{tag}-{i}", "usage": {}}, p)
+    ta, tb = threading.Thread(target=writer, args=(pa, "A")), threading.Thread(target=writer, args=(pb, "B"))
+    ta.start(); tb.start(); ta.join(); tb.join()
+    va, vb = cl.verify(pa), cl.verify(pb)
+    assert va["ok"] and vb["ok"] and va["n"] == 200 and vb["n"] == 200
+    assert all(json.loads(l)["api_type"] == "A" for l in pa.read_text().splitlines())
+    assert all(json.loads(l)["api_type"] == "B" for l in pb.read_text().splitlines())
+
+
+def test_generate_writes_to_explicit_ledger_path_not_env(tmp_path, monkeypatch):
+    """The generate() hook must honour ledger_path and ledger_extra, ignoring CALL_LEDGER_PATH."""
+    from answer_generation.answer_generator import AnswerGenerator
+    env_ledger, explicit = tmp_path / "env.jsonl", tmp_path / "explicit.jsonl"
+    monkeypatch.setenv("CALL_LEDGER_PATH", str(env_ledger))
+    g = AnswerGenerator(api_type="together", api_key="x", model="stub/model")
+    resp = types.SimpleNamespace(
+        choices=[types.SimpleNamespace(message=types.SimpleNamespace(content='{"1.8": "1"}'),
+                                       finish_reason="stop", logprobs=None)],
+        usage=types.SimpleNamespace(prompt_tokens=7, completion_tokens=3), id="stub-1", created=1, model="stub/model")
+    monkeypatch.setattr(g, "_ensure_client", lambda: object())
+    monkeypatch.setattr(g, "_call_with_retry", lambda call_fn, **k: resp)
+    out = g.generate(query="q", chunks=[("ctx",)], ledger_path=explicit,
+                     ledger_extra={"doc_name": "006", "query_id": "batched", "run_id": "r1"})
+    assert out["provenance"]["response_id"] == "stub-1"
+    assert explicit.exists() and not env_ledger.exists()
+    line = json.loads(explicit.read_text().splitlines()[0])
+    assert line["doc_name"] == "006" and line["run_id"] == "r1" and line["usage"]["prompt_tokens"] == 7
+    assert cl.verify(explicit)["ok"]

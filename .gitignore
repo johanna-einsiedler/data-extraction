@@ -1,5 +1,6 @@
-# data & run artefacts
-data/
+# data & run artefacts (everything under data/ except the split rule + id lists)
+data/*
+!data/dataset_splits/
 trial_cache/
 trial_logs/
 .env
@@ -46,3 +47,8 @@ tests/test_rcs_rerank_results_*.json
 
 # setuptools metadata recreated by `pip install -e .`
 *.egg-info/
+
+# frozen runs: outputs + manifests + ledgers are tracked; per-run caches and locks are not
+runs/**/cache.json
+runs/**/cache.json.tmp
+runs/**/.lock

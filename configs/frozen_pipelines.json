@@ -1,0 +1,167 @@
+{
+ "schema_version": 1,
+ "pipelines": {
+  "primary": {
+   "label": "P_primary",
+   "source": {
+    "db": "stage2_analyses/phase2_study/phase2.db",
+    "study_name": "full_item_accuracy_tuning",
+    "trial_number": 131,
+    "state": "COMPLETE",
+    "tuning_value": 0.8199335548172757,
+    "tuning_cost_usd": 2.4588,
+    "n_papers": 35,
+    "judge": "microsoft/Phi-3-mini-4k-instruct"
+   },
+   "optuna_params": {
+    "mode": "full",
+    "llm_model": "gemini-3.1-pro-preview",
+    "parser": "MinerUParser",
+    "batched_prompt_type": "cot_prompt",
+    "vlm": false
+   },
+   "trial_choices": {
+    "parser": "MinerUParser",
+    "mode": "full",
+    "chunk_size": null,
+    "chunk_overlap": null,
+    "chunker": "FullDocument",
+    "embedder": "N/A",
+    "retriever": "N/A",
+    "k": null,
+    "llm_model": "gemini-3.1-pro-preview",
+    "default_prompt_type": null,
+    "query_embedding": "full_document",
+    "use_default_prompt": true,
+    "question_mode": "batched",
+    "batched_prompt_type": "cot_prompt",
+    "vlm": false,
+    "disable_reasoning": false
+   },
+   "trial_hash10": "5f762d817b",
+   "parameters_hash_md5": "5f762d817b2d1acc07b13dfcd4cc684d",
+   "expected_parser_meta": "mineru",
+   "folder": "5f762d817b_trial_0131"
+  },
+  "open": {
+   "label": "P_open",
+   "source": {
+    "db": "stage2_analyses/phase2_study/phase2.db",
+    "study_name": "full_item_accuracy_tuning",
+    "trial_number": 109,
+    "state": "COMPLETE",
+    "tuning_value": 0.8117732558139535,
+    "tuning_cost_usd": 2.5862,
+    "n_papers": 32,
+    "judge": "microsoft/Phi-3-mini-4k-instruct"
+   },
+   "optuna_params": {
+    "mode": "full",
+    "llm_model": "zai-org/GLM-5.2",
+    "parser": "MinerUParser",
+    "batched_prompt_type": "base_prompt",
+    "disable_reasoning": true
+   },
+   "trial_choices": {
+    "parser": "MinerUParser",
+    "mode": "full",
+    "chunk_size": null,
+    "chunk_overlap": null,
+    "chunker": "FullDocument",
+    "embedder": "N/A",
+    "retriever": "N/A",
+    "k": null,
+    "llm_model": "zai-org/GLM-5.2",
+    "default_prompt_type": null,
+    "query_embedding": "full_document",
+    "use_default_prompt": true,
+    "question_mode": "batched",
+    "batched_prompt_type": "base_prompt",
+    "vlm": false,
+    "disable_reasoning": true
+   },
+   "trial_hash10": "f2609ec809",
+   "parameters_hash_md5": "f2609ec809a3f2ef70d40dbf1226ff3f",
+   "expected_parser_meta": "mineru",
+   "folder": "f2609ec809_trial_0109"
+  },
+  "consumer": {
+   "label": "consumer reference",
+   "source": {
+    "db": "stage2_analyses/phase2_study/consumer_tpe.db",
+    "study_name": "full_item_accuracy_tuning",
+    "trial_number": 62,
+    "state": "COMPLETE",
+    "tuning_value": 0.7800664451827243,
+    "tuning_cost_usd": 0.1168,
+    "n_papers": 35,
+    "judge": "microsoft/Phi-3-mini-4k-instruct"
+   },
+   "optuna_params": {
+    "mode": "full",
+    "llm_model": "google/gemma-4-31B-it",
+    "parser": "PyMuPDFTesseractParser",
+    "batched_prompt_type": "base_prompt",
+    "vlm": false,
+    "disable_reasoning": false
+   },
+   "trial_choices": {
+    "parser": "PyMuPDFTesseractParser",
+    "mode": "full",
+    "chunk_size": null,
+    "chunk_overlap": null,
+    "chunker": "FullDocument",
+    "embedder": "N/A",
+    "retriever": "N/A",
+    "k": null,
+    "llm_model": "google/gemma-4-31B-it",
+    "default_prompt_type": null,
+    "query_embedding": "full_document",
+    "use_default_prompt": true,
+    "question_mode": "batched",
+    "batched_prompt_type": "base_prompt",
+    "vlm": false,
+    "disable_reasoning": false
+   },
+   "trial_hash10": "4db0f5c971",
+   "parameters_hash_md5": "4db0f5c971b00dd042eb80793f70fb3d",
+   "expected_parser_meta": "pymupdf_tesseract",
+   "folder": "4db0f5c971_trial_0062"
+  },
+  "test_stub": {
+   "label": "test-only stub (never a preregistered run)",
+   "test_only": true,
+   "source": null,
+   "optuna_params": {
+    "mode": "full",
+    "llm_model": "openai/gpt-oss-20b",
+    "parser": "PyMuPDFParser",
+    "batched_prompt_type": "base_prompt"
+   },
+   "trial_choices": {
+    "parser": "PyMuPDFParser",
+    "mode": "full",
+    "chunk_size": null,
+    "chunk_overlap": null,
+    "chunker": "FullDocument",
+    "embedder": "N/A",
+    "retriever": "N/A",
+    "k": null,
+    "llm_model": "openai/gpt-oss-20b",
+    "default_prompt_type": null,
+    "query_embedding": "full_document",
+    "use_default_prompt": true,
+    "question_mode": "batched",
+    "batched_prompt_type": "base_prompt",
+    "vlm": false,
+    "disable_reasoning": false
+   },
+   "trial_hash10": "ab80064942",
+   "parameters_hash_md5": "ab8006494200059dd1e8912c739d107b",
+   "expected_parser_meta": "pymupdf",
+   "folder": null
+  }
+ },
+ "created_utc": "2026-10-02T14:06:38+00:00",
+ "hash_rule": "md5(json.dumps(trial_choices, sort_keys=True)); [:10] is the trial_logs folder prefix"
+}
