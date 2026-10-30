@@ -2,7 +2,7 @@
 
 usage: pipeline_env/bin/python scripts/run_frozen.py --config {primary|open|consumer|<json file>}
          --paper-set {calibration|test|tuning|rq2_subset|<ids file>} --run-id <label>
-         [--dry-run] [--resume] [--concurrency N] [--splits-version v2_2026-10-02]
+         [--dry-run] [--resume] [--concurrency N] [--splits-version v3_2026-10-30]
          [--runs-root runs] [--query-ids 1.8,3.2,...] [--allow-judge-override] [--allow-test-stub]
 
 Contract (preregistered run policy):
@@ -147,7 +147,7 @@ def main():
     ap.add_argument("--config", required=True); ap.add_argument("--paper-set", required=True)
     ap.add_argument("--run-id", required=True); ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--resume", action="store_true"); ap.add_argument("--concurrency", type=int, default=3)
-    ap.add_argument("--splits-version", default="v2_2026-10-02"); ap.add_argument("--runs-root", default="runs")
+    ap.add_argument("--splits-version", default="v3_2026-10-30"); ap.add_argument("--runs-root", default="runs")
     ap.add_argument("--query-ids"); ap.add_argument("--allow-judge-override", action="store_true")
     ap.add_argument("--allow-test-stub", action="store_true")
     a = ap.parse_args()

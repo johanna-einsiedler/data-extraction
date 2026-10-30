@@ -72,7 +72,7 @@ def legacy_check(v1_dir: Path) -> bool:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--version", default="v2_2026-10-02"); ap.add_argument("--sizes", default="35,50")
+    ap.add_argument("--version", default="v3_2026-10-30"); ap.add_argument("--sizes", default="35,63")
     ap.add_argument("--rq2-size", type=int, default=60); ap.add_argument("--rq2-seed", type=int, default=42)
     ap.add_argument("--out-root", default="configs/splits"); ap.add_argument("--mirror", default="data/dataset_splits")
     ap.add_argument("--legacy-check", action="store_true"); ap.add_argument("--v1-dir", default="configs/splits/v1_2026-07-03")

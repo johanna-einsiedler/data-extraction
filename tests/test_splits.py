@@ -1,15 +1,15 @@
-"""Versioned splits: the v2 lists are reproducible from the seed-42 rule, disjoint,
+"""Versioned splits: the v3 lists (35/63/150, 2026-10-30) are reproducible from the seed-42 rule, disjoint,
 pinned by sha256, and keep v1's tuning set; materialize --prune never deletes files."""
 import hashlib, json, os, pathlib, subprocess, sys
 import pytest
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-V2 = ROOT / "configs" / "splits" / "v2_2026-10-02"
+V2 = ROOT / "configs" / "splits" / "v3_2026-10-30"  # current version (v2 = 35/50/163 superseded 2026-10-30)
 V1 = ROOT / "configs" / "splits" / "v1_2026-07-03"
 PIN = {"tuning": "3b8025cf6b222ddeec57d2382891fa1f005b38830efd928447def9ce8b5ab061",
-       "calibration": "09a8524a5e86aff408d96c53de82e17742d0a9d74a1766876ad078f04f6fd677",
-       "test": "327ba3bcdbef366f11e15319a0b88bf170c02738a4d954779c4cf7af7fafb025",
-       "rq2_subset": "60fa7422ffa9624a94cbf3210d584f90de65a936e7cd079af2702105fe90272c"}
-pytestmark = pytest.mark.skipif(not V2.exists(), reason="v2 split lists not built")
+       "calibration": "6e2b81da862d16f9d7ccb49be7a1067657261ca14859e628921b694fa6c4de52",
+       "test": "0aa979f0dbee9b4d04bcfc651e75568cd4a8a6f25ea20ce258b073a69655aed7",
+       "rq2_subset": "349a4689e6b5860bb31bfc3483a3bab7ab18acfff5df550b681f685ed3e9748d"}
+pytestmark = pytest.mark.skipif(not V2.exists(), reason="v3 split lists not built")
 
 
 def ids(p):
@@ -18,7 +18,7 @@ def ids(p):
 
 def test_counts_disjoint_and_pinned():
     sets = {k: ids(V2 / f"{k}_ids.txt") for k in PIN}
-    assert {k: len(v) for k, v in sets.items()} == {"tuning": 35, "calibration": 50, "test": 163, "rq2_subset": 60}
+    assert {k: len(v) for k, v in sets.items()} == {"tuning": 35, "calibration": 63, "test": 150, "rq2_subset": 60}
     assert not (set(sets["tuning"]) & set(sets["calibration"])) and not (set(sets["tuning"]) & set(sets["test"]))
     assert not (set(sets["calibration"]) & set(sets["test"])) and set(sets["rq2_subset"]) <= set(sets["test"])
     for k, h in PIN.items():
