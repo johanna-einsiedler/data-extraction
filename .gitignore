@@ -14,16 +14,8 @@ all_articles/
 # caches
 .pytest_cache/
 
-# archive: 3.7 GB of superseded material (batch_api payloads are needed by
 # analysis/hpo_analysis/recover.py but are not versionable); manifests only
-archive/*
-!archive/README.md
-!archive/superseded_2026-09/
-archive/superseded_2026-09/*
-!archive/superseded_2026-09/README.md
-!archive/superseded_2026-10/
-archive/superseded_2026-10/*
-!archive/superseded_2026-10/README.md
+archive/
 
 # Phase-2 study dir: the three study DBs + provenance scripts are tracked;
 # worker logs, point-in-time backups and throwaway studies are not
@@ -41,7 +33,6 @@ stage2_analyses/**/sanity.db
 *.bak
 
 # generated test artefacts (written at import / test time)
-tests/caching/queries_with_prompts.json
 tests/query_creation/queries_with_prompts.json
 tests/test_rcs_rerank_results_*.json
 

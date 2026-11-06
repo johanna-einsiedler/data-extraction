@@ -1,7 +1,7 @@
 """Materialise a split VERSION as tracked id lists + manifest (no PDFs touched).
 
 usage: pipeline_env/bin/python scripts/make_splits.py --version v2_2026-10-02 [--sizes 35,50] [--rq2-size 60]
-         [--rq2-seed 42] [--out-root configs/splits] [--mirror data/dataset_splits] [--legacy-check]
+         [--rq2-seed 42] [--out-root configs/splits] [--mirror DIR] [--legacy-check]
 
 v2 (preregistered re-split): slices [:35] / [35:85] / [85:] of the seed-42 permutation of the
 248 eligible (>= 2-coder) studies -> tuning 35 (identical to v1), calibration 50, test 163;
@@ -74,7 +74,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--version", default="v3_2026-10-30"); ap.add_argument("--sizes", default="35,63")
     ap.add_argument("--rq2-size", type=int, default=60); ap.add_argument("--rq2-seed", type=int, default=42)
-    ap.add_argument("--out-root", default="configs/splits"); ap.add_argument("--mirror", default="data/dataset_splits")
+    ap.add_argument("--out-root", default="configs/splits"); ap.add_argument("--mirror", default="")
     ap.add_argument("--legacy-check", action="store_true"); ap.add_argument("--v1-dir", default="configs/splits/v1_2026-07-03")
     a = ap.parse_args()
     if a.legacy_check:
