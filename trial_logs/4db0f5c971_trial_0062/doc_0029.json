@@ -1,0 +1,956 @@
+{
+  "doc_id": 29,
+  "doc_name": "274",
+  "parameters_hash": "4db0f5c971b00dd042eb80793f70fb3d",
+  "results": [
+    {
+      "doc_id": 29,
+      "query_id": "1.8",
+      "label": "outcome",
+      "type": "single_choice",
+      "llm_output": "1",
+      "raw_output": "1",
+      "pred_indicator": "1",
+      "pred_value": "Binary",
+      "true_indicator": "1",
+      "true_value": "Binary",
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "1.2.1",
+      "label": "cases",
+      "type": "numeric",
+      "llm_output": "Z",
+      "raw_output": "Z",
+      "pred_value": 0.0,
+      "true_value": 123.0,
+      "accuracy": 0,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "3.2",
+      "label": "tunevalues",
+      "type": "multiple_choice",
+      "llm_output": "A",
+      "raw_output": "A",
+      "pred_indicator": [
+        "A"
+      ],
+      "pred_value": [
+        "hyperparameter values not mentioned"
+      ],
+      "true_indicator": [
+        "A"
+      ],
+      "true_value": [
+        "hyperparameter values not mentioned"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "3.2.1",
+      "label": "tunemethod",
+      "type": "multiple_choice",
+      "llm_output": "Z",
+      "raw_output": "Z",
+      "pred_indicator": [
+        "Z"
+      ],
+      "pred_value": [
+        "0"
+      ],
+      "true_indicator": [
+        "Z"
+      ],
+      "true_value": [
+        "0"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "3.4",
+      "label": "nested",
+      "type": "single_choice",
+      "llm_output": "0",
+      "raw_output": "0",
+      "pred_indicator": "0",
+      "pred_value": "No nested structure",
+      "true_indicator": "0",
+      "true_value": "No nested structure",
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "3.4.1",
+      "label": "nesthand",
+      "type": "multiple_choice",
+      "llm_output": "Z",
+      "raw_output": "Z",
+      "pred_indicator": [
+        "Z"
+      ],
+      "pred_value": [
+        "0"
+      ],
+      "true_indicator": [
+        "Z"
+      ],
+      "true_value": [
+        "0"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "3.5",
+      "label": "imbalhand",
+      "type": "multiple_choice",
+      "llm_output": "Z",
+      "raw_output": "Z",
+      "pred_indicator": [
+        "Z"
+      ],
+      "pred_value": [
+        "0"
+      ],
+      "true_indicator": [
+        "Z"
+      ],
+      "true_value": [
+        "0"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "3.5.1",
+      "label": "sampling",
+      "type": "multiple_choice",
+      "llm_output": "Z",
+      "raw_output": "Z",
+      "pred_indicator": [
+        "Z"
+      ],
+      "pred_value": [
+        "0"
+      ],
+      "true_indicator": [
+        "Z"
+      ],
+      "true_value": [
+        "0"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "4.1",
+      "label": "compare",
+      "type": "multiple_choice",
+      "llm_output": "Z",
+      "raw_output": "Z",
+      "pred_indicator": [
+        "Z"
+      ],
+      "pred_value": [
+        "0"
+      ],
+      "true_indicator": [
+        "B"
+      ],
+      "true_value": [
+        "between an unregularized linear logistic regression model and simple regularized linear logistic or complex ml models"
+      ],
+      "accuracy": 0,
+      "accuracy_secondary": 0,
+      "accuracy_exact": 0,
+      "accuracy_jaccard": 0.0,
+      "accuracy_per_level": 0.6666666666666666,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "4.2",
+      "label": "valid",
+      "type": "multiple_choice",
+      "llm_output": "C",
+      "raw_output": "C",
+      "pred_indicator": [
+        "C"
+      ],
+      "pred_value": [
+        "internal single split"
+      ],
+      "true_indicator": [
+        "C"
+      ],
+      "true_value": [
+        "internal single split"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "4.2.1",
+      "label": "ratio",
+      "type": "numeric",
+      "llm_output": "75",
+      "raw_output": "75",
+      "pred_value": 75.0,
+      "true_value": 75.0,
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "0.7",
+      "label": "code",
+      "type": "single_choice",
+      "llm_output": "1",
+      "raw_output": "1",
+      "pred_indicator": "1",
+      "pred_value": "No",
+      "true_indicator": "1",
+      "true_value": "No",
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "0.7.1",
+      "label": "codelang",
+      "type": "multiple_choice",
+      "llm_output": "A",
+      "raw_output": "A",
+      "pred_indicator": [
+        "A"
+      ],
+      "pred_value": [
+        "r"
+      ],
+      "true_indicator": [
+        "A"
+      ],
+      "true_value": [
+        "r"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "0.7.2",
+      "label": "codevers",
+      "type": "single_choice",
+      "llm_output": "2",
+      "raw_output": "2",
+      "pred_indicator": "2",
+      "pred_value": "Yes",
+      "true_indicator": "2",
+      "true_value": "Yes",
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "0.7.3",
+      "label": "packages",
+      "type": "list",
+      "llm_output": "Z",
+      "raw_output": "Z",
+      "pred_value": [],
+      "true_value": [
+        "0"
+      ],
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "0.7.4",
+      "label": "packagesvers",
+      "type": "single_choice",
+      "llm_output": "1",
+      "raw_output": "1",
+      "pred_indicator": "1",
+      "pred_value": "No",
+      "true_indicator": "1",
+      "true_value": "No",
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "0.8",
+      "label": "data",
+      "type": "single_choice",
+      "llm_output": "1",
+      "raw_output": "1",
+      "pred_indicator": "1",
+      "pred_value": "Available upon request",
+      "true_indicator": "1",
+      "true_value": "Available upon request",
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "0.9",
+      "label": "prereg",
+      "type": "single_choice",
+      "llm_output": "Z",
+      "raw_output": "Z",
+      "pred_indicator": "0",
+      "pred_value": "",
+      "true_indicator": "1",
+      "true_value": "No",
+      "accuracy": 0,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "1.1",
+      "label": "n",
+      "type": "numeric",
+      "llm_output": "259",
+      "raw_output": "259",
+      "pred_value": 259.0,
+      "true_value": 259.0,
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "1.2",
+      "label": "p",
+      "type": "numeric",
+      "llm_output": "23",
+      "raw_output": "23",
+      "pred_value": 23.0,
+      "true_value": 23.0,
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "1.3",
+      "label": "sample",
+      "type": "open_ended",
+      "llm_output": "young adults aged between 18 and 35",
+      "raw_output": "young adults aged between 18 and 35",
+      "pred_value": "young adults aged between 18 and 35",
+      "true_value": [
+        "Young adults aged between 18 and 35."
+      ],
+      "accuracy": 1,
+      "judge_equivalent": true,
+      "judge_confidence": 1.0,
+      "judge_reason": "normalized-exact",
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "1.4",
+      "label": "country",
+      "type": "multiple_choice",
+      "llm_output": "Y",
+      "raw_output": "Y",
+      "pred_indicator": [
+        "Y"
+      ],
+      "pred_value": [
+        "other",
+        "singapore"
+      ],
+      "true_indicator": [
+        "Y"
+      ],
+      "true_value": [
+        "singapore"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": "Singapore",
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "1.5",
+      "label": "predtype",
+      "type": "multiple_choice",
+      "llm_output": "F,G",
+      "raw_output": "F,G",
+      "pred_indicator": [
+        "F",
+        "G"
+      ],
+      "pred_value": [
+        "rating judgement data",
+        "demographic biographical data"
+      ],
+      "true_indicator": [
+        "F",
+        "G"
+      ],
+      "true_value": [
+        "demographic biographical data",
+        "rating judgement data"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "1.6",
+      "label": "outtype",
+      "type": "multiple_choice",
+      "llm_output": "F",
+      "raw_output": "F",
+      "pred_indicator": [
+        "F"
+      ],
+      "pred_value": [
+        "rating judgement data"
+      ],
+      "true_indicator": [
+        "F",
+        "G"
+      ],
+      "true_value": [
+        "demographic biographical data",
+        "rating judgement data"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 0,
+      "accuracy_jaccard": 0.5,
+      "accuracy_per_level": 0.875,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "1.7",
+      "label": "predtask",
+      "type": "open_ended",
+      "llm_output": "predicting presence or absence of role-play experience",
+      "raw_output": "predicting presence or absence of role-play experience",
+      "pred_value": "predicting presence or absence of role-play experience",
+      "true_value": [
+        "predicting role-play experiences"
+      ],
+      "accuracy": 1,
+      "judge_equivalent": true,
+      "judge_confidence": 0.95,
+      "judge_reason": "Both descriptions involve predicting aspects of role-play experiences, with B specifying the presence or absence, which is a detail within the broader task described in A.",
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "1.9",
+      "label": "long",
+      "type": "single_choice",
+      "llm_output": "1",
+      "raw_output": "1",
+      "pred_indicator": "1",
+      "pred_value": "No",
+      "true_indicator": "1",
+      "true_value": "No",
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "2.1",
+      "label": "miss",
+      "type": "single_choice",
+      "llm_output": "1",
+      "raw_output": "1",
+      "pred_indicator": "1",
+      "pred_value": "General statement",
+      "true_indicator": "1",
+      "true_value": "General statement",
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "2.2",
+      "label": " misshand",
+      "type": "multiple_choice",
+      "llm_output": "A",
+      "raw_output": "A",
+      "pred_indicator": [
+        "A"
+      ],
+      "pred_value": [
+        "listwise deletion"
+      ],
+      "true_indicator": [
+        "A"
+      ],
+      "true_value": [
+        "listwise deletion"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "2.3",
+      "label": "enrich",
+      "type": "multiple_choice",
+      "llm_output": "A",
+      "raw_output": "A",
+      "pred_indicator": [
+        "A"
+      ],
+      "pred_value": [
+        "aggregating items to scales"
+      ],
+      "true_indicator": [
+        "A"
+      ],
+      "true_value": [
+        "aggregating items to scales"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "2.4",
+      "label": "engineer",
+      "type": "multiple_choice",
+      "llm_output": "Z",
+      "raw_output": "Z",
+      "pred_indicator": [
+        "Z"
+      ],
+      "pred_value": [
+        "0"
+      ],
+      "true_indicator": [
+        "A"
+      ],
+      "true_value": [
+        "standardization zscores"
+      ],
+      "accuracy": 0,
+      "accuracy_secondary": 0,
+      "accuracy_exact": 0,
+      "accuracy_jaccard": 0.0,
+      "accuracy_per_level": 0.8,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "2.5",
+      "label": "select",
+      "type": "multiple_choice",
+      "llm_output": "Z",
+      "raw_output": "Z",
+      "pred_indicator": [
+        "Z"
+      ],
+      "pred_value": [
+        "0"
+      ],
+      "true_indicator": [
+        "Z"
+      ],
+      "true_value": [
+        "0"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "3.1",
+      "label": "algo",
+      "type": "multiple_choice",
+      "llm_output": "L",
+      "raw_output": "L",
+      "pred_indicator": [
+        "L"
+      ],
+      "pred_value": [
+        "linear svm"
+      ],
+      "true_indicator": [
+        "L"
+      ],
+      "true_value": [
+        "linear svm"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "3.3",
+      "label": "resampling",
+      "type": "multiple_choice",
+      "llm_output": "Z",
+      "raw_output": "Z",
+      "pred_indicator": [
+        "Z"
+      ],
+      "pred_value": [
+        "0"
+      ],
+      "true_indicator": [
+        "Z"
+      ],
+      "true_value": [
+        "0"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "4.3",
+      "label": "perfmetric",
+      "type": "multiple_choice",
+      "llm_output": "I",
+      "raw_output": "I",
+      "pred_indicator": [
+        "I"
+      ],
+      "pred_value": [
+        "accuracy acc"
+      ],
+      "true_indicator": [
+        "I"
+      ],
+      "true_value": [
+        "acc"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "4.5.1",
+      "label": "highestperf",
+      "type": "numeric",
+      "llm_output": "Z",
+      "raw_output": "Z",
+      "pred_value": 0.0,
+      "true_value": -99.0,
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "4.5.2",
+      "label": "highestperf",
+      "type": "numeric",
+      "llm_output": "75",
+      "raw_output": "75",
+      "pred_value": 75.0,
+      "true_value": -99.0,
+      "accuracy": 0,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "4.5.3",
+      "label": "highestperf",
+      "type": "numeric",
+      "llm_output": "Z",
+      "raw_output": "Z",
+      "pred_value": 0.0,
+      "true_value": -99.0,
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "4.5.4",
+      "label": "highestperf",
+      "type": "numeric",
+      "llm_output": "Z",
+      "raw_output": "Z",
+      "pred_value": 0.0,
+      "true_value": -99.0,
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "4.5.5",
+      "label": "highestperf",
+      "type": "numeric",
+      "llm_output": "Z",
+      "raw_output": "Z",
+      "pred_value": 0.0,
+      "true_value": -99.0,
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "4.6",
+      "label": "ci",
+      "type": "single_choice",
+      "llm_output": "1",
+      "raw_output": "1",
+      "pred_indicator": "1",
+      "pred_value": "No",
+      "true_indicator": "1",
+      "true_value": "No",
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "4.7",
+      "label": "sig",
+      "type": "multiple_choice",
+      "llm_output": "Y",
+      "raw_output": "Y",
+      "pred_indicator": [
+        "Y"
+      ],
+      "pred_value": [
+        "for other reported results",
+        "posthoc mannwhitney utest between roleplay and nonroleplay groups"
+      ],
+      "true_indicator": [
+        "B",
+        "Y"
+      ],
+      "true_value": [
+        "for variable importance measures",
+        "group comparisons"
+      ],
+      "accuracy": 0,
+      "accuracy_secondary": 0,
+      "accuracy_exact": 0,
+      "accuracy_jaccard": 0.5,
+      "accuracy_per_level": 0.6666666666666666,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": "post-hoc Mann-Whitney U-test between role-play and non-role-play groups",
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "5.1",
+      "label": "iml",
+      "type": "multiple_choice",
+      "llm_output": "L",
+      "raw_output": "L",
+      "pred_indicator": [
+        "L"
+      ],
+      "pred_value": [
+        "unspecified variable importance measures"
+      ],
+      "true_indicator": [
+        "A"
+      ],
+      "true_value": [
+        "standardized model coefficients"
+      ],
+      "accuracy": 0,
+      "accuracy_secondary": 0,
+      "accuracy_exact": 0,
+      "accuracy_jaccard": 0.0,
+      "accuracy_per_level": 0.8461538461538461,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 29,
+      "query_id": "5.2",
+      "label": "limit",
+      "type": "multiple_choice",
+      "llm_output": "A,C,Y",
+      "raw_output": "A,C,Y",
+      "pred_indicator": [
+        "A",
+        "C",
+        "Y"
+      ],
+      "pred_value": [
+        "lack of representativeness of the data",
+        "unreliably measured outcome",
+        "other",
+        "crosssectional correlational design"
+      ],
+      "true_indicator": [
+        "A",
+        "C"
+      ],
+      "true_value": [
+        "lack of representativeness of the data",
+        "unreliably measured outcome"
+      ],
+      "accuracy": 0,
+      "accuracy_secondary": 0,
+      "accuracy_exact": 0,
+      "accuracy_jaccard": 0.6666666666666666,
+      "accuracy_per_level": 0.9090909090909091,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": "cross-sectional correlational design",
+      "context": "[full document]",
+      "logprobs": {}
+    }
+  ],
+  "batched_other_text": {
+    "1.4": "Singapore",
+    "4.7": "post-hoc Mann-Whitney U-test between role-play and non-role-play groups",
+    "5.2": "cross-sectional correlational design"
+  }
+}

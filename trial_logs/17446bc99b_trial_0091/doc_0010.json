@@ -1,0 +1,995 @@
+{
+  "doc_id": 10,
+  "doc_name": "258",
+  "parameters_hash": "17446bc99b5f0e39effd746a6b877e30",
+  "results": [
+    {
+      "doc_id": 10,
+      "query_id": "1.8",
+      "label": "outcome",
+      "type": "single_choice",
+      "llm_output": "4",
+      "raw_output": "4",
+      "pred_indicator": "4",
+      "pred_value": "Continuous",
+      "true_indicator": "4",
+      "true_value": "Continuous",
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "1.2.1",
+      "label": "cases",
+      "type": "numeric",
+      "llm_output": "",
+      "raw_output": null,
+      "pred_value": -99,
+      "true_value": [
+        "-99"
+      ],
+      "accuracy": 1
+    },
+    {
+      "doc_id": 10,
+      "query_id": "3.2",
+      "label": "tunevalues",
+      "type": "multiple_choice",
+      "llm_output": "A",
+      "raw_output": "A",
+      "pred_indicator": [
+        "A"
+      ],
+      "pred_value": [
+        "hyperparameter values not mentioned"
+      ],
+      "true_indicator": [
+        "A"
+      ],
+      "true_value": [
+        "hyperparameter values not mentioned"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "3.2.1",
+      "label": "tunemethod",
+      "type": "multiple_choice",
+      "llm_output": "Z",
+      "raw_output": "Z",
+      "pred_indicator": [
+        "Z"
+      ],
+      "pred_value": [
+        "0"
+      ],
+      "true_indicator": [
+        "Z"
+      ],
+      "true_value": [
+        "0"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "3.4",
+      "label": "nested",
+      "type": "single_choice",
+      "llm_output": "0",
+      "raw_output": "0",
+      "pred_indicator": "0",
+      "pred_value": "No nested structure",
+      "true_indicator": "0",
+      "true_value": "No nested structure",
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "3.4.1",
+      "label": "nesthand",
+      "type": "multiple_choice",
+      "llm_output": "Z",
+      "raw_output": "Z",
+      "pred_indicator": [
+        "Z"
+      ],
+      "pred_value": [
+        "0"
+      ],
+      "true_indicator": [
+        "Z"
+      ],
+      "true_value": [
+        "0"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "3.5",
+      "label": "imbalhand",
+      "type": "multiple_choice",
+      "llm_output": "Y",
+      "raw_output": "Y",
+      "pred_indicator": [],
+      "pred_value": [],
+      "true_indicator": [
+        "Z"
+      ],
+      "true_value": [
+        "0"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 0,
+      "accuracy_jaccard": 0.0,
+      "accuracy_per_level": 0.75,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "3.5.1",
+      "label": "sampling",
+      "type": "multiple_choice",
+      "llm_output": "Y",
+      "raw_output": "Y",
+      "pred_indicator": [
+        "Y"
+      ],
+      "pred_value": [
+        "other",
+        "smogn"
+      ],
+      "true_indicator": [
+        "Y"
+      ],
+      "true_value": [
+        "smogn"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": "SMOGN",
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "4.1",
+      "label": "compare",
+      "type": "multiple_choice",
+      "llm_output": "B,E",
+      "raw_output": "B,E",
+      "pred_indicator": [
+        "B",
+        "E"
+      ],
+      "pred_value": [
+        "between an unregularized linear logistic regression model and simple regularized linear logistic or complex ml models",
+        "between different complex ml models"
+      ],
+      "true_indicator": [
+        "B",
+        "E"
+      ],
+      "true_value": [
+        "between an unregularized linear logistic regression model and simple regularized linear logistic or complex ml models",
+        "between different complex ml models"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "4.2",
+      "label": "valid",
+      "type": "multiple_choice",
+      "llm_output": "D,E",
+      "raw_output": "D,E",
+      "pred_indicator": [
+        "D",
+        "E"
+      ],
+      "pred_value": [
+        "internal repeated splits ie some form of nested resampling",
+        "external independent unseen holdout data same population"
+      ],
+      "true_indicator": [
+        "E"
+      ],
+      "true_value": [
+        "external independent unseen holdout data same population"
+      ],
+      "accuracy": 0,
+      "accuracy_secondary": 0,
+      "accuracy_exact": 0,
+      "accuracy_jaccard": 0.5,
+      "accuracy_per_level": 0.8571428571428571,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "4.2.1",
+      "label": "ratio",
+      "type": "numeric",
+      "llm_output": "",
+      "raw_output": null,
+      "pred_value": -99,
+      "true_value": [
+        "-99"
+      ],
+      "accuracy": 1
+    },
+    {
+      "doc_id": 10,
+      "query_id": "0.7",
+      "label": "code",
+      "type": "single_choice",
+      "llm_output": "2",
+      "raw_output": "2",
+      "pred_indicator": "2",
+      "pred_value": "Yes",
+      "true_indicator": "2",
+      "true_value": "Yes",
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "0.7.1",
+      "label": "codelang",
+      "type": "multiple_choice",
+      "llm_output": "A",
+      "raw_output": "A",
+      "pred_indicator": [
+        "A"
+      ],
+      "pred_value": [
+        "r"
+      ],
+      "true_indicator": [
+        "A"
+      ],
+      "true_value": [
+        "r"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "0.7.2",
+      "label": "codevers",
+      "type": "single_choice",
+      "llm_output": "2",
+      "raw_output": "2",
+      "pred_indicator": "2",
+      "pred_value": "Yes",
+      "true_indicator": "2",
+      "true_value": "Yes",
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "0.7.3",
+      "label": "packages",
+      "type": "list",
+      "llm_output": "Z",
+      "raw_output": "Z",
+      "pred_value": [],
+      "true_value": [
+        "0"
+      ],
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "0.7.4",
+      "label": "packagesvers",
+      "type": "single_choice",
+      "llm_output": "1",
+      "raw_output": "1",
+      "pred_indicator": "1",
+      "pred_value": "No",
+      "true_indicator": "1",
+      "true_value": "No",
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "0.8",
+      "label": "data",
+      "type": "single_choice",
+      "llm_output": "0",
+      "raw_output": "0",
+      "pred_indicator": "0",
+      "pred_value": "Not available",
+      "true_indicator": "0",
+      "true_value": "Not available",
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "0.9",
+      "label": "prereg",
+      "type": "single_choice",
+      "llm_output": "1",
+      "raw_output": "1",
+      "pred_indicator": "1",
+      "pred_value": "No",
+      "true_indicator": "1",
+      "true_value": "No",
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "1.1",
+      "label": "n",
+      "type": "numeric",
+      "llm_output": "1975,486",
+      "raw_output": "1975,486",
+      "pred_value": 1975486.0,
+      "true_value": 2461.0,
+      "accuracy": 0,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "1.2",
+      "label": "p",
+      "type": "numeric",
+      "llm_output": "Z",
+      "raw_output": "Z",
+      "pred_value": 0.0,
+      "true_value": 0.0,
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "1.3",
+      "label": "sample",
+      "type": "open_ended",
+      "llm_output": "adults with depression receiving CBT in a Dutch outpatient mental health clinic",
+      "raw_output": "adults with depression receiving CBT in a Dutch outpatient mental health clinic",
+      "pred_value": "adults with depression receiving CBT in a Dutch outpatient mental health clinic",
+      "true_value": [
+        "patients with depression"
+      ],
+      "accuracy": 1,
+      "judge_equivalent": true,
+      "judge_confidence": 0.95,
+      "judge_reason": "Description B specifies a subset of the population (adults) and a treatment method (CBT) within the context of a Dutch outpatient mental health clinic, which does not contradict the core construct of 'patients with depression' in Description A.",
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "1.4",
+      "label": "country",
+      "type": "multiple_choice",
+      "llm_output": "H",
+      "raw_output": "H",
+      "pred_indicator": [
+        "H"
+      ],
+      "pred_value": [
+        "netherlands"
+      ],
+      "true_indicator": [
+        "H"
+      ],
+      "true_value": [
+        "netherlands"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "1.5",
+      "label": "predtype",
+      "type": "multiple_choice",
+      "llm_output": "F,G,H",
+      "raw_output": "F,G,H",
+      "pred_indicator": [
+        "F",
+        "G",
+        "H"
+      ],
+      "pred_value": [
+        "rating judgement data",
+        "demographic biographical data",
+        "contextual aggregate data"
+      ],
+      "true_indicator": [
+        "F",
+        "G"
+      ],
+      "true_value": [
+        "demographic biographical data",
+        "rating judgement data"
+      ],
+      "accuracy": 0,
+      "accuracy_secondary": 0,
+      "accuracy_exact": 0,
+      "accuracy_jaccard": 0.6666666666666666,
+      "accuracy_per_level": 0.875,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "1.6",
+      "label": "outtype",
+      "type": "multiple_choice",
+      "llm_output": "F",
+      "raw_output": "F",
+      "pred_indicator": [
+        "F"
+      ],
+      "pred_value": [
+        "rating judgement data"
+      ],
+      "true_indicator": [
+        "F"
+      ],
+      "true_value": [
+        "rating judgement data"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "1.7",
+      "label": "predtask",
+      "type": "open_ended",
+      "llm_output": "predicting SQ-48 score at the 10th session in CBT for depression",
+      "raw_output": "predicting SQ-48 score at the 10th session in CBT for depression",
+      "pred_value": "predicting SQ-48 score at the 10th session in CBT for depression",
+      "true_value": [
+        "Prediction of treatment outcome of CBT"
+      ],
+      "accuracy": 1,
+      "judge_equivalent": true,
+      "judge_confidence": 0.95,
+      "judge_reason": "Both descriptions involve predicting an outcome of CBT, with B specifying the SQ-48 score at a particular session.",
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "1.9",
+      "label": "long",
+      "type": "single_choice",
+      "llm_output": "2",
+      "raw_output": "2",
+      "pred_indicator": "2",
+      "pred_value": "Yes",
+      "true_indicator": "2",
+      "true_value": "Yes",
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "2.1",
+      "label": "miss",
+      "type": "single_choice",
+      "llm_output": "1",
+      "raw_output": "1",
+      "pred_indicator": "1",
+      "pred_value": "General statement",
+      "true_indicator": "1",
+      "true_value": "General statement",
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "2.2",
+      "label": " misshand",
+      "type": "multiple_choice",
+      "llm_output": "A",
+      "raw_output": "A",
+      "pred_indicator": [
+        "A"
+      ],
+      "pred_value": [
+        "listwise deletion"
+      ],
+      "true_indicator": [
+        "Y"
+      ],
+      "true_value": [
+        "missforest or other treeensemble based imputation"
+      ],
+      "accuracy": 0,
+      "accuracy_secondary": 0,
+      "accuracy_exact": 0,
+      "accuracy_jaccard": 0.0,
+      "accuracy_per_level": 0.7142857142857143,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "2.3",
+      "label": "enrich",
+      "type": "multiple_choice",
+      "llm_output": "A,B,Y",
+      "raw_output": "A,B,Y",
+      "pred_indicator": [
+        "A",
+        "B",
+        "Y"
+      ],
+      "pred_value": [
+        "aggregating items to scales",
+        "clustering grouping raw data to features",
+        "other",
+        "early symptom change delta sqt0 sqt1"
+      ],
+      "true_indicator": [
+        "A"
+      ],
+      "true_value": [
+        "aggregating items to scales"
+      ],
+      "accuracy": 0,
+      "accuracy_secondary": 0,
+      "accuracy_exact": 0,
+      "accuracy_jaccard": 0.3333333333333333,
+      "accuracy_per_level": 0.7777777777777778,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": "early symptom change (Delta = SQ(t0) - SQ(t1))",
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "2.4",
+      "label": "engineer",
+      "type": "multiple_choice",
+      "llm_output": "Z",
+      "raw_output": "Z",
+      "pred_indicator": [
+        "Z"
+      ],
+      "pred_value": [
+        "0"
+      ],
+      "true_indicator": [
+        "Z"
+      ],
+      "true_value": [
+        "0"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "2.5",
+      "label": "select",
+      "type": "multiple_choice",
+      "llm_output": "Y",
+      "raw_output": "Y",
+      "pred_indicator": [
+        "Y"
+      ],
+      "pred_value": [
+        "other",
+        "lasso"
+      ],
+      "true_indicator": [
+        "Z"
+      ],
+      "true_value": [
+        "0"
+      ],
+      "accuracy": 0,
+      "accuracy_secondary": 0,
+      "accuracy_exact": 0,
+      "accuracy_jaccard": 0.0,
+      "accuracy_per_level": 0.6,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": "Lasso",
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "3.1",
+      "label": "algo",
+      "type": "multiple_choice",
+      "llm_output": "B,F,H,Y",
+      "raw_output": "B,F,H,Y",
+      "pred_indicator": [
+        "B",
+        "F",
+        "H",
+        "Y"
+      ],
+      "pred_value": [
+        "lasso regression",
+        "random forest",
+        "xgboost",
+        "other",
+        "svm kernel unspecified neural network"
+      ],
+      "true_indicator": [
+        "F",
+        "H",
+        "Y"
+      ],
+      "true_value": [
+        "random forest",
+        "unspecified neural network nn",
+        "unspecified svm",
+        "xgboost"
+      ],
+      "accuracy": 0,
+      "accuracy_secondary": 0,
+      "accuracy_exact": 0,
+      "accuracy_jaccard": 0.75,
+      "accuracy_per_level": 0.9545454545454546,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": "SVM (kernel unspecified), neural network",
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "3.3",
+      "label": "resampling",
+      "type": "multiple_choice",
+      "llm_output": "C",
+      "raw_output": "C",
+      "pred_indicator": [
+        "C"
+      ],
+      "pred_value": [
+        "repeated k fold cv"
+      ],
+      "true_indicator": [
+        "C"
+      ],
+      "true_value": [
+        "repeated k fold cv"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "4.3",
+      "label": "perfmetric",
+      "type": "multiple_choice",
+      "llm_output": "D",
+      "raw_output": "D",
+      "pred_indicator": [
+        "D"
+      ],
+      "pred_value": [
+        "rsquared"
+      ],
+      "true_indicator": [
+        "D"
+      ],
+      "true_value": [
+        "r²"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "4.5.1",
+      "label": "highestperf",
+      "type": "numeric",
+      "llm_output": "Z",
+      "raw_output": "Z",
+      "pred_value": 0.0,
+      "true_value": -99.0,
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "4.5.2",
+      "label": "highestperf",
+      "type": "numeric",
+      "llm_output": "Z",
+      "raw_output": "Z",
+      "pred_value": 0.0,
+      "true_value": -99.0,
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "4.5.3",
+      "label": "highestperf",
+      "type": "numeric",
+      "llm_output": "Z",
+      "raw_output": "Z",
+      "pred_value": 0.0,
+      "true_value": -99.0,
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "4.5.4",
+      "label": "highestperf",
+      "type": "numeric",
+      "llm_output": "51.2",
+      "raw_output": "51.2",
+      "pred_value": 51.2,
+      "true_value": 0.463,
+      "accuracy": 0,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "4.5.5",
+      "label": "highestperf",
+      "type": "numeric",
+      "llm_output": "Z",
+      "raw_output": "Z",
+      "pred_value": 0.0,
+      "true_value": -99.0,
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "4.6",
+      "label": "ci",
+      "type": "single_choice",
+      "llm_output": "2",
+      "raw_output": "2",
+      "pred_indicator": "2",
+      "pred_value": "Yes",
+      "true_indicator": "2",
+      "true_value": "Yes",
+      "accuracy": 1,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "4.7",
+      "label": "sig",
+      "type": "multiple_choice",
+      "llm_output": "Y",
+      "raw_output": "Y",
+      "pred_indicator": [
+        "Y"
+      ],
+      "pred_value": [
+        "for other reported results",
+        "independent ttests and chisquare tests comparing complete cases with excluded patients"
+      ],
+      "true_indicator": [
+        "Y"
+      ],
+      "true_value": [
+        "group comparisons"
+      ],
+      "accuracy": 1,
+      "accuracy_secondary": 1,
+      "accuracy_exact": 1,
+      "accuracy_jaccard": 1.0,
+      "accuracy_per_level": 1.0,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": "independent t-tests and chi-square tests comparing complete cases with excluded patients",
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "5.1",
+      "label": "iml",
+      "type": "multiple_choice",
+      "llm_output": "A,B,C,I,J,L",
+      "raw_output": "A,B,C,I,J,L",
+      "pred_indicator": [
+        "A",
+        "B",
+        "C",
+        "I",
+        "J",
+        "L"
+      ],
+      "pred_value": [
+        "standardized model coefficients",
+        "permutation importance mean decrease in accuracy",
+        "gini importance mean decrease in impurity for tree models",
+        "partial dependence plots pdp",
+        "individual conditional expectation ice",
+        "unspecified variable importance measures"
+      ],
+      "true_indicator": [
+        "A",
+        "B",
+        "C",
+        "I",
+        "J"
+      ],
+      "true_value": [
+        "standardized model coefficients",
+        "gini importance",
+        "ice",
+        "pdp",
+        "permutation importance"
+      ],
+      "accuracy": 0,
+      "accuracy_secondary": 0,
+      "accuracy_exact": 0,
+      "accuracy_jaccard": 0.8333333333333334,
+      "accuracy_per_level": 0.9230769230769231,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": null,
+      "context": "[full document]",
+      "logprobs": {}
+    },
+    {
+      "doc_id": 10,
+      "query_id": "5.2",
+      "label": "limit",
+      "type": "multiple_choice",
+      "llm_output": "A,D,Y",
+      "raw_output": "A,D,Y",
+      "pred_indicator": [
+        "A",
+        "D",
+        "Y"
+      ],
+      "pred_value": [
+        "lack of representativeness of the data",
+        "incomplete data",
+        "other",
+        "limited predictors available in realworld clinical practice relatively few potential predictors"
+      ],
+      "true_indicator": [
+        "Y"
+      ],
+      "true_value": [
+        "limited predictor set",
+        "limited study design"
+      ],
+      "accuracy": 0,
+      "accuracy_secondary": 0,
+      "accuracy_exact": 0,
+      "accuracy_jaccard": 0.3333333333333333,
+      "accuracy_per_level": 0.8181818181818182,
+      "mc_metric": "I<=P<=U | curated exact (letters-only)",
+      "other_value": "limited predictors available in real-world clinical practice; relatively few potential predictors",
+      "context": "[full document]",
+      "logprobs": {}
+    }
+  ],
+  "batched_other_text": {
+    "3.5": "SMOGN",
+    "3.5.1": "SMOGN",
+    "2.3": "early symptom change (Delta = SQ(t0) - SQ(t1))",
+    "2.5": "Lasso",
+    "3.1": "SVM (kernel unspecified), neural network",
+    "4.7": "independent t-tests and chi-square tests comparing complete cases with excluded patients",
+    "5.2": "limited predictors available in real-world clinical practice; relatively few potential predictors"
+  }
+}

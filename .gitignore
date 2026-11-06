@@ -2,7 +2,22 @@
 data/*
 !data/dataset_splits/
 trial_cache/
-trial_logs/
+# trial outputs are deposited separately; only the frozen pipelines and their top sets are tracked
+trial_logs/*
+!trial_logs/5f762d817b_trial_0131/
+!trial_logs/5f762d817b_trial_0128/
+!trial_logs/2ea20cce02_trial_0148/
+!trial_logs/0367aa7d06_trial_0124/
+!trial_logs/f2609ec809_trial_0109/
+!trial_logs/67fdf4fef7_trial_0107/
+!trial_logs/67fdf4fef7_trial_0109/
+!trial_logs/17446bc99b_trial_0094/
+!trial_logs/30a8860a78_trial_0067/
+!trial_logs/17446bc99b_trial_0093/
+!trial_logs/17446bc99b_trial_0091/
+!trial_logs/d27d022237_trial_0092/
+!trial_logs/17446bc99b_trial_0088/
+!trial_logs/4db0f5c971_trial_0062/
 .env
 .DS_Store
 pipeline_env/

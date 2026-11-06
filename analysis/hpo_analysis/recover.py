@@ -37,7 +37,7 @@ RECOVERED_USAGE_PQ = CACHE / "recovered_usage.parquet"
 # The raw Batch-API payloads were moved to archive/batch_api/ during the 2026-09-04
 # cleanup. They are the only source for the 17 output-less trials, so resolve from
 # either location and keep the recovery reproducible.
-BATCH_DIRS = [ROOT / "archive" / "batch_api", ROOT]
+BATCH_DIRS = [ROOT.parent / "deposit" / "batch_api", ROOT / "archive" / "batch_api", ROOT]  # moved to the deposit folder 2026-11-07
 
 
 def _find(name: str) -> Path | None:
