@@ -53,6 +53,16 @@ class Ctx:
             agg = self.exp["dbs"][name].get("aggregated", {}).get(str(t.number))
             if agg:
                 self._fs[key] = union_folder_stats(agg, self.tuning)
+                absent = self.exp["dbs"][name].get("folders_absent", {}).get(str(t.number))
+                if self._fs[key]["n_doc_files"] == 0 and absent:
+                    # The union folders no longer exist on disk (documented loss); the
+                    # 31-paper record survives in the trial's own attributes, which are
+                    # the only basis left for I4/I5. Reported, not silently passed.
+                    print(f"WARN  {name} #{t.number}: union folders absent on disk -- {absent}")
+                    self._fs[key] = {"folder": f"union({agg}) [absent]", "n_papers": ua["n_papers"],
+                                     "n_cells": ua["n_cells"], "n_doc_files": ua.get("n_doc_files"),
+                                     "docs": None, "missing_docs": sorted(ua["missing_docs"]),
+                                     "mean": float(ua["partial_raw_mean_31papers"]), "config_md5": None}
             else:
                 origin, num, params = resolve_source(name, t, self.studies)
                 f = matched_folder(num, params)

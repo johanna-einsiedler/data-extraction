@@ -211,6 +211,9 @@
           148,
           124
         ]
+      },
+      "folders_absent": {
+        "123": "the four union folders 0b4c900e2c_trial_{0102,0110,0115,0123} were deleted in the trial_logs prune of 2026-11-07 (keep rule missed the union(...) source_folder); 486 cells of 12 papers recovered from the answer cache into analysis/cache/trial123_recovered_cells.json; the 31-paper scoring record (partial_raw_mean_31papers 0.6896, 1121 cells, missing 190/371/385/460) is the trial's DB attributes"
       }
     },
     "open_tpe": {

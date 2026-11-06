@@ -77,3 +77,5 @@ OpenRouter with a pinned provider. Copied Phase-1 trials for those ids were serv
 a different stack (different quantisation, possibly different sampling), so copied and
 new trials for the same `llm_model` are **not freely exchangeable**. Check before
 pooling them.
+
+**2026-11-07 trial_logs prune.** trial_logs/ now holds exactly the folders of the COMPLETE trials of the four studies (208 folders); sanity/smoke-study and failed-trial folders were deleted. One loss: the four union folders of phase2 #123 (gpt-4.1 + RCS, partial 31/35 papers) were removed by mistake; 486 of its cells (12 papers) are kept in `analysis/cache/trial123_recovered_cells.json`, and its scoring record lives in the trial's attributes (`check_study_coherence.py` reports this as a WARN and verifies #123 against those attributes).
