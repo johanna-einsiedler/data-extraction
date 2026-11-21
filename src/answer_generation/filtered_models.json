@@ -341,5 +341,31 @@
     "local_tier": "mid",
     "multimodal": false,
     "max_output_tokens": 16384
+  },
+  {
+    "id": "z-ai/glm-5.2",
+    "api_type": "openrouter",
+    "display_name": "GLM 5.2 (OpenRouter, Alibaba fp8)",
+    "organization": "Zai Org",
+    "context_length": 1048576,
+    "pricing": {
+      "input": 0.97,
+      "output": 3.04
+    },
+    "link": "https://openrouter.ai/z-ai/glm-5.2",
+    "exposes_logprobs": true,
+    "reasoning": true,
+    "multimodal": false,
+    "max_output_tokens": 32768,
+    "api_model": "z-ai/glm-5.2",
+    "base_url": "https://openrouter.ai/api/v1",
+    "provider_routing": {
+      "order": [
+        "Alibaba"
+      ],
+      "allow_fallbacks": false
+    },
+    "_added": "2026-11-19 variant of zai-org/GLM-5.2 (Together): OpenRouter endpoint that honours reasoning.enabled=false on the batched full-document prompt and returns top-5 answer-token logprobs (probe on tuning doc 103); Together's endpoint ignored the toggle and returned no logprobs",
+    "_not_in_search": true
   }
 ]

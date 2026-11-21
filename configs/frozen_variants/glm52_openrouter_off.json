@@ -1,0 +1,38 @@
+{
+ "label": "P_open variant: GLM-5.2 via OpenRouter/Alibaba fp8, reasoning off",
+ "source": {
+  "derived_from": "open (phase2 trial 109, f2609ec809)",
+  "change": "provider Together -> OpenRouter pinned Alibaba fp8; disable_reasoning=True",
+  "purpose": "tuning-set check before any re-freeze decision (2026-11-19)",
+  "judge": "microsoft/Phi-3-mini-4k-instruct"
+ },
+ "optuna_params": {
+  "mode": "full",
+  "llm_model": "z-ai/glm-5.2",
+  "parser": "MinerUParser",
+  "batched_prompt_type": "base_prompt",
+  "disable_reasoning": true
+ },
+ "trial_choices": {
+  "parser": "MinerUParser",
+  "mode": "full",
+  "chunk_size": null,
+  "chunk_overlap": null,
+  "chunker": "FullDocument",
+  "embedder": "N/A",
+  "retriever": "N/A",
+  "k": null,
+  "llm_model": "z-ai/glm-5.2",
+  "default_prompt_type": null,
+  "query_embedding": "full_document",
+  "use_default_prompt": true,
+  "question_mode": "batched",
+  "batched_prompt_type": "base_prompt",
+  "vlm": false,
+  "disable_reasoning": true
+ },
+ "trial_hash10": "d22703dbce",
+ "parameters_hash_md5": "d22703dbce29d54bf13d14d0a50c5121",
+ "expected_parser_meta": "mineru",
+ "folder": null
+}
