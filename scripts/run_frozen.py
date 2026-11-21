@@ -150,6 +150,9 @@ def main():
     ap.add_argument("--splits-version", default="v3_2026-10-30"); ap.add_argument("--runs-root", default="runs")
     ap.add_argument("--query-ids"); ap.add_argument("--allow-judge-override", action="store_true")
     ap.add_argument("--allow-test-stub", action="store_true")
+    ap.add_argument("--allow-parse-fallback", default="", metavar="IDS",
+                    help="comma-separated paper ids whose cached parse may be another parser's / a fallback "
+                         "(recorded in the manifest as parse_provenance_exceptions)")
     a = ap.parse_args()
 
     cname, entry = load_entry(a.config, a.allow_test_stub)
@@ -162,6 +165,11 @@ def main():
     os.environ["CALL_LEDGER_PATH"] = str(out_dir / "calls.jsonl")
     os.environ["RUN_ID"] = a.run_id
     os.environ["PAPER_CONCURRENCY"] = str(a.concurrency)
+    parse_exceptions = [x.strip() for x in a.allow_parse_fallback.split(",") if x.strip()]
+    if parse_exceptions:
+        os.environ["PARSE_PROVENANCE_EXCEPTIONS"] = ",".join(parse_exceptions)
+    else:
+        os.environ.pop("PARSE_PROVENANCE_EXCEPTIONS", None)
     for k in ("SMOKE_MAX_DOCS", "SMOKE_QUERY_IDS", "RESUME_FROM_FOLDER", "SAMPLE_ONLY", "GEMINI_BUDGET_USD"):
         os.environ.pop(k, None)
     os.environ.update({"QWEN_TIMEOUT_EXCLUSION": "0", "TRIAL_WALL_BUDGET_S": "1000000000",
@@ -191,7 +199,10 @@ def main():
     manifest = json.load(open(manifest_path)) if manifest_path.exists() else {
         "run_id": a.run_id, "config_name": cname, "registry_entry": entry, "paper_set": {"name": pset, "ids_file": str(ids_file),
         "sha256": pf["ids_sha256"], "n": len(ids), "ids": ids}, "out_dir": str(out_dir), "attempts": []}
-    attempt = {"started_utc": _dt.datetime.now(_dt.timezone.utc).isoformat(), "resume": a.resume}
+    attempt = {"started_utc": _dt.datetime.now(_dt.timezone.utc).isoformat(), "resume": a.resume,
+               "parse_provenance_exceptions": parse_exceptions}
+    if parse_exceptions:
+        manifest["parse_provenance_exceptions"] = sorted(set(manifest.get("parse_provenance_exceptions", [])) | set(parse_exceptions))
     manifest["attempts"].append(attempt); manifest["status"] = "running"; manifest["preflight"] = pf
     json.dump(manifest, open(manifest_path, "w"), indent=1, default=str)
 

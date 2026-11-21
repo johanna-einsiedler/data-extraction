@@ -100,7 +100,8 @@ markupsafe==3.0.2
 matplotlib==3.10.6
 matplotlib-inline==0.1.7
 mdurl==0.1.2
-mineru==2.2.1
+mineru==3.4.3  # installed 2026-07-08; produced the July tuning parses (pipeline backend). 2.2.1 produced the 2026-03-11 parses.
+mineru-vl-utils==1.0.5
 modelscope==1.29.2
 mpmath==1.3.0
 multidict==6.6.4

@@ -740,11 +740,15 @@ def evaluate_answer(
             acc = int(pred_num == 0)
         elif np.isnan(true_num):
             acc = 0
+        elif true_num == 0:
+            # Gold "not reported" (code 0): correct iff the model abstains (Z / 0).
+            acc = int(pred_num == 0)
         else:
-            # Compare rounded to the lesser reported precision (0.849 vs 0.85 -> match;
-            # 90% -> 90; integer counts stay exact). No partial credit.
-            ndp = min(pred_dec, true_dec)
-            acc = int(round(pred_num, ndp) == round(true_num, ndp))
+            # Registered precision-tolerant rule (mc_rule.numeric_match): round both,
+            # half away from zero, to the precision of the less precise value when that
+            # value has >= 2 significant digits; otherwise exact. 0.849 vs 0.85 match,
+            # 1 vs 0.85 and 0.8 vs 0.849 do not; integers exact. No partial credit.
+            acc = mc_rule.numeric_match(llm_output, true_str)
 
         # dependency-gated numerics (1.2.1, 4.2.1): gold-NA + model-abstain -> correct
         # (reconciles -99/-96/0/Z between coder and model conventions).

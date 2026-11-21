@@ -107,3 +107,64 @@ def score_mc(item_id, pred_letters, true_letters, pred_value,
 def na_pair(pred_value, true_value):
     """True when a dependency-gated numeric / list cell is gold-NA + model-abstain."""
     return is_na(pred_value) and is_na(true_value)
+
+
+# --------------------------------------------------------------------------
+# Dependency children (prereg2 "Conventions shared by all item types"): the coded
+# dataset marks a child "not applicable" with -99 for the numeric children and
+# with 0 for the multiple-choice children (shared with "not reported").
+# --------------------------------------------------------------------------
+def child_gold_not_applicable(qtype, gold):
+    """Does the gold mark a dependency child not applicable?"""
+    g = _norm_scalar(gold[0] if isinstance(gold, (list, tuple)) and gold else gold)
+    if g in ("-99", "-99.0", "not applicable"):
+        return True
+    return qtype == "multiple_choice" and g in ("0", "")
+
+
+# --------------------------------------------------------------------------
+# Numeric items (prereg2 "Numeric items: precision-tolerant matching"): round
+# both values, half away from zero, to the precision of the less precise of the
+# two, provided that value carries at least two significant digits; a value with
+# a single significant digit must match exactly; integers match exactly. The
+# rule is symmetric in prediction and gold.
+# --------------------------------------------------------------------------
+_NUM_TOKEN = re.compile(r"-?\d*\.?\d+")
+
+
+def parse_numeric(s):
+    """(value, decimals, significant_digits) from the first numeric token after
+    stripping %, units and thousands separators; None for 'Z' / unparseable."""
+    s = str(s).strip()
+    if s == "" or s.upper() == "Z" or s.lower() in ("none", "nan"):
+        return None
+    m = _NUM_TOKEN.search(s.replace(",", ""))
+    if not m:
+        return None
+    tok = m.group()
+    dec = len(tok.split(".")[1]) if "." in tok else 0
+    digits = tok.lstrip("-").replace(".", "").lstrip("0")
+    # Trailing zeros of an integer count as significant ("50" -> 2); a bare zero
+    # has one significant digit.
+    sig = len(digits) if digits else 1
+    return float(tok), dec, sig
+
+
+def _round_half_away(x, ndp):
+    from decimal import Decimal, ROUND_HALF_UP
+    return Decimal(repr(float(x))).quantize(Decimal(1).scaleb(-ndp), rounding=ROUND_HALF_UP)
+
+
+def numeric_match(pred, gold):
+    """0/1 under the registered precision-tolerant rule. Both arguments are raw
+    strings (or numbers); abstentions / -99 are handled by the caller."""
+    pp, gg = parse_numeric(pred), parse_numeric(gold)
+    if pp is None or gg is None:
+        return 0
+    (pv, pdec, psig), (gv, gdec, gsig) = pp, gg
+    if pdec == gdec:                       # same precision (incl. two integers): exact
+        return int(pv == gv)
+    less_dec, less_sig = (pdec, psig) if pdec < gdec else (gdec, gsig)
+    if less_sig >= 2:
+        return int(_round_half_away(pv, less_dec) == _round_half_away(gv, less_dec))
+    return int(pv == gv)

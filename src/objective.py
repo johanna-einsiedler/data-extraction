@@ -442,31 +442,54 @@ def embeddings_dir(
     return Path(base) / parser_name / chunker_name / embedder_name
 
 
-def dependency_autoresolve(qid, gold):
-    """Prereg2 metrics rule for dependency-child items (3.2.1/3.4.1/3.5.1/1.2.1...):
-    a cell whose GOLD is the not-applicable code -99 is resolved by the codebook's
-    dependency logic without a model call and counts as correct. Any other gold
-    means the item applies to this study, so the model is ALWAYS asked. The model's
-    own answer to the parent item is never used to skip a child (the pre-2026-09-28
-    behaviour fabricated raw_output="Not applicable"/pred -99 and mis-scored ~24-41
-    MC cells per trial; found by analysis/hpo_analysis/unified_rescore.py). Returns
-    the eval_result dict for an auto-resolved cell, else None (must evaluate).
-    raw_output stays None so offline re-scoring keeps the stored accuracy."""
-    if str(gold[0]) == str(-99):
-        return {"raw_output": None, "pred_value": -99, "true_value": gold,
-                "accuracy": 1}
-    return None
+def dependency_resolve(qid, qtype, doc_result_map, gold, model_answer=None):
+    """Prereg2 model-driven dependency rule for child items (src/dependencies.txt).
+
+    Applicability follows the PIPELINE'S OWN answer to the parent item, never the
+    gold: when the parent answer makes the child not applicable, the child is set
+    to -99 without a model call and counts as correct iff the gold marks the child
+    not applicable (-99 for the numeric children, 0 or -99 for the multiple-choice
+    children, where the coders used the not-reported code); otherwise None is
+    returned and the child is scored by its item rule like any other cell.
+    Nothing about the gold enters the decision, so the rule applies unchanged to
+    papers without gold (RQ4). In batched mode the model has already answered the
+    child; that answer is kept under `model_answer_unused` (raw_output stays None
+    so offline re-scoring keeps the stored value). The pre-2026-09-28 scorer used
+    the parent answer too but then scored the fabricated "Not applicable" against
+    the raw gold; the 2026-09-28 .. 2026-11-20 scorer was gold-driven (gold -99 ->
+    not asked, auto-correct), which is what the tuning values were computed under."""
+    if qid not in DEPENDENCIES:
+        return None
+    try:
+        applicable = check_dependency(qid, list(doc_result_map.values()), DEPENDENCIES, None)
+    except ValueError:
+        # parent not scored for this paper (e.g. --query-ids subset): the child applies
+        return None
+    if applicable:
+        return None
+    import mc_rule
+    return {
+        "raw_output": None,
+        "pred_value": -99,
+        "pred_indicator": "-99",
+        "true_value": gold,
+        "accuracy": int(mc_rule.child_gold_not_applicable(qtype, gold)) if gold is not None else None,
+        "resolved_by": "model_parent_not_applicable",
+        "model_answer_unused": model_answer,
+    }
 
 
 def check_dependency(qid, evaluated_results, dependency_rules, doc_id):
     rules = dependency_rules.get(qid, {})
     depends_on = rules.get("depends_on", [])
     not_applicable_if = rules.get("not_applicable_if", [])
-    doc_results = [r for r in evaluated_results if r.get("doc_id") == doc_id]
+    doc_results = [r for r in evaluated_results if doc_id is None or r.get("doc_id") == doc_id]
 
     # Ensure dependencies exist
     for dep_qid in depends_on:
         if dep_qid not in [r["query_id"] for r in doc_results]:
+            if dep_qid not in QUERIES:      # parent not among the scored items -> child applies
+                continue
             raise ValueError(
                 f"Query {qid} depends on {dep_qid}, which has not been evaluated yet "
                 f"for document {doc_id or '[unknown]'}."
@@ -483,6 +506,8 @@ def check_dependency(qid, evaluated_results, dependency_rules, doc_id):
                 dep_value = dep_entry.get("pred_indicator")
             else:
                 dep_value = dep_entry.get("pred_value")
+            if dep_value is None:
+                dep_value = dep_entry.get("raw_output")
 
             # Normalize dep_value to a list
             if not isinstance(dep_value, list):
@@ -498,7 +523,9 @@ def check_dependency(qid, evaluated_results, dependency_rules, doc_id):
                         all_blocked = False
                         break
                 except (ValueError, TypeError):
-                    if str(v).strip().lower() != str(blocked_value).strip().lower():
+                    _nv = re.sub(r"[^a-z0-9]+", " ", str(v).lower()).strip()
+                    _nb = re.sub(r"[^a-z0-9]+", " ", str(blocked_value).lower()).strip()
+                    if _nv != _nb:
                         all_blocked = False
                         break
 
@@ -511,6 +538,16 @@ def check_dependency(qid, evaluated_results, dependency_rules, doc_id):
 # ---------------------------------------------------------------------
 # Ensure functions: run component only if output missing
 # ---------------------------------------------------------------------
+def _parse_provenance_excepted(stem: str) -> bool:
+    """True when PARSE_PROVENANCE_EXCEPTIONS (comma-separated paper ids or PDF stems)
+    names this paper. Used by frozen runs to accept, deliberately and on record, a
+    cached parse that is not the requested parser's (e.g. the pymupdf fallback that
+    the search trial of paper 451 used). run_frozen writes the list to the manifest."""
+    raw = os.getenv("PARSE_PROVENANCE_EXCEPTIONS", "")
+    allowed = {x.strip() for x in raw.split(",") if x.strip()}
+    return bool(allowed) and (stem in allowed or stem.split("_")[0] in allowed)
+
+
 def ensure_parsed(file_path: Path, parser_name: str, strict: bool = False):
     """Ensure a file is parsed. Return path to cached or newly parsed output.
 
@@ -541,6 +578,10 @@ def ensure_parsed(file_path: Path, parser_name: str, strict: bool = False):
                     _m = {}
                 _tag = PARSER_META_TAG.get(parser_name)
                 if _m.get("fallback_from") or (_tag and _m.get("parser") and _m.get("parser") != _tag):
+                    if _parse_provenance_excepted(stem):
+                        logger.warning("%s: cached parse is '%s' (not %s); accepted under "
+                                       "PARSE_PROVENANCE_EXCEPTIONS", file_path.name, _m.get("parser"), parser_name)
+                        return cached
                     raise ParserProvenanceError(
                         f"{file_path.name}: cached parse is '{_m.get('parser')}'"
                         f"{' (fallback from ' + str(_m.get('fallback_from')) + ')' if _m.get('fallback_from') else ''}"
@@ -1472,6 +1513,7 @@ def objective(
             # once; parse into per-item answers/others, then score each below as in
             # individual mode (no per-item generation).
             batched_answers, batched_others = {}, {}
+            _lp_streams = []
             _wanted_qids = [q for q in QUERIES if (query_ids is None or q in query_ids)]
             # Skip the (paid) batched call when every requested item is already cached
             # for this paper -- on resume it was a no-op that still cost a call.
@@ -1479,6 +1521,11 @@ def objective(
                 if full_doc_text is None:
                     full_doc_text = load_full_document_text(parsed_path)
                 _bctx = _VLM_CTX if vlm else full_doc_text
+                # RQ2 procedure (a): request the answer-token log-probabilities with
+                # the top-5 alternatives on the batched call (models that expose them;
+                # reasoning off). The stream is kept per paper and each item's answer
+                # tokens are located by its JSON key below.
+                _want_lp = bool(llm_meta.get("exposes_logprobs", True))
 
                 def _batched_call(_ids=None):
                     """One batched generation over `_ids` (all items when None)."""
@@ -1490,7 +1537,7 @@ def objective(
                             query=_p,
                             system_prompt=system_prompt,
                             chunks=[(_bctx, 1.0)],
-                            return_logprobs=False,
+                            return_logprobs=_want_lp,
                             reasoning_enabled=reasoning_enabled,
                             ledger_path=_ledger_path,
                             ledger_extra={"doc_name": doc_name, "query_id": "batched", "run_id": _run_id},
@@ -1519,6 +1566,7 @@ def objective(
                     )
                     _h1, _h2 = batched.split_item_ids(QUERIES)
                     _o1, _o2 = _batched_call(_h1), _batched_call(_h2)
+                    _lp_streams = [batched.logprob_stream(_o1), batched.logprob_stream(_o2)]
                     _a1, _x1 = batched.parse_batched_response(
                         _o1.get("text", ""), {k: QUERIES[k] for k in _h1}
                     )
@@ -1538,7 +1586,9 @@ def objective(
                     batched_answers, batched_others = batched.parse_batched_response(
                         _bout.get("text", ""), QUERIES
                     )
+                    _lp_streams = [batched.logprob_stream(_bout)]
                     _acc(_bout)
+                _lp_streams = [st for st in _lp_streams if st is not None]
                 # A "<id>__other" text whose answer does not contain Y is discarded by
                 # the scorer (Y is never inferred from it, matching RAG where the
                 # follow-up only runs after Y). Count it so we know how often that
@@ -1558,10 +1608,14 @@ def objective(
                 log(f"  Evaluating NEW query {qid} for {doc_name}")
                 needs_evaluation = True
                 if qid in DEPENDENCIES:
-                    gold = TRUE_ANSWERS[doc_name][qid]
-                    _auto = dependency_autoresolve(qid, gold)
+                    gold = TRUE_ANSWERS.get(doc_name, {}).get(qid)
+                    _auto = dependency_resolve(
+                        qid, qdata["type"], doc_result_map, gold,
+                        model_answer=batched_answers.get(qid) if question_mode == "batched" else None,
+                    )
                     if _auto is not None:
-                        log(f"  Query {qid}: gold not-applicable (-99) -> auto-correct, no call.")
+                        log(f"  Query {qid}: pipeline's parent answer -> not applicable (-99), no call; "
+                            f"gold {'NA' if _auto['accuracy'] else 'applicable'}.")
                         eval_result = _auto
                         result = {
                             "doc_id": doc_id,
@@ -1619,7 +1673,7 @@ def objective(
                     existing_qids.add(qid)
                     doc_result_map[qid] = result
                     log(
-                        f"    ✅ Query {qid} accuracy: {eval_result.get('accuracy', 0):.3f}"
+                        f"    ✅ Query {qid} accuracy: {eval_result.get('accuracy') or 0:.3f}"
                     )
                     param_hash = hashlib.md5(
                         json.dumps(trial_choices, sort_keys=True).encode()
@@ -1652,7 +1706,10 @@ def objective(
                     # (they cover all items at once), so don't store/duplicate them.
                     llm_text = batched_answers.get(qid, "Z")
                     llm_output = {"text": llm_text}
-                    llm_logprobs = {}
+                    # Answer-token logprobs (with top-5 alternatives) for this item,
+                    # located in the batched token stream by its JSON key; {} when
+                    # the model returned none.
+                    llm_logprobs = batched.locate_answer_tokens(_lp_streams, qid) or {}
                 elif prompt_type == "binary_prompts" and qdata["type"] in [
                     "multiple_choice",
                     "single_choice",
@@ -1778,6 +1835,10 @@ def objective(
                     # every "<id>__other" the model returned, whether or not the
                     # answer carried Y -- recoverable for an Other-aware rescoring
                     doc_data["batched_other_text"] = dict(batched_others)
+                    if _lp_streams:
+                        # full token stream(s) of the batched reply (tokens, logprobs,
+                        # top-5 alternatives) -- RQ2 procedure (a) re-analyses start here
+                        doc_data["batched_logprobs"] = _lp_streams
                 with open(doc_file, "w", encoding="utf-8") as f:
                     json.dump(doc_data, f, indent=2, ensure_ascii=False)
             num_cached = len(existing_results)

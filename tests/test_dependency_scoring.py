@@ -1,60 +1,89 @@
-"""Regression tests for the gold-driven dependency rule (prereg2 metrics).
+"""Model-driven dependency rule (prereg2 "Conventions shared by all item types").
 
-The pre-2026-09-28 live scorer skipped dependency-child items based on the
-MODEL's parent answer, fabricated raw_output="Not applicable"/pred -99, and
-scored the cell against gold — mis-scoring ~24-41 MC cells per trial (found by
-the unified rescore). The rule now: gold == -99 -> auto-correct without a model
-call; any real gold -> the model is always asked.
-
-The parquet-driven test replays every cell the unified rescore CHANGED on the
-freshest trial (#124) and asserts the new resolver would have asked the model on
-each one — i.e. the entire class of mis-scored cells is unreachable now.
-"""
-import json
+Applicability of a child item follows the PIPELINE'S OWN parent answer. When the
+parent answer makes the child not applicable, the child is set to -99 without a
+model call and counts as correct iff the gold marks the child not applicable
+(-99 for the numeric children 1.2.1/4.2.1; 0 or -99 for the multiple-choice
+children, where the coders used the not-reported code). Otherwise the child is
+scored like any other cell. The gold never enters the decision."""
 import os
 import pathlib
 import sys
 
-import pandas as pd
 import pytest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 os.environ.setdefault("SAMPLE_ONLY", "1")
 sys.path.insert(0, str(ROOT / "src"))
 
-from objective import dependency_autoresolve  # noqa: E402
-
-PQ = ROOT / "analysis" / "cache" / "unified_rescore_cells.parquet"
-
-
-def test_gold_not_applicable_autoresolves_correct():
-    for gold in (["-99"], [-99], [-99, "x"]):
-        r = dependency_autoresolve("3.4.1", gold)
-        assert r is not None
-        assert r["accuracy"] == 1
-        assert r["pred_value"] == -99
-        # raw_output must stay None so offline re-scoring keeps the stored value
-        assert r["raw_output"] is None
+import objective  # noqa: E402
+from objective import dependency_resolve  # noqa: E402
 
 
-@pytest.mark.parametrize("gold", [["0"], ["1"], ["A", "B"], [0], ["Z"]])
-def test_real_gold_always_asks_the_model(gold):
-    assert dependency_autoresolve("3.4.1", gold) is None
+@pytest.fixture(autouse=True)
+def _deps(monkeypatch):
+    import json
+    monkeypatch.setattr(objective, "DEPENDENCIES", json.load(open(ROOT / "src" / "dependencies.txt")), raising=False)
+    monkeypatch.setattr(objective, "QUERIES", {q: {} for q in
+                        ["1.8", "1.2.1", "3.2", "3.2.1", "3.4", "3.4.1", "3.5", "3.5.1", "4.1", "4.2", "4.2.1"]}, raising=False)
 
 
-def test_every_previously_misscored_cell_would_now_be_asked():
-    if not PQ.exists():
-        pytest.skip("unified rescore parquet not built")
-    import _data_loading as D
-    cells = pd.read_parquet(PQ)
-    changed = cells[(cells.p2_number == 124)
-                    & (cells.accuracy_unified != cells.accuracy_stored)]
-    assert len(changed) > 0, "expected the known #124 divergent cells"
-    Q = D.load_queries()
-    Q = {q: v for q, v in Q.items() if q in D.finalized_item_map(Q)}
-    TRUE = D.load_true_answers_final(Q)
-    for row in changed.itertuples():
-        gold = TRUE[str(row.doc_name)][str(row.query_id)]
-        assert dependency_autoresolve(str(row.query_id), gold) is None, (
-            f"cell ({row.doc_name},{row.query_id}) gold={gold} would still be "
-            f"auto-skipped — the old bug class is reachable again")
+def sc(qid, code):      # a scored single-choice parent cell
+    return {"query_id": qid, "type": "single_choice", "pred_indicator": str(code), "pred_value": "x"}
+
+
+def mc(qid, *values):   # a scored multiple-choice parent cell (stored option values)
+    return {"query_id": qid, "type": "multiple_choice", "pred_value": list(values)}
+
+
+def test_continuous_outcome_makes_cases_not_applicable():
+    res = {"1.8": sc("1.8", 4)}
+    r = dependency_resolve("1.2.1", "numeric", res, ["-99"])
+    assert r["accuracy"] == 1 and r["pred_value"] == -99 and r["raw_output"] is None
+    assert r["resolved_by"] == "model_parent_not_applicable"
+    assert dependency_resolve("1.2.1", "numeric", res, ["3397"])["accuracy"] == 0   # gold applicable -> wrong
+    assert dependency_resolve("1.2.1", "numeric", res, ["0"])["accuracy"] == 0      # numeric gold 0 = not reported
+
+
+def test_applicable_parent_asks_the_model():
+    assert dependency_resolve("1.2.1", "numeric", {"1.8": sc("1.8", 1)}, ["-99"]) is None
+    assert dependency_resolve("1.2.1", "numeric", {"1.8": sc("1.8", "Z")}, ["-99"]) is None
+
+
+def test_mc_child_gold_codes():
+    res = {"3.4": sc("3.4", 0)}
+    assert dependency_resolve("3.4.1", "multiple_choice", res, ["0"])["accuracy"] == 1
+    assert dependency_resolve("3.4.1", "multiple_choice", res, ["-99"])["accuracy"] == 1
+    assert dependency_resolve("3.4.1", "multiple_choice", res, ["grouped / nested cv"])["accuracy"] == 0
+
+
+def test_mc_parent_values_are_normalised_against_the_rule_text():
+    # stored pred_values are lower-cased with punctuation stripped
+    assert dependency_resolve("4.2.1", "numeric", {"4.2": mc("4.2", "internal no split")}, ["-99"])["accuracy"] == 1
+    assert dependency_resolve("4.2.1", "numeric", {"4.2": mc("4.2", "internal single split")}, ["-99"]) is None
+    # one selected option that is NOT blocked keeps the child applicable
+    assert dependency_resolve("4.2.1", "numeric", {"4.2": mc("4.2", "no validation", "internal single split")}, ["-99"]) is None
+
+
+def test_chain_3_5_to_3_5_1():
+    res = {"1.8": sc("1.8", 4)}
+    child = dependency_resolve("3.5", "multiple_choice", res, ["0"])
+    assert child["accuracy"] == 1
+    res["3.5"] = {"query_id": "3.5", "type": "multiple_choice", **child}
+    assert dependency_resolve("3.5.1", "multiple_choice", res, ["0"])["accuracy"] == 1
+    assert dependency_resolve("3.5.1", "multiple_choice", res, ["smogn"])["accuracy"] == 0
+
+
+def test_gold_never_enters_the_decision_and_may_be_absent():
+    res = {"1.8": sc("1.8", 4)}
+    r = dependency_resolve("1.2.1", "numeric", res, None, model_answer="12")
+    assert r is not None and r["accuracy"] is None and r["model_answer_unused"] == "12"
+    assert dependency_resolve("1.2.1", "numeric", {"1.8": sc("1.8", 1)}, None) is None
+
+
+def test_missing_parent_means_applicable():
+    assert dependency_resolve("1.2.1", "numeric", {}, ["-99"]) is None
+
+
+def test_non_child_is_untouched():
+    assert dependency_resolve("1.1", "numeric", {"1.8": sc("1.8", 4)}, ["-99"]) is None

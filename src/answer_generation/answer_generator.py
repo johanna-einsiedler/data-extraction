@@ -101,6 +101,23 @@ def escape_braces_keep_context(template: str, placeholder: str = "context") -> s
     return template
 
 
+def _ordered_logprob_content(content_list):
+    """Ordered token stream [{token, logprob, top: [{token, logprob}, ...]}, ...]
+    from an OpenAI-schema `logprobs.content` list (SDK objects or dicts). Keeps
+    duplicates and order, unlike the legacy {token: logprob} dict."""
+    def _get(o, k):
+        return o.get(k) if isinstance(o, dict) else getattr(o, k, None)
+    out = []
+    for e in content_list:
+        tok, lp = _get(e, "token"), _get(e, "logprob")
+        if tok is None or lp is None:
+            continue
+        top = [{"token": _get(t, "token"), "logprob": _get(t, "logprob")}
+               for t in (_get(e, "top_logprobs") or []) if _get(t, "token") is not None]
+        out.append({"token": tok, "logprob": lp, "top": top})
+    return out
+
+
 class AnswerGenerator:
     def __init__(
         self,
@@ -308,6 +325,9 @@ class AnswerGenerator:
                 # Reasoning models (gpt-5.x, o-series) reject logprobs.
                 if self.exposes_logprobs:
                     oai_kwargs["logprobs"] = True
+                    if return_logprobs:
+                        # top-5 alternatives per answer token (RQ2 procedure (a))
+                        oai_kwargs["top_logprobs"] = 5
                 if (
                     response_format is not None
                     and response_format.get("type") == "json_schema"
@@ -355,6 +375,7 @@ class AnswerGenerator:
                 lp = getattr(response.choices[0], "logprobs", None)
                 if self.exposes_logprobs and lp is not None and lp.content:
                     token_logprobs = {t.token: t.logprob for t in lp.content}
+                    result["logprobs_content"] = _ordered_logprob_content(lp.content)
                 else:
                     token_logprobs = np.nan
 
@@ -383,6 +404,8 @@ class AnswerGenerator:
                 # (an integer `1` -> 400 "invalid type: integer, expected boolean").
                 # logprobs=True returns the chosen token's logprob (what we use).
                 kwargs["logprobs"] = True
+                if return_logprobs:
+                    kwargs["top_logprobs"] = 5   # top-5 alternatives (RQ2 procedure (a))
             # Reasoning models only return token logprobs in non-thinking mode.
             # reasoning_enabled=False disables chain-of-thought so logprobs flow;
             # None leaves the model's default (thinking on for reasoning models).
@@ -407,6 +430,7 @@ class AnswerGenerator:
                 # {"token": str, "logprob": float, ...} dicts
                 content_list = getattr(logprob_payload, "content", None)
                 if content_list:
+                    result["logprobs_content"] = _ordered_logprob_content(content_list)
                     for entry in content_list:
                         tok = (
                             entry.get("token")
@@ -771,6 +795,7 @@ class AnswerGenerator:
                 ):
                     logger.warning("Retrying without logprobs/reasoning …")
                     fallback_kwargs.pop("logprobs", None)
+                    fallback_kwargs.pop("top_logprobs", None)
                     fallback_kwargs.pop("reasoning", None)
                     if _eb:
                         _eb.pop("reasoning", None)

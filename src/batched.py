@@ -318,3 +318,81 @@ def response_is_usable(text, QUERIES, min_frac=0.5):
         if obj.get(iid) is not None and str(obj.get(iid)).strip() != ""
     )
     return (n >= max(1, int(min_frac * len(QUERIES)))), n
+
+
+# --------------------------------------------------------------------------
+# Answer-token log-probabilities for the batched reply (RQ2 procedure (a)).
+# --------------------------------------------------------------------------
+def logprob_stream(llm_output):
+    """{'text', 'tokens', 'logprobs', 'top_logprobs'} from a generate() result that
+    carries the ordered `logprobs_content` list (answer_generator); None when the
+    model returned no token logprobs."""
+    content = (llm_output or {}).get("logprobs_content")
+    if not content:
+        return None
+    return {
+        "text": llm_output.get("text") or "",
+        "tokens": [c["token"] for c in content],
+        "logprobs": [c["logprob"] for c in content],
+        "top_logprobs": [c.get("top") or [] for c in content],
+    }
+
+
+def _token_offsets(text, tokens):
+    """Start offset of every token in `text`. Tokens are matched sequentially (the
+    stream normally concatenates to the text; a stray mismatch falls back to a
+    forward search). None for a token that cannot be placed."""
+    offs, pos = [], 0
+    for tok in tokens:
+        if tok and text.startswith(tok, pos):
+            offs.append(pos)
+            pos += len(tok)
+        else:
+            j = text.find(tok, pos) if tok else -1
+            if j == -1:
+                offs.append(None)
+            else:
+                offs.append(j)
+                pos = j + len(tok)
+    return offs
+
+
+def value_span(text, item_id):
+    """(start, end) character span of the JSON value for `item_id` in the raw
+    reply (quotes excluded for string values); None when the key is absent."""
+    m = re.search(r'"' + re.escape(item_id) + r'"\s*:\s*', text)
+    if not m:
+        return None
+    start = m.end()
+    try:
+        val, end = json.JSONDecoder().raw_decode(text, start)
+    except Exception:
+        return None
+    if isinstance(val, str) and text[start] == '"' and end - start >= 2:
+        return start + 1, end - 1
+    return start, end
+
+
+def locate_answer_tokens(streams, item_id):
+    """The answer tokens of `item_id` with their logprobs and top-5 alternatives,
+    located in the batched token stream(s) by the JSON key. Returns {} when the
+    item is absent or no stream carries logprobs. `min_logprob` is the weakest-link
+    confidence used by RQ2 procedure (a)."""
+    for st in streams or []:
+        span = value_span(st["text"], item_id)
+        if span is None:
+            continue
+        s0, s1 = span
+        offs = _token_offsets(st["text"], st["tokens"])
+        idx = [i for i, o in enumerate(offs)
+               if o is not None and o < max(s1, s0 + 1) and o + len(st["tokens"][i]) > s0]
+        if not idx:
+            continue
+        lps = [st["logprobs"][i] for i in idx]
+        return {
+            "tokens": [st["tokens"][i] for i in idx],
+            "logprobs": lps,
+            "top_logprobs": [st["top_logprobs"][i] for i in idx],
+            "min_logprob": min(lps),
+        }
+    return {}

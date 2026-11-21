@@ -1,3 +1,4 @@
+import importlib.metadata as _im
 import logging
 import os
 import shutil
@@ -9,27 +10,46 @@ from .base_parser import BaseParser, ParseResult
 
 logger = logging.getLogger(__name__)
 
+# The backend is pinned to the one that produced every cached parse the search
+# used: the pipeline backend (PDF-Extract-Kit models). Its model set was fetched
+# on 2026-03-11 (MinerU 2.2.1, 20 tuning papers) and on 2026-07-08 (MinerU 3.4.3,
+# 15 tuning papers); the VLM model of the `hybrid-engine`/`vlm-engine` backends was
+# never present on the machine. MinerU 3.x defaults to `hybrid-engine` when no
+# backend is given, so the flag has to be explicit for new parses to match the
+# old ones. Override with MINERU_BACKEND only for a deliberate, recorded change.
+DEFAULT_BACKEND = "pipeline"
+
 
 class MinerUParser(BaseParser):
     """Wrapper around the MinerU CLI tool to extract deeply structured content."""
 
-    def __init__(self, output_dir: str = "../data/_intermediate/"):
+    def __init__(self, output_dir: str = "../data/_intermediate/", backend: str | None = None):
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(parents=True, exist_ok=True)
         if shutil.which("mineru") is None:
             raise FileNotFoundError(
                 "The 'mineru' executable was not found on PATH."
             )
+        self.backend = backend or os.getenv("MINERU_BACKEND", DEFAULT_BACKEND)
+        try:
+            self.version = _im.version("mineru")
+        except Exception:  # noqa: BLE001 - version is provenance only
+            self.version = None
+
+    def command(self, file_path: str, run_dir: Path) -> list[str]:
+        """The exact CLI invocation (also written to the parse meta)."""
+        return ["mineru", "-p", str(file_path), "-o", str(run_dir), "-b", self.backend]
 
     def parse(self, file_path: str) -> ParseResult:
         """Run MinerU on the target PDF and return Markdown (or fenced fallback)."""
         run_dir = self.output_dir / f"mineru_{uuid.uuid4().hex}"
         run_dir.mkdir(parents=True, exist_ok=True)
+        cmd = self.command(file_path, run_dir)
 
         try:
-            logger.info("Running MinerU on %s", file_path)
+            logger.info("Running MinerU %s (backend %s) on %s", self.version, self.backend, file_path)
             result = subprocess.run(
-                ["mineru", "-p", file_path, "-o", str(run_dir)],
+                cmd,
                 capture_output=True,
                 text=True,
             )
@@ -72,6 +92,10 @@ class MinerUParser(BaseParser):
                 metadata={
                     "parser": "mineru",
                     "source_format": source_ext or "unknown",
+                    "mineru_version": self.version,
+                    "mineru_backend": self.backend,
+                    # run_dir is a throw-away temp folder; record the flags only
+                    "mineru_command": " ".join(["mineru", "-p", "<pdf>", "-o", "<tmp>", "-b", self.backend]),
                 },
             )
 
